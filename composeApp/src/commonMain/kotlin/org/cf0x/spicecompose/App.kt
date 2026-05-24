@@ -1,48 +1,77 @@
 package org.cf0x.spicecompose
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.i18n.AppLanguage
+import org.cf0x.spicecompose.ui.i18n.EnStrings
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.i18n.ZhCnStrings
+import org.cf0x.spicecompose.ui.screen.MainScreen
+import org.cf0x.spicecompose.ui.screen.settings.SettingsScreen
+import org.cf0x.spicecompose.ui.theme.*
 
-import spicecompose.composeapp.generated.resources.Res
-import spicecompose.composeapp.generated.resources.compose_multiplatform
+@ExperimentalMaterial3Api
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    val p = ThemePreferences
+    val strings = when (p.appLanguage) { AppLanguage.ZH_CN -> ZhCnStrings; else -> EnStrings }
+
+    CompositionLocalProvider(
+        LocalUiMode              provides p.uiMode,
+        LocalAppStrings          provides strings,
+        LocalColorMode           provides p.colorMode,
+        LocalKeyColor            provides p.keyColor,
+        LocalPaletteStyle        provides p.paletteStyle,
+        LocalColorSpecVersion    provides p.colorSpecVersion,
+        LocalEnableBlur          provides p.enableBlur,
+        LocalEnableSmoothCorner  provides p.enableSmoothCorner,
+        LocalPageScale           provides p.pageScale,
+        LocalFloatingBottomBar   provides p.floatingBottomBar,
+        LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
+    ) {
+        SpiceComposeTheme(
+            colorMode    = p.colorMode,
+            keyColor     = p.keyColor,
+            paletteStyle = p.paletteStyle,
+            specVersion  = p.colorSpecVersion,
+            pageScale    = p.pageScale,
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+            MainScreen(
+                navLayoutMode         = p.navLayoutMode,
+                onNavLayoutModeChange = { p.setNavLayoutMode(it) },
+                settingsContent = {
+                    SettingsScreen(
+                        uiMode                        = p.uiMode,
+                        onUiModeChange                = { p.setUiMode(it) },
+                        appLanguage                   = p.appLanguage,
+                        onLanguageChange              = { p.setAppLanguage(it) },
+                        colorMode                     = p.colorMode,
+                        onColorModeChange             = { p.setColorMode(it) },
+                        keyColor                      = p.keyColor,
+                        onKeyColorChange              = { p.setKeyColor(it) },
+                        paletteStyle                  = p.paletteStyle,
+                        onPaletteStyleChange          = { p.setPaletteStyle(it) },
+                        colorSpecVersion              = p.colorSpecVersion,
+                        onColorSpecVersionChange      = { p.setColorSpecVersion(it) },
+                        navLayoutMode                 = p.navLayoutMode,
+                        onNavLayoutModeChange         = { p.setNavLayoutMode(it) },
+                        pageScale                     = p.pageScale,
+                        onPageScaleChange             = { p.setPageScale(it) },
+                        floatingBottomBar             = p.floatingBottomBar,
+                        onFloatingBottomBarChange     = { p.setFloatingBottomBar(it) },
+                        floatingBottomBarBlur         = p.floatingBottomBarBlur,
+                        onFloatingBottomBarBlurChange = { p.setFloatingBottomBarBlur(it) },
+                        enableBlur                    = p.enableBlur,
+                        onEnableBlurChange            = { p.setEnableBlur(it) },
+                        enableSmoothCorner            = p.enableSmoothCorner,
+                        onEnableSmoothCornerChange    = { p.setEnableSmoothCorner(it) },
+                        predictiveBack                = p.predictiveBack,
+                        onPredictiveBackChange        = { p.setPredictiveBack(it) },
+                    )
+                },
+            )
         }
     }
 }

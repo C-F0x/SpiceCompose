@@ -1,39 +1,44 @@
 [versions]
-agp                   = "9.2.1"
-com-android-library-gradle-plugin = "9.3.0-alpha05"
-kotlin                = "2.3.21"
-compose-multiplatform = "1.7.3"
-lifecycle             = "2.10.0"
-activity-compose      = "1.13.0"
-kotlinx-coroutines    = "1.10.2"
-material-icons-extended = "1.7.3"
-miuix                 = "0.9.0"
-ui-tooling-preview = "1.12.0-alpha02"
+agp                       = "9.2.1"
+kotlin                    = "2.3.21"
+compose-multiplatform     = "1.11.0"
+lifecycle                 = "2.10.0"
+activity-compose          = "1.13.0"
+kotlinx-coroutines        = "1.11.0"
+material-icons-extended   = "1.7.3"
+miuix                     = "0.9.1"
+materialkolor             = "4.0.2"
+ui-tooling-preview        = "1.11.2"
+material3                 = "1.9.0"
+multiplatform-settings    = "1.2.0"
 
 [plugins]
-androidApplication   = { id = "com.android.application",                      version.ref = "agp"                }
-androidMultiplatform = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
-kotlinMultiplatform  = { id = "org.jetbrains.kotlin.multiplatform",            version.ref = "kotlin"             }
-composeMultiplatform = { id = "org.jetbrains.compose",                         version.ref = "compose-multiplatform" }
-composeCompiler      = { id = "org.jetbrains.kotlin.plugin.compose",           version.ref = "kotlin"             }
-kotlinSerialization  = { id = "org.jetbrains.kotlin.plugin.serialization",     version.ref = "kotlin"             }
+androidApplication   = { id = "com.android.application",                   version.ref = "agp"                   }
+androidMultiplatform = { id = "com.android.kotlin.multiplatform.library",  version.ref = "agp"                   }
+kotlinMultiplatform  = { id = "org.jetbrains.kotlin.multiplatform",        version.ref = "kotlin"                }
+composeMultiplatform = { id = "org.jetbrains.compose",                     version.ref = "compose-multiplatform" }
+composeCompiler      = { id = "org.jetbrains.kotlin.plugin.compose",       version.ref = "kotlin"                }
+kotlinSerialization  = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"                }
 
 [libraries]
 # androidApp-only
 androidx-activity-compose          = { module = "androidx.activity:activity-compose",           version.ref = "activity-compose" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle"        }
 
-# composeApp commonMain — KMP base coords; Gradle resolves platform variants automatically
-androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui-tooling-preview" }
-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
-components-ui-tooling-preview = { module = "org.jetbrains.compose.components:components-ui-tooling-preview", version.ref = "compose-multiplatform" }
-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-multiplatform" }
-miuix-ui                = { module = "top.yukonga.miuix.kmp:miuix-ui",                version.ref = "miuix"             }
-miuix-icons             = { module = "top.yukonga.miuix.kmp:miuix-icons",             version.ref = "miuix"             }
-miuix-preference        = { module = "top.yukonga.miuix.kmp:miuix-preference",        version.ref = "miuix"             }
-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
-jetbrains-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+# composeApp commonMain
+androidx-ui-tooling-preview       = { module = "androidx.compose.ui:ui-tooling-preview",                         version.ref = "ui-tooling-preview"    }
+components-resources               = { module = "org.jetbrains.compose.components:components-resources",          version.ref = "compose-multiplatform"  }
+components-ui-tooling-preview      = { module = "org.jetbrains.compose.components:components-ui-tooling-preview", version.ref = "compose-multiplatform"  }
+foundation                         = { module = "org.jetbrains.compose.foundation:foundation",                    version.ref = "compose-multiplatform"  }
+kotlinx-coroutines-core            = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core",                  version.ref = "kotlinx-coroutines"     }
+material-icons-extended            = { module = "org.jetbrains.compose.material:material-icons-extended",         version.ref = "material-icons-extended" }
+material3                          = { module = "org.jetbrains.compose.material3:material3",                      version.ref = "material3"              }
+materialkolor                      = { module = "com.materialkolor:material-kolor",                                version.ref = "materialkolor"          }
+miuix-ui                           = { module = "top.yukonga.miuix.kmp:miuix-ui",                                  version.ref = "miuix"                  }
+miuix-icons                        = { module = "top.yukonga.miuix.kmp:miuix-icons",                              version.ref = "miuix"                  }
+miuix-preference                   = { module = "top.yukonga.miuix.kmp:miuix-preference",                         version.ref = "miuix"                  }
+runtime                            = { module = "org.jetbrains.compose.runtime:runtime",                          version.ref = "compose-multiplatform"  }
+ui                                 = { module = "org.jetbrains.compose.ui:ui",                                    version.ref = "compose-multiplatform"  }
+jetbrains-compose-ui-tooling       = { module = "org.jetbrains.compose.ui:ui-tooling",                           version.ref = "compose-multiplatform"  }
+multiplatform-settings             = { module = "com.russhwolf:multiplatform-settings",                           version.ref = "multiplatform-settings" }
+multiplatform-settings-no-arg      = { module = "com.russhwolf:multiplatform-settings-no-arg",                    version.ref = "multiplatform-settings" }

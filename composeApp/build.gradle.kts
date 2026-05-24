@@ -15,9 +15,6 @@ kotlin {
         namespace = "org.cf0x.spicecompose.compose"
         compileSdk = androidCompileSdkVersion
         minSdk = androidMinSdkVersion
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-        }
     }
 
     jvm("desktop")
@@ -33,15 +30,20 @@ kotlin {
             implementation(libs.components.ui.tooling.preview)
             implementation(libs.components.resources)
             implementation(libs.material.icons.extended)
-
+            implementation(libs.materialkolor)
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.miuix.ui)
             implementation(libs.miuix.icons)
+            implementation(libs.miuix.preference)
         }
 
         androidMain.dependencies {
             implementation(libs.jetbrains.compose.ui.tooling)
             implementation(libs.androidx.ui.tooling.preview)
+            implementation("androidx.compose.material3:material3")       // dynamicDarkColorScheme
+            implementation(libs.androidx.activity.compose)               // BackHandler actual
         }
 
         desktopMain.dependencies {
