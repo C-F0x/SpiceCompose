@@ -12,6 +12,8 @@ import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.component.navigation.BottomBar
 import org.cf0x.spicecompose.ui.component.navigation.SideRail
 import org.cf0x.spicecompose.ui.navigation.*
+import org.cf0x.spicecompose.ui.screen.status.StatusScreen
+import org.cf0x.spicecompose.ui.screen.tools.ToolsScreen
 import org.cf0x.spicecompose.ui.screen.utils.UtilsScreen
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBar
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -101,8 +103,8 @@ private fun PageContent(
         modifier          = Modifier.fillMaxSize().padding(bottom = bottomPadding),
     ) { page ->
         when (page) {
-            0    -> StatusPlaceholder()
-            1    -> ToolsPlaceholder()
+            0    -> StatusScreen()
+            1    -> ToolsScreen()
             2    -> UtilsScreen()
             else -> settingsContent()
         }

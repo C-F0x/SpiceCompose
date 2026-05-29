@@ -1,4 +1,4 @@
-package org.cf0x.spicecompose.ui.screen.utils
+package org.cf0x.spicecompose.ui.screen.tools
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,8 +20,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
-fun UtilsPagerMiuix(
-    actions: UtilsScreenActions,
+fun ToolsPagerMiuix(
+    actions: ToolsScreenActions,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
@@ -29,7 +29,7 @@ fun UtilsPagerMiuix(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = strings.utils,
+                title = strings.tools,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -48,12 +48,28 @@ fun UtilsPagerMiuix(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = strings.subScreen,
-                        summary = strings.subScreenSummary,
+                        title = strings.buttons,
+                        summary = strings.buttonsSummary,
                         startAction = {
-                            Icon(Icons.Rounded.Tv, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                            Icon(Icons.Rounded.RadioButtonChecked, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenSubScreen,
+                        onClick = actions.onOpenButtons,
+                    )
+                    ArrowPreference(
+                        title = strings.analogs,
+                        summary = strings.analogsSummary,
+                        startAction = {
+                            Icon(Icons.Rounded.LinearScale, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = actions.onOpenAnalogs,
+                    )
+                    ArrowPreference(
+                        title = strings.lights,
+                        summary = strings.lightsSummary,
+                        startAction = {
+                            Icon(Icons.Rounded.Lightbulb, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = actions.onOpenLights,
                     )
                 }
 
@@ -61,33 +77,20 @@ fun UtilsPagerMiuix(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = strings.patches,
-                        summary = strings.patchesSummary,
+                        title = strings.coins,
+                        summary = strings.coinsSummary,
                         startAction = {
-                            Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                            Icon(Icons.Rounded.MonetizationOn, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenPatches,
+                        onClick = actions.onOpenCoins,
                     )
                     ArrowPreference(
-                        title = strings.cardManager,
-                        summary = strings.cardManagerSummary,
+                        title = strings.keypad,
+                        summary = strings.keypadSummary,
                         startAction = {
-                            Icon(Icons.Rounded.Nfc, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                            Icon(Icons.Rounded.Apps, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenCardMgr,
-                    )
-                }
-
-                Card(
-                    modifier = Modifier.padding(top = 12.dp, bottom = 12.dp).fillMaxWidth(),
-                ) {
-                    ArrowPreference(
-                        title = strings.cabinetInfo,
-                        summary = strings.cabinetInfoSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.Info, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = actions.onOpenCabinet,
+                        onClick = actions.onOpenKeypad,
                     )
                 }
             }

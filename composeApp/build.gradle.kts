@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 val androidCompileSdkVersion: Int = rootProject.extra["androidCompileSdkVersion"] as Int

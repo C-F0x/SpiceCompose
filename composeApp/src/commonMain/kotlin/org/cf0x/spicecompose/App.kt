@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import org.cf0x.spicecompose.network.ConnectionManager
+import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
@@ -24,6 +26,7 @@ fun App() {
     // Shared state: true when a sub-page (ThemeScreen / AboutScreen) is shown.
     // Passed down via CompositionLocal so MainScreen can disable pager swipe.
     val inSubPage = remember { mutableStateOf(false) }
+    val connectionManager = remember { ConnectionManager() }
 
     CompositionLocalProvider(
         LocalUiMode                provides p.uiMode,
@@ -37,7 +40,8 @@ fun App() {
         LocalPageScale             provides p.pageScale,
         LocalFloatingBottomBar     provides p.floatingBottomBar,
         LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
-        LocalInSubPage             provides inSubPage,   // ← new
+        LocalInSubPage             provides inSubPage,
+        LocalConnectionManager     provides connectionManager,
     ) {
         SpiceComposeTheme(
             colorMode    = p.colorMode,

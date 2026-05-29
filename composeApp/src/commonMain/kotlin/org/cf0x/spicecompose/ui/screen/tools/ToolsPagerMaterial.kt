@@ -1,8 +1,7 @@
-package org.cf0x.spicecompose.ui.screen.utils
+package org.cf0x.spicecompose.ui.screen.tools
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -15,8 +14,8 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UtilsPagerMaterial(
-    actions: UtilsScreenActions,
+fun ToolsPagerMaterial(
+    actions: ToolsScreenActions,
 ) {
     val strings = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -24,7 +23,7 @@ fun UtilsPagerMaterial(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(strings.utils) },
+                title = { Text(strings.tools) },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -36,12 +35,12 @@ fun UtilsPagerMaterial(
             contentPadding = innerPadding,
         ) {
             item {
-                FeatureItem(strings.subScreen, strings.subScreenSummary, Icons.Rounded.Tv, actions.onOpenSubScreen)
+                FeatureItem(strings.buttons, strings.buttonsSummary, Icons.Rounded.RadioButtonChecked, actions.onOpenButtons)
+                FeatureItem(strings.analogs, strings.analogsSummary, Icons.Rounded.LinearScale, actions.onOpenAnalogs)
+                FeatureItem(strings.lights, strings.lightsSummary, Icons.Rounded.Lightbulb, actions.onOpenLights)
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                FeatureItem(strings.patches, strings.patchesSummary, Icons.Rounded.Build, actions.onOpenPatches)
-                FeatureItem(strings.cardManager, strings.cardManagerSummary, Icons.Rounded.Nfc, actions.onOpenCardMgr)
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                FeatureItem(strings.cabinetInfo, strings.cabinetInfoSummary, Icons.Rounded.Info, actions.onOpenCabinet)
+                FeatureItem(strings.coins, strings.coinsSummary, Icons.Rounded.MonetizationOn, actions.onOpenCoins)
+                FeatureItem(strings.keypad, strings.keypadSummary, Icons.Rounded.Apps, actions.onOpenKeypad)
             }
         }
     }

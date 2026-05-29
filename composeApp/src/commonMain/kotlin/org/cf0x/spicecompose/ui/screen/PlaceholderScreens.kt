@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.basic.Text
 
-@Composable fun StatusPlaceholder()   = PlaceholderScreen("Hello! 👋")
-@Composable fun ToolsPlaceholder()    = PlaceholderScreen("Bonjour! 🔧")
 @Composable fun SettingsPlaceholder() = PlaceholderScreen("こんにちは！ 🎛️")
 
 @Composable
