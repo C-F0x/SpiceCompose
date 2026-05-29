@@ -10,7 +10,6 @@ import top.yukonga.miuix.kmp.basic.Text
 
 @Composable fun StatusPlaceholder()   = PlaceholderScreen("Hello! 👋")
 @Composable fun ToolsPlaceholder()    = PlaceholderScreen("Bonjour! 🔧")
-@Composable fun UtilsPlaceholder()    = PlaceholderScreen("你好！ ⚙️")
 @Composable fun SettingsPlaceholder() = PlaceholderScreen("こんにちは！ 🎛️")
 
 @Composable

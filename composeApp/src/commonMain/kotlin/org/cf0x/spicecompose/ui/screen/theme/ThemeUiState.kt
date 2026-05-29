@@ -10,17 +10,17 @@ import org.cf0x.spicecompose.ui.theme.defaultKeyColor
 
 @Immutable
 data class ThemeUiState(
-    val colorMode:             ColorMode              = ColorMode.SYSTEM,
-    val keyColor:              Color                  = defaultKeyColor,
-    val paletteStyle:          PaletteStyle           = PaletteStyle.TonalSpot,
-    val colorSpecVersion:      ColorSpec.SpecVersion  = ColorSpec.SpecVersion.SPEC_2021,
-    val navLayoutMode:         NavLayoutMode          = NavLayoutMode.Auto,
-    val pageScale:             Float                  = 1.0f,
-    val floatingBottomBar:     Boolean                = false,
-    val floatingBottomBarBlur: Boolean                = true,
-    val enableBlur:            Boolean                = true,
-    val enableSmoothCorner:    Boolean                = true,
-    val predictiveBack:        Boolean                = true,   // ← restored
+    val colorMode:             ColorMode             = ColorMode.SYSTEM,
+    val keyColor:              Color                 = defaultKeyColor,
+    val paletteStyle:          PaletteStyle          = PaletteStyle.TonalSpot,
+    val colorSpecVersion:      ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2021,
+    val navLayoutMode:         NavLayoutMode         = NavLayoutMode.Auto,
+    val pageScale:             Float                 = 1.0f,
+    val floatingBottomBar:     Boolean               = false,
+    val floatingBottomBarBlur: Boolean               = true,
+    val enableBlur:            Boolean               = true,
+    val enableSmoothCorner:    Boolean               = true,
+    // predictiveBack removed: controlled by AndroidManifest, not runtime-toggleable
 )
 
 @Immutable
@@ -36,5 +36,4 @@ data class ThemeScreenActions(
     val onSetFloatingBottomBarBlur:     (Boolean) -> Unit,
     val onSetEnableBlur:                (Boolean) -> Unit,
     val onSetEnableSmoothCorner:        (Boolean) -> Unit,
-    val onSetPredictiveBack:            (Boolean) -> Unit,     // ← restored
 )

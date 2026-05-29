@@ -15,6 +15,7 @@ kotlin {
         namespace = "org.cf0x.spicecompose.compose"
         compileSdk = androidCompileSdkVersion
         minSdk = androidMinSdkVersion
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
     jvm("desktop")
@@ -34,6 +35,7 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.miuix.ui)
             implementation(libs.miuix.icons)
             implementation(libs.miuix.preference)

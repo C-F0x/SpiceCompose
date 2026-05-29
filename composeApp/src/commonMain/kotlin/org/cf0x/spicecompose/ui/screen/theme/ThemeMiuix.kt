@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -39,32 +40,43 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-/**
- * Miuix theme settings screen.
- * Layout mirrors KernelSU's Miuix implementation:
- *   - Phone preview mockup
- *   - Seed color circles
- *   - 4 icon mode chips  (Dynamic | Light | Dark | AMOLED)
- *   - PaletteStyle / ColorSpec rows
- *   - Predictive back toggle
- *   - Inline scale slider
- */
 @Composable
 fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
     val scrollBehavior = MiuixScrollBehavior()
-    val strings = LocalAppStrings.current
-    var showCustomColor by rememberSaveable { mutableStateOf(false) }
+    val strings        = LocalAppStrings.current
 
-    if (showCustomColor) {
-        CustomColorDialog(uiState.keyColor,
-            { actions.onSetKeyColor(it); showCustomColor = false },
-            { showCustomColor = false }, strings)
+    var showAccentPicker by rememberSaveable { mutableStateOf(false) }
+    // Local scale value — only committed on slider release
+    var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+
+    if (showAccentPicker) {
+        AccentColorDialog(
+            current   = uiState.keyColor,
+            onConfirm = { actions.onSetKeyColor(it); showAccentPicker = false },
+            onDismiss = { showAccentPicker = false },
+            strings   = strings,
+        )
+    }
+
+    // Derived nav/floating mutual-exclusion logic
+    val effectiveNav = uiState.navLayoutMode   // Auto, BottomBar, SideRail
+    val isBottomMode = effectiveNav == NavLayoutMode.Auto || effectiveNav == NavLayoutMode.BottomBar
+    val monetEnabled = uiState.colorMode.isMonet
+
+    fun resolveColorMode(baseMonet: Boolean): ColorMode = when {
+        baseMonet && uiState.colorMode.isLight -> ColorMode.MONET_LIGHT
+        baseMonet && uiState.colorMode.isDark  -> ColorMode.MONET_DARK
+        baseMonet                              -> ColorMode.MONET_SYSTEM
+        uiState.colorMode == ColorMode.DARK_AMOLED -> ColorMode.DARK_AMOLED
+        uiState.colorMode.isLight              -> ColorMode.LIGHT
+        uiState.colorMode.isDark               -> ColorMode.DARK
+        else                                   -> ColorMode.SYSTEM
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = strings.themeSettings,
+                title          = strings.themeSettings,
                 navigationIcon = {
                     IconButton(onClick = actions.onBack) {
                         Icon(MiuixIcons.Back, contentDescription = null)
@@ -86,72 +98,51 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
             overscrollEffect = null,
         ) {
             item {
-                // ── Phone preview ────────────────────────────────────────────
                 Spacer(Modifier.height(12.dp))
+
+                // ── Phone preview ────────────────────────────────────────────
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    ThemePreviewCard()
+                    ThemePreviewCard(navLayoutMode = uiState.navLayoutMode)
                 }
                 Spacer(Modifier.height(16.dp))
 
-                // ── Seed color circles ───────────────────────────────────────
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.padding(bottom = 12.dp),
-                ) {
-                    items(keyColorPresets) { opt ->
-                        ColorCircle(opt.color, uiState.keyColor == opt.color) {
-                            actions.onSetKeyColor(opt.color)
-                        }
-                    }
-                    item {
-                        // Custom "+" circle
-                        Box(Modifier.size(48.dp).clip(CircleShape)
-                            .background(colorScheme.secondary)
-                            .clickable { showCustomColor = true },
-                            contentAlignment = Alignment.Center) {
-                            Icon(Icons.Rounded.Add, null,
-                                tint = colorScheme.onSecondary, modifier = Modifier.size(22.dp))
-                        }
-                    }
-                }
-
                 // ── 4 mode chips (Dynamic | Light | Dark | AMOLED) ───────────
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    val isMonet = uiState.colorMode.isMonet ||
-                            uiState.colorMode == ColorMode.MONET_SYSTEM
-                    ColorModeChip(
-                        icon     = Icons.Rounded.AutoAwesome,
-                        selected = uiState.colorMode.isMonet,
-                        modifier = Modifier.weight(1f),
-                        onClick  = { actions.onSetColorMode(ColorMode.MONET_SYSTEM) },
-                    )
-                    ColorModeChip(
-                        icon     = Icons.Rounded.LightMode,
-                        selected = uiState.colorMode == ColorMode.LIGHT,
-                        modifier = Modifier.weight(1f),
-                        onClick  = { actions.onSetColorMode(ColorMode.LIGHT) },
-                    )
-                    ColorModeChip(
-                        icon     = Icons.Rounded.DarkMode,
-                        selected = uiState.colorMode == ColorMode.DARK,
-                        modifier = Modifier.weight(1f),
-                        onClick  = { actions.onSetColorMode(ColorMode.DARK) },
-                    )
-                    ColorModeChip(
-                        icon     = Icons.Rounded.Brightness1,
-                        selected = uiState.colorMode == ColorMode.DARK_AMOLED,
-                        modifier = Modifier.weight(1f),
-                        onClick  = { actions.onSetColorMode(ColorMode.DARK_AMOLED) },
-                    )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ColorModeChip(Icons.Rounded.AutoAwesome,  monetEnabled,                              Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.MONET_SYSTEM) }
+                    ColorModeChip(Icons.Rounded.LightMode,    uiState.colorMode == ColorMode.LIGHT,      Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
+                    ColorModeChip(Icons.Rounded.DarkMode,     uiState.colorMode == ColorMode.DARK,       Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
+                    ColorModeChip(Icons.Rounded.Brightness1,  uiState.colorMode == ColorMode.DARK_AMOLED,Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK_AMOLED) }
                 }
                 Spacer(Modifier.height(12.dp))
 
-                // ── Color style / spec (hide when Monet active) ──────────────
-                if (!uiState.colorMode.isMonet) {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                // ── Color section ────────────────────────────────────────────
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    // Enable Monet
+                    SwitchPreference(
+                        title   = strings.monetEnable,
+                        summary = strings.monetEnableSummary,
+                        checked = monetEnabled,
+                        onCheckedChange = { actions.onSetColorMode(resolveColorMode(it)) },
+                        startAction = { PrefIcon(Icons.Rounded.Wallpaper) },
+                    )
+
+                    // Accent color (only when Monet is OFF)
+                    if (!monetEnabled) {
+                        ArrowPreference(
+                            title   = strings.keyColor,
+                            summary = strings.keyColorSummary,
+                            startAction = {
+                                Box(
+                                    Modifier.size(20.dp).padding(end = 2.dp)
+                                        .clip(CircleShape).background(uiState.keyColor)
+                                )
+                            },
+                            onClick = { showAccentPicker = true },
+                        )
+                    }
+
+                    // Palette style (hide when Monet)
+                    if (!monetEnabled) {
                         val paletteLabels = paletteStyleLabels(strings)
                         OverlayDropdownPreference(
                             title   = strings.paletteStyle,
@@ -167,46 +158,54 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                             items   = listOf(strings.spec2021, strings.spec2025),
                             selectedIndex = if (uiState.colorSpecVersion == ColorSpec.SpecVersion.SPEC_2025) 1 else 0,
                             onSelectedIndexChange = {
-                                actions.onSetColorSpecVersion(
-                                    if (it == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
+                                actions.onSetColorSpecVersion(if (it == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
                             },
                             startAction = { PrefIcon(Icons.Rounded.Science) },
-                        )
-                    }
-                    Spacer(Modifier.height(12.dp))
-                }
-
-                // ── Layout ───────────────────────────────────────────────────
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    val navLabels = listOf(strings.navAuto, strings.navBottom, strings.navRail)
-                    OverlayDropdownPreference(
-                        title   = strings.navBarStyle,
-                        summary = navLabels[uiState.navLayoutMode.ordinal],
-                        items   = navLabels,
-                        selectedIndex = uiState.navLayoutMode.ordinal,
-                        onSelectedIndexChange = { actions.onSetNavLayoutMode(NavLayoutMode.entries[it]) },
-                        startAction = { PrefIcon(Icons.Rounded.ViewQuilt) },
-                    )
-                    SwitchPreference(
-                        title   = strings.floatingBottomBar,
-                        summary = strings.floatingBottomBarSummary,
-                        checked = uiState.floatingBottomBar,
-                        onCheckedChange = actions.onSetFloatingBottomBar,
-                        startAction = { PrefIcon(Icons.Rounded.WebAsset) },
-                    )
-                    if (uiState.floatingBottomBar) {
-                        SwitchPreference(
-                            title   = strings.floatingBottomBarBlur,
-                            summary = strings.floatingBottomBarBlurSummary,
-                            checked = uiState.floatingBottomBarBlur,
-                            onCheckedChange = actions.onSetFloatingBottomBarBlur,
-                            startAction = { PrefIcon(Icons.Rounded.BlurOn) },
                         )
                     }
                 }
                 Spacer(Modifier.height(12.dp))
 
-                // ── Effects (Miuix-only) ─────────────────────────────────────
+                // ── Layout ───────────────────────────────────────────────────
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    // Nav mode: hide when floating bar is on (mutually exclusive)
+                    if (!uiState.floatingBottomBar) {
+                        OverlayDropdownPreference(
+                            title   = strings.navBarStyle,
+                            summary = listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal],
+                            items   = listOf(strings.navAuto, strings.navBottom, strings.navRail),
+                            selectedIndex = uiState.navLayoutMode.ordinal,
+                            onSelectedIndexChange = { actions.onSetNavLayoutMode(NavLayoutMode.entries[it]) },
+                            startAction = { PrefIcon(Icons.AutoMirrored.Rounded.MenuOpen) },
+                        )
+                    }
+
+                    /*
+                    // Floating bar: only show when actual nav mode is bottom (not rail)
+                    if (isBottomMode) {
+                        SwitchPreference(
+                            title   = strings.floatingBottomBar,
+                            summary = strings.floatingBottomBarSummary,
+                            checked = uiState.floatingBottomBar,
+                            onCheckedChange = actions.onSetFloatingBottomBar,
+                            startAction = { PrefIcon(Icons.Rounded.WebAsset) },
+                        )
+                        // Blur sub-option (hidden when no floating bar)
+                        if (uiState.floatingBottomBar) {
+                            SwitchPreference(
+                                title   = strings.floatingBottomBarBlur,
+                                summary = strings.floatingBottomBarBlurSummary,
+                                checked = uiState.floatingBottomBarBlur,
+                                onCheckedChange = actions.onSetFloatingBottomBarBlur,
+                                startAction = { PrefIcon(Icons.Rounded.BlurOn) },
+                            )
+                        }
+                    }
+                    */
+                }
+                Spacer(Modifier.height(12.dp))
+
+                // ── Effects (Miuix-only: blur) ───────────────────────────────
                 Card(modifier = Modifier.fillMaxWidth()) {
                     SwitchPreference(
                         title   = strings.enableBlur,
@@ -215,47 +214,27 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                         onCheckedChange = actions.onSetEnableBlur,
                         startAction = { PrefIcon(Icons.Rounded.BlurOn) },
                     )
-                    SwitchPreference(
-                        title   = strings.smoothCorner,
-                        summary = strings.smoothCornerSummary,
-                        checked = uiState.enableSmoothCorner,
-                        onCheckedChange = actions.onSetEnableSmoothCorner,
-                        startAction = { PrefIcon(Icons.Rounded.RoundedCorner) },
-                    )
                 }
                 Spacer(Modifier.height(12.dp))
 
-                // ── Predictive back ──────────────────────────────────────────
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    SwitchPreference(
-                        title   = strings.predictiveBack,
-                        summary = strings.predictiveBackSummary,
-                        checked = uiState.predictiveBack,
-                        onCheckedChange = actions.onSetPredictiveBack,
-                        startAction = { PrefIcon(Icons.AutoMirrored.Rounded.ArrowBack) },
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-
-                // ── Interface scale (inline slider, like KernelSU) ───────────
+                // ── Scale (inline slider, apply on release) ──────────────────
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             PrefIcon(Icons.Rounded.AspectRatio)
                             Column(Modifier.weight(1f)) {
-                                Text(strings.pageScale,
-                                    style = textStyles.main, color = colorScheme.onBackground)
-                                Text(strings.pageScaleSummary,
-                                    style = textStyles.body2, color = colorScheme.onSurfaceVariantSummary)
+                                Text(strings.pageScale,   style = textStyles.main, color = colorScheme.onBackground)
+                                Text(strings.pageScaleSummary, style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
                             }
-                            Text("${"%.0f".format(uiState.pageScale * 100)}%",
-                                style = textStyles.body2, color = colorScheme.onSurfaceVariantSummary)
+                            Text("${"%.0f".format(localScale * 100)}%",
+                                style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
                         }
                         Slider(
-                            value        = uiState.pageScale,
-                            onValueChange= actions.onSetPageScale,
-                            valueRange   = 0.6f..1.4f,
-                            modifier     = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            value              = localScale,
+                            onValueChange      = { localScale = it },           // update local preview
+                            onValueChangeFinished = { actions.onSetPageScale(localScale) }, // commit on release
+                            valueRange         = 0.6f..1.4f,
+                            modifier           = Modifier.fillMaxWidth().padding(top = 4.dp),
                         )
                     }
                 }
@@ -265,71 +244,95 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
     }
 }
 
-@Composable
-private fun ColorModeChip(
-    icon: ImageVector,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    val bg    = if (selected) colorScheme.primary else colorScheme.secondaryContainer
-    val tint  = if (selected) colorScheme.onPrimary else colorScheme.onSecondaryContainer
-    Box(
-        modifier = modifier
-            .height(48.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(bg)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
-    }
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun ColorCircle(color: Color, selected: Boolean, onClick: () -> Unit) =
-    Box(
-        modifier = Modifier.size(48.dp).clip(CircleShape).background(color)
-            .border(3.dp, if (selected) colorScheme.primary else Color.Transparent, CircleShape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (selected) Icon(Icons.Rounded.Check, null,
-            tint = Color.White, modifier = Modifier.size(22.dp))
-    }
+private fun ColorModeChip(
+    icon: ImageVector, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit,
+) = Box(
+    modifier = modifier.height(48.dp)
+        .clip(RoundedCornerShape(24.dp))
+        .background(if (selected) colorScheme.primary else colorScheme.secondaryContainer)
+        .clickable(onClick = onClick),
+    contentAlignment = Alignment.Center,
+) { Icon(icon, null, tint = if (selected) colorScheme.onPrimary else colorScheme.onSecondaryContainer,
+    modifier = Modifier.size(22.dp)) }
 
 @Composable
 private fun PrefIcon(icon: ImageVector) =
     Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground)
 
 @Composable
-private fun CustomColorDialog(
-    current: Color, onConfirm: (Color) -> Unit,
-    onDismiss: () -> Unit, strings: AppStrings,
+private fun AccentColorDialog(
+    current: Color, onConfirm: (Color) -> Unit, onDismiss: () -> Unit, strings: AppStrings,
 ) {
-    var hex by remember { mutableStateOf(
-        (current.value.toLong() and 0xFFFFFF).toString(16).uppercase().padStart(6, '0')) }
-    var isError by remember { mutableStateOf(false) }
+    var hexInput by remember { mutableStateOf(current.toHex()) }
+    var isError  by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title   = { androidx.compose.material3.Text(strings.custom) },
-        text    = {
-            OutlinedTextField(
-                value = hex, onValueChange = { hex = it.take(6).uppercase(); isError = false },
-                label = { androidx.compose.material3.Text("#RRGGBB") }, isError = isError,
-                singleLine = true,
-                leadingIcon = { Box(Modifier.size(24.dp).clip(CircleShape).background(
-                    runCatching { Color(("FF$hex").toLong(16)) }.getOrNull() ?: Color.Gray)) },
-            )
+        title = { androidx.compose.material3.Text(strings.keyColor) },
+        text = {
+            androidx.compose.foundation.lazy.LazyColumn {
+                // "Default" option
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { onConfirm(org.cf0x.spicecompose.ui.theme.defaultKeyColor) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Box(Modifier.size(32.dp).clip(CircleShape).background(org.cf0x.spicecompose.ui.theme.defaultKeyColor)
+                            .border(2.dp, if (current == org.cf0x.spicecompose.ui.theme.defaultKeyColor) colorScheme.primary else Color.Transparent, CircleShape))
+                        androidx.compose.material3.Text(strings.specDefault)
+                    }
+                }
+                // Presets in rows of 5
+                item {
+                    val rows = keyColorPresets.chunked(5)
+                    rows.forEach { row ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            row.forEach { opt ->
+                                Box(Modifier.size(36.dp).clip(CircleShape).background(opt.color)
+                                    .border(2.dp, if (current == opt.color) colorScheme.primary else Color.Transparent, CircleShape)
+                                    .clickable { onConfirm(opt.color) },
+                                    contentAlignment = Alignment.Center) {
+                                    if (current == opt.color) Icon(Icons.Rounded.Check, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+                // Custom HEX input
+                item {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = hexInput, onValueChange = { hexInput = it.take(6).uppercase(); isError = false },
+                        label = { androidx.compose.material3.Text("#RRGGBB") }, isError = isError, singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Box(Modifier.size(24.dp).clip(CircleShape).background(
+                                runCatching { Color(("FF$hexInput").toLong(16)) }.getOrNull() ?: Color.Gray))
+                        },
+                    )
+                }
+            }
         },
-        confirmButton = { TextButton(onClick = {
-            val c = runCatching { Color(("FF$hex").toLong(16)) }.getOrNull()
-            if (c != null) onConfirm(c) else isError = true
-        }) { androidx.compose.material3.Text(strings.ok) } },
-        dismissButton = { TextButton(onClick = onDismiss) {
-            androidx.compose.material3.Text(strings.cancel) } },
+        confirmButton = {
+            TextButton(onClick = {
+                val c = runCatching { Color(("FF$hexInput").toLong(16)) }.getOrNull()
+                if (c != null) onConfirm(c) else isError = true
+            }) { androidx.compose.material3.Text(strings.ok) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { androidx.compose.material3.Text(strings.cancel) }
+        },
     )
 }
+
+private fun Color.toHex(): String =
+    (value.toLong() and 0xFFFFFF).toString(16).uppercase().padStart(6, '0')
 
 private fun paletteStyleLabels(s: AppStrings) = listOf(
     s.paletteTonalSpot, s.paletteNeutral, s.paletteVibrant, s.paletteExpressive,

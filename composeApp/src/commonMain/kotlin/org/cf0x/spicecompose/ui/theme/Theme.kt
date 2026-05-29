@@ -14,6 +14,20 @@ import top.yukonga.miuix.kmp.theme.darkColorScheme
 import top.yukonga.miuix.kmp.theme.lightColorScheme
 
 @Composable
+fun isInDarkTheme(): Boolean {
+    val colorMode = LocalColorMode.current
+    val systemDark = isSystemInDarkTheme()
+    return when {
+        colorMode.isAmoled -> true
+        colorMode.isDark   -> true
+        colorMode.isLight  -> false
+        colorMode == ColorMode.MONET_LIGHT -> false
+        colorMode == ColorMode.MONET_DARK  -> true
+        else               -> systemDark
+    }
+}
+
+@Composable
 fun SpiceComposeTheme(
     colorMode:    ColorMode               = ColorMode.SYSTEM,
     keyColor:     androidx.compose.ui.graphics.Color = defaultKeyColor,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
@@ -69,3 +70,7 @@ fun rememberMainPagerState(
     pagerState: PagerState,
     scope: CoroutineScope = rememberCoroutineScope(),
 ): MainPagerState = remember(pagerState, scope) { MainPagerState(pagerState, scope) }
+
+val LocalMainPagerState = staticCompositionLocalOf<MainPagerState> {
+    error("No MainPagerState provided")
+}

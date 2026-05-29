@@ -13,17 +13,16 @@ import org.cf0x.spicecompose.ui.theme.ColorMode
 @ExperimentalMaterial3Api
 @Composable
 fun ThemeScreen(
-    colorMode: ColorMode,                           onColorModeChange: (ColorMode) -> Unit,
-    keyColor: Color,                                onKeyColorChange: (Color) -> Unit,
-    paletteStyle: PaletteStyle,                     onPaletteStyleChange: (PaletteStyle) -> Unit,
-    colorSpecVersion: ColorSpec.SpecVersion,        onColorSpecVersionChange: (ColorSpec.SpecVersion) -> Unit,
-    navLayoutMode: NavLayoutMode,                   onNavLayoutModeChange: (NavLayoutMode) -> Unit,
-    pageScale: Float,                               onPageScaleChange: (Float) -> Unit,
-    floatingBottomBar: Boolean,                     onFloatingBottomBarChange: (Boolean) -> Unit,
-    floatingBottomBarBlur: Boolean,                 onFloatingBottomBarBlurChange: (Boolean) -> Unit,
-    enableBlur: Boolean,                            onEnableBlurChange: (Boolean) -> Unit,
-    enableSmoothCorner: Boolean,                    onEnableSmoothCornerChange: (Boolean) -> Unit,
-    predictiveBack: Boolean,                        onPredictiveBackChange: (Boolean) -> Unit,
+    colorMode: ColorMode,            onColorModeChange: (ColorMode) -> Unit,
+    keyColor: Color,                 onKeyColorChange: (Color) -> Unit,
+    paletteStyle: PaletteStyle,      onPaletteStyleChange: (PaletteStyle) -> Unit,
+    colorSpecVersion: ColorSpec.SpecVersion, onColorSpecVersionChange: (ColorSpec.SpecVersion) -> Unit,
+    navLayoutMode: NavLayoutMode,    onNavLayoutModeChange: (NavLayoutMode) -> Unit,
+    pageScale: Float,                onPageScaleChange: (Float) -> Unit,
+    floatingBottomBar: Boolean,      onFloatingBottomBarChange: (Boolean) -> Unit,
+    floatingBottomBarBlur: Boolean,  onFloatingBottomBarBlurChange: (Boolean) -> Unit,
+    enableBlur: Boolean,             onEnableBlurChange: (Boolean) -> Unit,
+    enableSmoothCorner: Boolean,     onEnableSmoothCornerChange: (Boolean) -> Unit,
     onBack: () -> Unit,
 ) {
     val uiState = ThemeUiState(
@@ -31,7 +30,6 @@ fun ThemeScreen(
         colorSpecVersion = colorSpecVersion, navLayoutMode = navLayoutMode, pageScale = pageScale,
         floatingBottomBar = floatingBottomBar, floatingBottomBarBlur = floatingBottomBarBlur,
         enableBlur = enableBlur, enableSmoothCorner = enableSmoothCorner,
-        predictiveBack = predictiveBack,
     )
     val actions = ThemeScreenActions(
         onBack = onBack, onSetColorMode = onColorModeChange, onSetKeyColor = onKeyColorChange,
@@ -40,7 +38,6 @@ fun ThemeScreen(
         onSetFloatingBottomBar = onFloatingBottomBarChange,
         onSetFloatingBottomBarBlur = onFloatingBottomBarBlurChange,
         onSetEnableBlur = onEnableBlurChange, onSetEnableSmoothCorner = onEnableSmoothCornerChange,
-        onSetPredictiveBack = onPredictiveBackChange,
     )
     when (LocalUiMode.current) {
         UiMode.Miuix    -> ThemeScreenMiuix(uiState, actions)

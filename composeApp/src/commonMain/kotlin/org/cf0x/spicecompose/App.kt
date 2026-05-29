@@ -3,6 +3,9 @@ package org.cf0x.spicecompose
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.i18n.EnStrings
@@ -15,21 +18,26 @@ import org.cf0x.spicecompose.ui.theme.*
 @ExperimentalMaterial3Api
 @Composable
 fun App() {
-    val p = ThemePreferences
+    val p       = ThemePreferences
     val strings = when (p.appLanguage) { AppLanguage.ZH_CN -> ZhCnStrings; else -> EnStrings }
 
+    // Shared state: true when a sub-page (ThemeScreen / AboutScreen) is shown.
+    // Passed down via CompositionLocal so MainScreen can disable pager swipe.
+    val inSubPage = remember { mutableStateOf(false) }
+
     CompositionLocalProvider(
-        LocalUiMode              provides p.uiMode,
-        LocalAppStrings          provides strings,
-        LocalColorMode           provides p.colorMode,
-        LocalKeyColor            provides p.keyColor,
-        LocalPaletteStyle        provides p.paletteStyle,
-        LocalColorSpecVersion    provides p.colorSpecVersion,
-        LocalEnableBlur          provides p.enableBlur,
-        LocalEnableSmoothCorner  provides p.enableSmoothCorner,
-        LocalPageScale           provides p.pageScale,
-        LocalFloatingBottomBar   provides p.floatingBottomBar,
+        LocalUiMode                provides p.uiMode,
+        LocalAppStrings            provides strings,
+        LocalColorMode             provides p.colorMode,
+        LocalKeyColor              provides p.keyColor,
+        LocalPaletteStyle          provides p.paletteStyle,
+        LocalColorSpecVersion      provides p.colorSpecVersion,
+        LocalEnableBlur            provides p.enableBlur,
+        LocalEnableSmoothCorner    provides p.enableSmoothCorner,
+        LocalPageScale             provides p.pageScale,
+        LocalFloatingBottomBar     provides p.floatingBottomBar,
         LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
+        LocalInSubPage             provides inSubPage,   // ← new
     ) {
         SpiceComposeTheme(
             colorMode    = p.colorMode,
@@ -40,35 +48,33 @@ fun App() {
         ) {
             MainScreen(
                 navLayoutMode         = p.navLayoutMode,
-                onNavLayoutModeChange = { p.setNavLayoutMode(it) },
+                onNavLayoutModeChange = { p.updateNavLayoutMode(it) },
                 settingsContent = {
                     SettingsScreen(
                         uiMode                        = p.uiMode,
-                        onUiModeChange                = { p.setUiMode(it) },
+                        onUiModeChange                = { p.updateUiMode(it) },
                         appLanguage                   = p.appLanguage,
-                        onLanguageChange              = { p.setAppLanguage(it) },
+                        onLanguageChange              = { p.updateAppLanguage(it) },
                         colorMode                     = p.colorMode,
-                        onColorModeChange             = { p.setColorMode(it) },
+                        onColorModeChange             = { p.updateColorMode(it) },
                         keyColor                      = p.keyColor,
-                        onKeyColorChange              = { p.setKeyColor(it) },
+                        onKeyColorChange              = { p.updateKeyColor(it) },
                         paletteStyle                  = p.paletteStyle,
-                        onPaletteStyleChange          = { p.setPaletteStyle(it) },
+                        onPaletteStyleChange          = { p.updatePaletteStyle(it) },
                         colorSpecVersion              = p.colorSpecVersion,
-                        onColorSpecVersionChange      = { p.setColorSpecVersion(it) },
+                        onColorSpecVersionChange      = { p.updateColorSpecVersion(it) },
                         navLayoutMode                 = p.navLayoutMode,
-                        onNavLayoutModeChange         = { p.setNavLayoutMode(it) },
+                        onNavLayoutModeChange         = { p.updateNavLayoutMode(it) },
                         pageScale                     = p.pageScale,
-                        onPageScaleChange             = { p.setPageScale(it) },
+                        onPageScaleChange             = { p.updatePageScale(it) },
                         floatingBottomBar             = p.floatingBottomBar,
-                        onFloatingBottomBarChange     = { p.setFloatingBottomBar(it) },
+                        onFloatingBottomBarChange     = { p.updateFloatingBottomBar(it) },
                         floatingBottomBarBlur         = p.floatingBottomBarBlur,
-                        onFloatingBottomBarBlurChange = { p.setFloatingBottomBarBlur(it) },
+                        onFloatingBottomBarBlurChange = { p.updateFloatingBottomBarBlur(it) },
                         enableBlur                    = p.enableBlur,
-                        onEnableBlurChange            = { p.setEnableBlur(it) },
+                        onEnableBlurChange            = { p.updateEnableBlur(it) },
                         enableSmoothCorner            = p.enableSmoothCorner,
-                        onEnableSmoothCornerChange    = { p.setEnableSmoothCorner(it) },
-                        predictiveBack                = p.predictiveBack,
-                        onPredictiveBackChange        = { p.setPredictiveBack(it) },
+                        onEnableSmoothCornerChange    = { p.updateEnableSmoothCorner(it) },
                     )
                 },
             )
