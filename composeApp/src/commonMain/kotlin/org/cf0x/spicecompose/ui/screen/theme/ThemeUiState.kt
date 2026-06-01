@@ -11,6 +11,8 @@ import org.cf0x.spicecompose.ui.theme.defaultKeyColor
 @Immutable
 data class ThemeUiState(
     val colorMode:             ColorMode             = ColorMode.SYSTEM,
+    val useMonet:              Boolean               = false,
+    val amoledDark:            Boolean               = false,
     val keyColor:              Color                 = defaultKeyColor,
     val paletteStyle:          PaletteStyle          = PaletteStyle.TonalSpot,
     val colorSpecVersion:      ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2021,
@@ -20,13 +22,14 @@ data class ThemeUiState(
     val floatingBottomBarBlur: Boolean               = true,
     val enableBlur:            Boolean               = true,
     val enableSmoothCorner:    Boolean               = true,
-    // predictiveBack removed: controlled by AndroidManifest, not runtime-toggleable
 )
 
 @Immutable
 data class ThemeScreenActions(
     val onBack:                         () -> Unit,
     val onSetColorMode:                 (ColorMode) -> Unit,
+    val onSetUseMonet:                  (Boolean) -> Unit,
+    val onSetAmoledDark:                (Boolean) -> Unit,
     val onSetKeyColor:                  (Color) -> Unit,
     val onSetPaletteStyle:              (PaletteStyle) -> Unit,
     val onSetColorSpecVersion:          (ColorSpec.SpecVersion) -> Unit,

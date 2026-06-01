@@ -41,7 +41,7 @@ fun SubScreenMiuix(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = "Sub Screen Content (Miuix)", fontSize = 24.sp)
+            SubScreenContent()
         }
     }
 }

@@ -45,6 +45,8 @@ fun App() {
     ) {
         SpiceComposeTheme(
             colorMode    = p.colorMode,
+            useMonet     = p.useMonet,
+            amoledDark   = p.amoledDark,
             keyColor     = p.keyColor,
             paletteStyle = p.paletteStyle,
             specVersion  = p.colorSpecVersion,
@@ -61,6 +63,10 @@ fun App() {
                         onLanguageChange              = { p.updateAppLanguage(it) },
                         colorMode                     = p.colorMode,
                         onColorModeChange             = { p.updateColorMode(it) },
+                        useMonet                      = p.useMonet,
+                        onUseMonetChange              = { p.updateUseMonet(it) },
+                        amoledDark                    = p.amoledDark,
+                        onAmoledDarkChange            = { p.updateAmoledDark(it) },
                         keyColor                      = p.keyColor,
                         onKeyColorChange              = { p.updateKeyColor(it) },
                         paletteStyle                  = p.paletteStyle,

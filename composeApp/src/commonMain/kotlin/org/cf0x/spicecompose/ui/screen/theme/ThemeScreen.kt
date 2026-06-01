@@ -14,6 +14,8 @@ import org.cf0x.spicecompose.ui.theme.ColorMode
 @Composable
 fun ThemeScreen(
     colorMode: ColorMode,            onColorModeChange: (ColorMode) -> Unit,
+    useMonet: Boolean,               onUseMonetChange: (Boolean) -> Unit,
+    amoledDark: Boolean,             onAmoledDarkChange: (Boolean) -> Unit,
     keyColor: Color,                 onKeyColorChange: (Color) -> Unit,
     paletteStyle: PaletteStyle,      onPaletteStyleChange: (PaletteStyle) -> Unit,
     colorSpecVersion: ColorSpec.SpecVersion, onColorSpecVersionChange: (ColorSpec.SpecVersion) -> Unit,
@@ -26,13 +28,16 @@ fun ThemeScreen(
     onBack: () -> Unit,
 ) {
     val uiState = ThemeUiState(
-        colorMode = colorMode, keyColor = keyColor, paletteStyle = paletteStyle,
+        colorMode = colorMode, useMonet = useMonet, amoledDark = amoledDark,
+        keyColor = keyColor, paletteStyle = paletteStyle,
         colorSpecVersion = colorSpecVersion, navLayoutMode = navLayoutMode, pageScale = pageScale,
         floatingBottomBar = floatingBottomBar, floatingBottomBarBlur = floatingBottomBarBlur,
         enableBlur = enableBlur, enableSmoothCorner = enableSmoothCorner,
     )
     val actions = ThemeScreenActions(
-        onBack = onBack, onSetColorMode = onColorModeChange, onSetKeyColor = onKeyColorChange,
+        onBack = onBack, onSetColorMode = onColorModeChange, 
+        onSetUseMonet = onUseMonetChange, onSetAmoledDark = onAmoledDarkChange,
+        onSetKeyColor = onKeyColorChange,
         onSetPaletteStyle = onPaletteStyleChange, onSetColorSpecVersion = onColorSpecVersionChange,
         onSetNavLayoutMode = onNavLayoutModeChange, onSetPageScale = onPageScaleChange,
         onSetFloatingBottomBar = onFloatingBottomBarChange,

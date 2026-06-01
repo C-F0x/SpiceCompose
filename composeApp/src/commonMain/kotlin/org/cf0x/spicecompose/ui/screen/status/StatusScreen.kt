@@ -1,12 +1,15 @@
 package org.cf0x.spicecompose.ui.screen.status
 
 import androidx.compose.runtime.*
+import kotlinx.coroutines.flow.filter
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.data.ServerRepository
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.network.ConnectionStatus
+import org.cf0x.spicecompose.ui.navigation.Destination
+import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 
 @Composable
 fun StatusScreen() {
@@ -15,21 +18,15 @@ fun StatusScreen() {
     var showAddDialog by remember { mutableStateOf(false) }
     
     val connectionManager = LocalConnectionManager.current
+    val mainState = LocalMainPagerState.current
     val status by connectionManager.status.collectAsState()
     val currentServer by connectionManager.currentServer.collectAsState()
 
-    // For demo/testing: add a default server if list is empty
-    LaunchedEffect(Unit) {
-        if (servers.isEmpty()) {
-            val defaultServer = ServerConfig(
-                id = "default",
-                name = "Local Spice",
-                host = "127.0.0.1",
-                port = 673
-            )
-            repository.addServer(defaultServer)
-            servers = repository.getServers()
-        }
+    // Handle reset events from BottomBar
+    LaunchedEffect(mainState) {
+        mainState.resetEvents
+            .filter { it == Destination.Status.index }
+            .collect { showAddDialog = false }
     }
 
     ServerEditDialog(

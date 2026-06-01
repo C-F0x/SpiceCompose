@@ -43,7 +43,7 @@ fun SubScreenMaterial(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = "Sub Screen Content (Material)", fontSize = 24.sp)
+            SubScreenContent()
         }
     }
 }

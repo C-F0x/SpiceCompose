@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -28,13 +30,28 @@ class MainPagerState(
     var isNavigating by mutableStateOf(false)
         private set
 
+    private val _resetEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    val resetEvents = _resetEvents.asSharedFlow()
+
     private var navJob: Job? = null
+    var lastPage = pagerState.currentPage
+
+    fun emitReset(index: Int) {
+        scope.launch { _resetEvents.emit(index) }
+    }
 
     fun animateToPage(target: Int) {
-        if (target == selectedPage) return
+        if (target == selectedPage) {
+            // Req 1: Re-tap current tab -> Reset it
+            emitReset(target)
+            return
+        }
+
         navJob?.cancel()
         selectedPage  = target
         isNavigating  = true
+        // ... rest
+        // ... (rest same)
 
         val distance   = abs(target - pagerState.currentPage).coerceAtLeast(2)
         val duration   = 100 * distance + 100

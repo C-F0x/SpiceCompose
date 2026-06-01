@@ -1,41 +1,131 @@
 package org.cf0x.spicecompose.ui.screen.feature
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.cf0x.spicecompose.network.LocalConnectionManager
+import org.cf0x.spicecompose.network.spiceapi.wrappers.LightState
+import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsRead
+import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsWrite
+import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsWriteReset
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LightsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
+    val connectionManager = LocalConnectionManager.current
+    val connection = connectionManager.getConnection()
+    val scope = rememberCoroutineScope()
+    
+    var lightStates by remember { mutableStateOf<List<LightState>>(emptyList()) }
+    var locked by remember { mutableStateOf(false) }
+    val draggingNames = remember { mutableStateListOf<String>() }
+
+    // Polling logic
+    LaunchedEffect(connection) {
+        if (connection == null) {
+            lightStates = emptyList()
+            return@LaunchedEffect
+        }
+        
+        while (isActive) {
+            try {
+                val newState = connection.lightsRead()
+                // Update non-dragging ones
+                lightStates = newState.map { fresh ->
+                    if (draggingNames.contains(fresh.name)) {
+                        lightStates.find { it.name == fresh.name } ?: fresh
+                    } else {
+                        fresh
+                    }
+                }
+            } catch (_: Exception) { }
+            delay(200)
+        }
+    }
+
+    DisposableEffect(connection) {
+        onDispose {
+            scope.launch {
+                if (!locked) connection?.lightsWriteReset(emptyList())
+            }
+        }
+    }
+
+    val onValueChange: (LightState, Float) -> Unit = { light, value ->
+        val updated = light.copy(state = value.toDouble(), active = true)
+        lightStates = lightStates.map { if (it.name == light.name) updated else it }
+        scope.launch {
+            connection?.lightsWrite(listOf(updated))
+        }
+    }
+
+    val onLockToggle: () -> Unit = {
+        scope.launch {
+            if (locked) {
+                locked = false
+                connection?.lightsWriteReset(emptyList())
+            } else {
+                locked = true
+                connection?.lightsWrite(lightStates)
+            }
+        }
+    }
+
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    SmallTopAppBar(
+                    top.yukonga.miuix.kmp.basic.SmallTopAppBar(
                         title = strings.lights,
                         navigationIcon = {
                             top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
                             }
+                        },
+                        actions = {
+                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onLockToggle) {
+                                top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
+                            }
                         }
                     )
                 }
             ) { innerPadding ->
-                Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                    top.yukonga.miuix.kmp.basic.Text("Lights Content (Miuix)", fontSize = 24.sp)
+                if (lightStates.isEmpty()) {
+                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                        top.yukonga.miuix.kmp.basic.Text("No lights available :(")
+                    }
+                } else {
+                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                        items(lightStates) { light ->
+                            LightItemMiuix(
+                                light = light,
+                                onValueChange = { onValueChange(light, it) },
+                                onDragStart = { draggingNames.add(light.name) },
+                                onDragEnd = { draggingNames.remove(light.name) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -51,12 +141,76 @@ fun LightsScreen(onBack: () -> Unit) {
                             }
                         }
                     )
+                },
+                floatingActionButton = {
+                    androidx.compose.material3.FloatingActionButton(
+                        onClick = onLockToggle,
+                        containerColor = if (locked) androidx.compose.material3.MaterialTheme.colorScheme.errorContainer else androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
+                    }
                 }
             ) { innerPadding ->
-                Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                    androidx.compose.material3.Text("Lights Content (Material)", fontSize = 24.sp)
+                if (lightStates.isEmpty()) {
+                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.Text("No lights available :(")
+                    }
+                } else {
+                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                        items(lightStates) { light ->
+                            LightItemMaterial(
+                                light = light,
+                                onValueChange = { onValueChange(light, it) },
+                                onDragStart = { draggingNames.add(light.name) },
+                                onDragEnd = { draggingNames.remove(light.name) }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+fun LightItemMiuix(light: LightState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+    top.yukonga.miuix.kmp.basic.Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            val titleColor = if (light.active) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface
+            top.yukonga.miuix.kmp.basic.Text(light.name, color = titleColor, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            top.yukonga.miuix.kmp.basic.Slider(
+                value = light.state.toFloat(),
+                onValueChange = {
+                    onDragStart()
+                    onValueChange(it)
+                },
+                onValueChangeFinished = onDragEnd,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+fun LightItemMaterial(light: LightState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+    androidx.compose.material3.ListItem(
+        headlineContent = {
+            val titleColor = if (light.active) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+            androidx.compose.material3.Text(light.name, color = titleColor)
+        },
+        supportingContent = {
+            androidx.compose.material3.Slider(
+                value = light.state.toFloat(),
+                onValueChange = {
+                    onDragStart()
+                    onValueChange(it)
+                },
+                onValueChangeFinished = onDragEnd,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    )
 }

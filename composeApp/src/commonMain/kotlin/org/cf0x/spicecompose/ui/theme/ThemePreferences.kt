@@ -28,6 +28,14 @@ object ThemePreferences {
         private set
     fun updateColorMode(v: ColorMode) { colorMode = v; s.putInt("colorMode", v.value) }
 
+    var useMonet by mutableStateOf(s.getBoolean("useMonet", false))
+        private set
+    fun updateUseMonet(v: Boolean) { useMonet = v; s.putBoolean("useMonet", v) }
+
+    var amoledDark by mutableStateOf(s.getBoolean("amoledDark", false))
+        private set
+    fun updateAmoledDark(v: Boolean) { amoledDark = v; s.putBoolean("amoledDark", v) }
+
     var keyColor by mutableStateOf(Color(s.getInt("keyColor", defaultKeyColor.toArgb())))
         private set
     fun updateKeyColor(v: Color) { keyColor = v; s.putInt("keyColor", v.toArgb()) }

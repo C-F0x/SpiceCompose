@@ -32,7 +32,13 @@ fun MainScreen(
         // Disable swipe while a sub-page is open
         val inSubPage      = LocalInSubPage.current.value
 
-        LaunchedEffect(pagerState.settledPage) { mainPagerState.syncPage() }
+        LaunchedEffect(pagerState.settledPage) {
+            if (mainPagerState.lastPage != pagerState.settledPage) {
+                mainPagerState.emitReset(mainPagerState.lastPage)
+                mainPagerState.lastPage = pagerState.settledPage
+            }
+            mainPagerState.syncPage()
+        }
 
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val useRail = when (navLayoutMode) {

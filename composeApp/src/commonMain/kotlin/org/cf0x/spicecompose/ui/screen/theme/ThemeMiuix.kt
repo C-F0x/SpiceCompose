@@ -58,20 +58,8 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
         )
     }
 
-    // Derived nav/floating mutual-exclusion logic
     val effectiveNav = uiState.navLayoutMode   // Auto, BottomBar, SideRail
     val isBottomMode = effectiveNav == NavLayoutMode.Auto || effectiveNav == NavLayoutMode.BottomBar
-    val monetEnabled = uiState.colorMode.isMonet
-
-    fun resolveColorMode(baseMonet: Boolean): ColorMode = when {
-        baseMonet && uiState.colorMode.isLight -> ColorMode.MONET_LIGHT
-        baseMonet && uiState.colorMode.isDark  -> ColorMode.MONET_DARK
-        baseMonet                              -> ColorMode.MONET_SYSTEM
-        uiState.colorMode == ColorMode.DARK_AMOLED -> ColorMode.DARK_AMOLED
-        uiState.colorMode.isLight              -> ColorMode.LIGHT
-        uiState.colorMode.isDark               -> ColorMode.DARK
-        else                                   -> ColorMode.SYSTEM
-    }
 
     Scaffold(
         topBar = {
@@ -106,12 +94,11 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                 }
                 Spacer(Modifier.height(16.dp))
 
-                // ── 4 mode chips (Dynamic | Light | Dark | AMOLED) ───────────
+                // ── 3 mode chips (Auto | Light | Dark) ───────────
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ColorModeChip(Icons.Rounded.AutoAwesome,  monetEnabled,                              Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.MONET_SYSTEM) }
-                    ColorModeChip(Icons.Rounded.LightMode,    uiState.colorMode == ColorMode.LIGHT,      Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
-                    ColorModeChip(Icons.Rounded.DarkMode,     uiState.colorMode == ColorMode.DARK,       Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
-                    ColorModeChip(Icons.Rounded.Brightness1,  uiState.colorMode == ColorMode.DARK_AMOLED,Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK_AMOLED) }
+                    ColorModeChip(Icons.Rounded.Star,      uiState.colorMode == ColorMode.SYSTEM, Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.SYSTEM) }
+                    ColorModeChip(Icons.Rounded.LightMode, uiState.colorMode == ColorMode.LIGHT,  Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
+                    ColorModeChip(Icons.Rounded.DarkMode,  uiState.colorMode == ColorMode.DARK,   Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
                 }
                 Spacer(Modifier.height(12.dp))
 
@@ -121,13 +108,24 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                     SwitchPreference(
                         title   = strings.monetEnable,
                         summary = strings.monetEnableSummary,
-                        checked = monetEnabled,
-                        onCheckedChange = { actions.onSetColorMode(resolveColorMode(it)) },
+                        checked = uiState.useMonet,
+                        onCheckedChange = actions.onSetUseMonet,
                         startAction = { PrefIcon(Icons.Rounded.Wallpaper) },
                     )
 
+                    // AMOLED Dark
+                    if (uiState.colorMode != ColorMode.LIGHT) {
+                        SwitchPreference(
+                            title   = strings.amoledDark,
+                            summary = strings.amoledDarkSummary,
+                            checked = uiState.amoledDark,
+                            onCheckedChange = actions.onSetAmoledDark,
+                            startAction = { PrefIcon(Icons.Rounded.Brightness1) },
+                        )
+                    }
+
                     // Accent color (only when Monet is OFF)
-                    if (!monetEnabled) {
+                    if (!uiState.useMonet) {
                         ArrowPreference(
                             title   = strings.keyColor,
                             summary = strings.keyColorSummary,
@@ -142,7 +140,7 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                     }
 
                     // Palette style (hide when Monet)
-                    if (!monetEnabled) {
+                    if (!uiState.useMonet) {
                         val paletteLabels = paletteStyleLabels(strings)
                         OverlayDropdownPreference(
                             title   = strings.paletteStyle,

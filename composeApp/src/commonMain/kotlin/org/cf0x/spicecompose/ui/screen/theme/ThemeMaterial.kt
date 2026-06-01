@@ -43,24 +43,6 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
     var specExpanded     by rememberSaveable { mutableStateOf(false) }
     var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
-    val monetEnabled = uiState.colorMode.isMonet
-
-    // Base mode (System / Light / Dark) independent of Monet flag
-    val baseTab = when {
-        uiState.colorMode.isLight  -> 1
-        uiState.colorMode.isDark || uiState.colorMode.isAmoled -> 2
-        else -> 0
-    }
-
-    fun resolveMode(tab: Int, monet: Boolean): ColorMode = when {
-        monet && tab == 1  -> ColorMode.MONET_LIGHT
-        monet && tab == 2  -> ColorMode.MONET_DARK
-        monet              -> ColorMode.MONET_SYSTEM
-        tab == 1           -> ColorMode.LIGHT
-        tab == 2           -> ColorMode.DARK
-        else               -> ColorMode.SYSTEM
-    }
-
     if (showAccentPicker) {
         M3AccentColorDialog(
             current   = uiState.keyColor,
@@ -95,14 +77,13 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                 }
             }
 
-            // ── 4 icon mode chips (same as Miuix) ────────────────────────────
+            // ── 3 icon mode chips ────────────────────────────
             item {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    M3ModeChip(Icons.Rounded.AutoAwesome, monetEnabled,                               Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.MONET_SYSTEM) }
-                    M3ModeChip(Icons.Rounded.LightMode,   uiState.colorMode == ColorMode.LIGHT,       Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
-                    M3ModeChip(Icons.Rounded.DarkMode,    uiState.colorMode == ColorMode.DARK,        Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
-                    M3ModeChip(Icons.Rounded.Brightness1, uiState.colorMode == ColorMode.DARK_AMOLED, Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK_AMOLED) }
+                    M3ModeChip(Icons.Rounded.Star,      uiState.colorMode == ColorMode.SYSTEM, Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.SYSTEM) }
+                    M3ModeChip(Icons.Rounded.LightMode, uiState.colorMode == ColorMode.LIGHT,  Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
+                    M3ModeChip(Icons.Rounded.DarkMode,  uiState.colorMode == ColorMode.DARK,   Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -114,15 +95,28 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                     supportingContent = { Text(strings.monetEnableSummary) },
                     leadingContent    = { Icon(Icons.Rounded.Wallpaper, null) },
                     trailingContent   = {
-                        Switch(checked = monetEnabled,
-                            onCheckedChange = { actions.onSetColorMode(resolveMode(baseTab, it)) })
+                        Switch(checked = uiState.useMonet, onCheckedChange = actions.onSetUseMonet)
                     },
                 )
-                HorizontalDivider()
             }
 
+            // ── AMOLED Dark ─────────────────────────────────────────────────
+            if (uiState.colorMode != ColorMode.LIGHT) {
+                item {
+                    ListItem(
+                        headlineContent   = { Text(strings.amoledDark) },
+                        supportingContent = { Text(strings.amoledDarkSummary) },
+                        leadingContent    = { Icon(Icons.Rounded.Brightness1, null) },
+                        trailingContent   = {
+                            Switch(checked = uiState.amoledDark, onCheckedChange = actions.onSetAmoledDark)
+                        },
+                    )
+                }
+            }
+            item { HorizontalDivider() }
+
             // ── Accent color (Monet OFF only) ────────────────────────────────
-            if (!monetEnabled) {
+            if (!uiState.useMonet) {
                 item {
                     ListItem(
                         headlineContent   = { Text(strings.keyColor) },
