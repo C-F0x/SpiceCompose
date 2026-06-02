@@ -23,6 +23,7 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.ButtonState
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsRead
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWrite
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWriteReset
+import org.cf0x.spicecompose.platform.VibratorManager
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
@@ -69,6 +70,7 @@ fun ButtonsScreen(onBack: () -> Unit) {
     }
 
     val onToggle: (ButtonState) -> Unit = { button ->
+        VibratorManager.vibrate(50)
         scope.launch {
             val newState = if (button.state >= 0.5) 0.0 else 1.0
             val updated = button.copy(state = newState, active = true)

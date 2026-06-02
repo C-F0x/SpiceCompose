@@ -20,6 +20,7 @@ import org.cf0x.spicecompose.data.CardConfig
 import org.cf0x.spicecompose.data.CardRepository
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.cardInsert
+import org.cf0x.spicecompose.platform.NfcManager
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
@@ -54,6 +55,21 @@ fun CardManagerScreen(onBack: () -> Unit) {
     val onDelete: (String) -> Unit = { id ->
         repository.deleteCard(id)
         cards = repository.getCards()
+    }
+
+    // NFC Scanning logic
+    LaunchedEffect(Unit) {
+        NfcManager.tagIdFlow.collect { id ->
+            // Try to find if we have this card
+            val existing = cards.find { it.idTrigger == id || it.cardId == id }
+            if (existing != null) {
+                onInsert(existing, 0) // Default to P1
+            } else {
+                // Not found, maybe show a toast or auto-add? 
+                // For now just insert the raw ID
+                scope.launch { connection?.cardInsert(0, id) }
+            }
+        }
     }
 
     if (showAddDialog || editingCard != null) {

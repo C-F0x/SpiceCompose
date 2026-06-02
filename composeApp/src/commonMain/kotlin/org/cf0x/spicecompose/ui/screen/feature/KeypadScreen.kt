@@ -13,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.cardInsert
 import org.cf0x.spicecompose.network.spiceapi.wrappers.keypadsWrite
+import org.cf0x.spicecompose.platform.NfcManager
+import org.cf0x.spicecompose.platform.VibratorManager
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
@@ -35,7 +38,17 @@ fun KeypadScreen(onBack: () -> Unit) {
     val modeColor = if (currentMode == 0) Color(0xFF008080) else Color(0xFF800080)
     val modeLabel = if (currentMode == 0) "P1" else "P2"
 
+    // Listen for NFC tags
+    LaunchedEffect(connection) {
+        if (connection == null) return@LaunchedEffect
+        NfcManager.tagIdFlow.collect { id ->
+            connection.cardInsert(currentMode, id)
+            VibratorManager.vibrate(100)
+        }
+    }
+
     val onKeyClick: (String) -> Unit = { key ->
+        VibratorManager.vibrate(50)
         scope.launch {
             connection?.keypadsWrite(currentMode, key)
         }
