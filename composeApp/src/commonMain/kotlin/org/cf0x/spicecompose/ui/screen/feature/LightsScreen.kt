@@ -75,8 +75,12 @@ fun LightsScreen(onBack: () -> Unit) {
     val onValueChange: (LightState, Float) -> Unit = { light, value ->
         val updated = light.copy(state = value.toDouble(), active = true)
         lightStates = lightStates.map { if (it.name == light.name) updated else it }
+        // Local only
+    }
+
+    val onValueCommit: (LightState) -> Unit = { light ->
         scope.launch {
-            connection?.lightsWrite(listOf(updated))
+            connection?.lightsWrite(listOf(light))
         }
     }
 
@@ -121,6 +125,7 @@ fun LightsScreen(onBack: () -> Unit) {
                             LightItemMiuix(
                                 light = light,
                                 onValueChange = { onValueChange(light, it) },
+                                onValueCommit = { onValueCommit(light) },
                                 onDragStart = { draggingNames.add(light.name) },
                                 onDragEnd = { draggingNames.remove(light.name) }
                             )
@@ -161,6 +166,7 @@ fun LightsScreen(onBack: () -> Unit) {
                             LightItemMaterial(
                                 light = light,
                                 onValueChange = { onValueChange(light, it) },
+                                onValueCommit = { onValueCommit(light) },
                                 onDragStart = { draggingNames.add(light.name) },
                                 onDragEnd = { draggingNames.remove(light.name) }
                             )
@@ -173,7 +179,7 @@ fun LightsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-fun LightItemMiuix(light: LightState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+fun LightItemMiuix(light: LightState, onValueChange: (Float) -> Unit, onValueCommit: () -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
     top.yukonga.miuix.kmp.basic.Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
@@ -187,7 +193,10 @@ fun LightItemMiuix(light: LightState, onValueChange: (Float) -> Unit, onDragStar
                     onDragStart()
                     onValueChange(it)
                 },
-                onValueChangeFinished = onDragEnd,
+                onValueChangeFinished = {
+                    onDragEnd()
+                    onValueCommit()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -195,7 +204,7 @@ fun LightItemMiuix(light: LightState, onValueChange: (Float) -> Unit, onDragStar
 }
 
 @Composable
-fun LightItemMaterial(light: LightState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+fun LightItemMaterial(light: LightState, onValueChange: (Float) -> Unit, onValueCommit: () -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
     androidx.compose.material3.ListItem(
         headlineContent = {
             val titleColor = if (light.active) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
@@ -208,7 +217,10 @@ fun LightItemMaterial(light: LightState, onValueChange: (Float) -> Unit, onDragS
                     onDragStart()
                     onValueChange(it)
                 },
-                onValueChangeFinished = onDragEnd,
+                onValueChangeFinished = {
+                    onDragEnd()
+                    onValueCommit()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }

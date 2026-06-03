@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import org.cf0x.spicecompose.platform.NfcManager
+import org.cf0x.spicecompose.platform.SystemBarsManager
 import org.cf0x.spicecompose.platform.VibratorManager
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
         
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         VibratorManager.init(this)
+        SystemBarsManager.init(this)
 
         setContent {
             val darkTheme = isSystemInDarkTheme()

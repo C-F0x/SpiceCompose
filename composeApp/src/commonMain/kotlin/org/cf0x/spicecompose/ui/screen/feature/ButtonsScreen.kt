@@ -6,9 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,10 +26,12 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.ButtonState
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsRead
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWrite
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWriteReset
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.platform.VibratorManager
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -34,6 +39,16 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun ButtonsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
+    val fullscreen = LocalFullscreenMode.current
+    
+    // Auto exit fullscreen on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            fullscreen.value = false
+        }
+    }
+// ... rest
+// ... rest
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
@@ -72,10 +87,10 @@ fun ButtonsScreen(onBack: () -> Unit) {
     val onToggle: (ButtonState) -> Unit = { button ->
         VibratorManager.vibrate(50)
         scope.launch {
-            val newState = if (button.state >= 0.5) 0.0 else 1.0
-            val updated = button.copy(state = newState, active = true)
-            connection?.buttonsWrite(listOf(updated))
-            // UI will update on next poll
+            // Pulse: set 1.0, wait, set 0.0
+            connection?.buttonsWrite(listOf(button.copy(state = 1.0, active = true)))
+            delay(100)
+            connection?.buttonsWrite(listOf(button.copy(state = 0.0, active = true)))
         }
     }
 
@@ -95,15 +110,18 @@ fun ButtonsScreen(onBack: () -> Unit) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    top.yukonga.miuix.kmp.basic.SmallTopAppBar(
+                    SmallTopAppBar(
                         title = strings.buttons,
                         navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
+                            IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
                             }
                         },
                         actions = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onLockToggle) {
+                            IconButton(onClick = { fullscreen.value = !fullscreen.value }) {
+                                top.yukonga.miuix.kmp.basic.Icon(if (fullscreen.value) Icons.Rounded.FullscreenExit else Icons.Rounded.Fullscreen, null)
+                            }
+                            IconButton(onClick = onLockToggle) {
                                 top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
                             }
                         }
@@ -132,6 +150,11 @@ fun ButtonsScreen(onBack: () -> Unit) {
                         navigationIcon = {
                             androidx.compose.material3.IconButton(onClick = onBack) {
                                 androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                            }
+                        },
+                        actions = {
+                            androidx.compose.material3.IconButton(onClick = { fullscreen.value = !fullscreen.value }) {
+                                androidx.compose.material3.Icon(if (fullscreen.value) Icons.Rounded.FullscreenExit else Icons.Rounded.Fullscreen, null)
                             }
                         }
                     )

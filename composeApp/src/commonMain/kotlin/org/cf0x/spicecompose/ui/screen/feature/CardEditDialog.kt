@@ -10,16 +10,20 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.util.CardCipher
+import androidx.compose.material.icons.rounded.Delete
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import org.cf0x.spicecompose.platform.NfcManager
+import org.cf0x.spicecompose.platform.VibratorManager
 
 @Composable
 fun CardEditDialog(
     show: Boolean,
     card: CardConfig? = null,
     onSave: (CardConfig) -> Unit,
+    onDiscard: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember(show) { mutableStateOf(card?.name ?: "") }
@@ -29,7 +33,18 @@ fun CardEditDialog(
 
     val strings = LocalAppStrings.current
 
+    // Listen for NFC during editing
+    LaunchedEffect(show) {
+        if (show) {
+            NfcManager.tagIdFlow.collect { id ->
+                cardId = id
+                VibratorManager.vibrate(100)
+            }
+        }
+    }
+
     // Update publicId when cardId changes
+// ... rest
     LaunchedEffect(cardId) {
         if (cardId.length == 16) {
             try {
@@ -87,16 +102,17 @@ fun CardEditDialog(
                             label = strings.triggerId,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                         )
-                        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(
-                                text = strings.cancel,
-                                onClick = onDismiss,
-                                modifier = Modifier.weight(1f)
+                                text = strings.discard,
+                                onClick = onDiscard,
+                                modifier = Modifier.weight(1f),
+                                colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary() // Miuix doesn't easily support contentColor change in this ver
                             )
-                            Spacer(Modifier.width(20.dp))
                             TextButton(
-                                text = strings.ok,
+                                text = strings.save,
                                 onClick = {
+                                    if (name.isEmpty() || cardId.length != 16) return@TextButton
                                     val newCard = CardConfig(
                                         id = card?.id ?: (1..16).map { "0123456789ABCDEF".random() }.joinToString(""),
                                         name = name,
@@ -151,6 +167,7 @@ fun CardEditDialog(
                 },
                 confirmButton = {
                     androidx.compose.material3.Button(onClick = {
+                        if (name.isEmpty() || cardId.length != 16) return@Button
                         val newCard = CardConfig(
                             id = card?.id ?: (1..16).map { "0123456789ABCDEF".random() }.joinToString(""),
                             name = name,
@@ -160,12 +177,15 @@ fun CardEditDialog(
                         )
                         onSave(newCard)
                     }) {
-                        Text(strings.ok)
+                        Text(strings.save)
                     }
                 },
                 dismissButton = {
-                    androidx.compose.material3.TextButton(onClick = onDismiss) {
-                        Text(strings.cancel)
+                    androidx.compose.material3.TextButton(
+                        onClick = onDiscard,
+                        colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.Red)
+                    ) {
+                        Text(strings.discard)
                     }
                 }
             )

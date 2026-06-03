@@ -75,8 +75,12 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val onValueChange: (AnalogState, Float) -> Unit = { analog, value ->
         val updated = analog.copy(state = value.toDouble(), active = true)
         analogStates = analogStates.map { if (it.name == analog.name) updated else it }
+        // Local state update only
+    }
+
+    val onValueCommit: (AnalogState) -> Unit = { analog ->
         scope.launch {
-            connection?.analogsWrite(listOf(updated))
+            connection?.analogsWrite(listOf(analog))
         }
     }
 
@@ -121,6 +125,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
                             AnalogItemMiuix(
                                 analog = analog,
                                 onValueChange = { onValueChange(analog, it) },
+                                onValueCommit = { onValueCommit(analog) },
                                 onDragStart = { draggingNames.add(analog.name) },
                                 onDragEnd = { draggingNames.remove(analog.name) }
                             )
@@ -161,6 +166,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
                             AnalogItemMaterial(
                                 analog = analog,
                                 onValueChange = { onValueChange(analog, it) },
+                                onValueCommit = { onValueCommit(analog) },
                                 onDragStart = { draggingNames.add(analog.name) },
                                 onDragEnd = { draggingNames.remove(analog.name) }
                             )
@@ -173,7 +179,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-fun AnalogItemMiuix(analog: AnalogState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+fun AnalogItemMiuix(analog: AnalogState, onValueChange: (Float) -> Unit, onValueCommit: () -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
     top.yukonga.miuix.kmp.basic.Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
@@ -187,7 +193,10 @@ fun AnalogItemMiuix(analog: AnalogState, onValueChange: (Float) -> Unit, onDragS
                     onDragStart()
                     onValueChange(it)
                 },
-                onValueChangeFinished = onDragEnd,
+                onValueChangeFinished = {
+                    onDragEnd()
+                    onValueCommit()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -195,7 +204,7 @@ fun AnalogItemMiuix(analog: AnalogState, onValueChange: (Float) -> Unit, onDragS
 }
 
 @Composable
-fun AnalogItemMaterial(analog: AnalogState, onValueChange: (Float) -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
+fun AnalogItemMaterial(analog: AnalogState, onValueChange: (Float) -> Unit, onValueCommit: () -> Unit, onDragStart: () -> Unit, onDragEnd: () -> Unit) {
     androidx.compose.material3.ListItem(
         headlineContent = {
             val titleColor = if (analog.active) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
@@ -208,7 +217,10 @@ fun AnalogItemMaterial(analog: AnalogState, onValueChange: (Float) -> Unit, onDr
                     onDragStart()
                     onValueChange(it)
                 },
-                onValueChangeFinished = onDragEnd,
+                onValueChangeFinished = {
+                    onDragEnd()
+                    onValueCommit()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }

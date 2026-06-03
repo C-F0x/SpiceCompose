@@ -56,7 +56,8 @@ fun StatusHomeMaterial(
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
     onServerClick: () -> Unit,
-    onServerLongClick: () -> Unit
+    onServerLongClick: () -> Unit,
+    onStatusClick: () -> Unit
 ) {
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
@@ -64,9 +65,9 @@ fun StatusHomeMaterial(
 
     Scaffold(
         topBar = {
-            @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+            @OptIn(ExperimentalMaterial3Api::class)
             LargeTopAppBar(
-                title = { Text("Status") },
+                title = { Text(strings.status) },
                 scrollBehavior = scrollBehavior
             )
         }
@@ -82,7 +83,7 @@ fun StatusHomeMaterial(
             // Status Card (Top Large)
             TonalCard(
                 containerColor = if (isConnected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.errorContainer,
-                onClick = onServerClick
+                onClick = onStatusClick
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(24.dp),

@@ -72,13 +72,16 @@ fun StatusScreen() {
         }
     }
 
-    // Logic: Clicking a card in StatusHome calls onServerCardAction
-    val onServerCardAction: (Boolean) -> Unit = { isLong ->
-        if (isLong) {
-            showServerList = true
+    val onStatusBlockClick = {
+        if (status == ConnectionStatus.Connected) {
+            connectionManager.disconnect()
         } else {
             chosenServer?.let { connectionManager.connect(it) } ?: run { showServerList = true }
         }
+    }
+    
+    val onTargetServerClick = {
+        showServerList = true
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -136,12 +139,13 @@ fun StatusScreen() {
                 when (LocalUiMode.current) {
                     UiMode.Miuix -> StatusHomeMiuix(
                         connectionStatus = status,
-                        currentServer = chosenServer, // Show chosen instead of active conn for UI consistent
+                        currentServer = chosenServer,
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
-                        onServerClick = { onServerCardAction(false) }, // Click: Try Connect
-                        onServerLongClick = { onServerCardAction(true) } // Long: List
+                        onServerClick = onTargetServerClick,
+                        onServerLongClick = onTargetServerClick,
+                        onStatusClick = onStatusBlockClick
                     )
                     UiMode.Material -> StatusHomeMaterial(
                         connectionStatus = status,
@@ -149,8 +153,9 @@ fun StatusScreen() {
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
-                        onServerClick = { onServerCardAction(false) },
-                        onServerLongClick = { onServerCardAction(true) }
+                        onServerClick = onTargetServerClick,
+                        onServerLongClick = onTargetServerClick,
+                        onStatusClick = onStatusBlockClick
                     )
                 }
             }

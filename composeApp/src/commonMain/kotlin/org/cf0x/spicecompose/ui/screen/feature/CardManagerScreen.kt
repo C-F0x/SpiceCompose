@@ -82,6 +82,12 @@ fun CardManagerScreen(onBack: () -> Unit) {
                 showAddDialog = false
                 editingCard = null
             },
+            onDiscard = {
+                editingCard?.let { repository.deleteCard(it.id) }
+                cards = repository.getCards()
+                showAddDialog = false
+                editingCard = null
+            },
             onDismiss = {
                 showAddDialog = false
                 editingCard = null

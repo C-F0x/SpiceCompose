@@ -35,7 +35,8 @@ fun StatusHomeMiuix(
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
     onServerClick: () -> Unit,
-    onServerLongClick: () -> Unit
+    onServerLongClick: () -> Unit,
+    onStatusClick: () -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
@@ -45,7 +46,7 @@ fun StatusHomeMiuix(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = strings.connected,
+                title = strings.status,
                 scrollBehavior = scrollBehavior
             )
         }
@@ -80,6 +81,7 @@ fun StatusHomeMiuix(
                                 else -> colorScheme.surfaceVariant
                             }
                         ),
+                        onClick = onStatusClick,
                         pressFeedbackType = PressFeedbackType.Tilt
                     ) {
                         Box(modifier = Modifier.fillMaxSize()) {

@@ -3,10 +3,13 @@ package org.cf0x.spicecompose
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.network.LocalConnectionManager
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.platform.SystemBarsManager
 import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
@@ -27,6 +30,11 @@ fun App() {
     // Passed down via CompositionLocal so MainScreen can disable pager swipe.
     val inSubPage = remember { mutableStateOf(false) }
     val connectionManager = remember { ConnectionManager() }
+    val fullscreenMode = remember { mutableStateOf(false) }
+
+    LaunchedEffect(fullscreenMode.value) {
+        SystemBarsManager.setFullscreen(fullscreenMode.value)
+    }
 
     CompositionLocalProvider(
         LocalUiMode                provides p.uiMode,
@@ -42,6 +50,7 @@ fun App() {
         LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
         LocalInSubPage             provides inSubPage,
         LocalConnectionManager     provides connectionManager,
+        LocalFullscreenMode        provides fullscreenMode,
     ) {
         SpiceComposeTheme(
             colorMode    = p.colorMode,

@@ -50,7 +50,11 @@ class SpiceConnection(
             val buffer = mutableListOf<Byte>()
             try {
                 while (isActive && !isDisposed) {
-                    val data = s.read() ?: break
+                    val data = try {
+                        s.read()
+                    } catch (e: Exception) {
+                        null
+                    } ?: break
                     
                     // Decrypt
                     cipher?.crypt(data)
@@ -79,6 +83,8 @@ class SpiceConnection(
 
     @OptIn(FlowPreview::class)
     suspend fun request(req: SpiceRequest): SpiceResponse = writeMutex.withLock {
+        val s = socket ?: throw Exception("Not connected")
+        
         val json = spiceJson.encodeToString(req) + "\u0000"
         val data = json.encodeToByteArray()
         
@@ -88,9 +94,17 @@ class SpiceConnection(
         val responseFlow = _responses.filter { it.id == req.id }
             .timeout(3000.milliseconds)
             
-        socket?.write(encrypted)
+        try {
+            s.write(encrypted)
+        } catch (e: Exception) {
+            throw Exception("Write error: ${e.message}")
+        }
         
-        val response = responseFlow.first()
+        val response = try {
+            responseFlow.first()
+        } catch (e: Exception) {
+            throw Exception("Timeout or connection closed while waiting for response")
+        }
         
         if (response.errors.isNotEmpty()) {
             throw Exception("API Error: ${response.errors.joinToString()}")
