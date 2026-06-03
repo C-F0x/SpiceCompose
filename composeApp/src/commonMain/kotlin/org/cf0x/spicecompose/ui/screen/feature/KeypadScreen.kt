@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
@@ -28,6 +30,8 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -39,31 +43,25 @@ fun KeypadScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val repository = remember { CardRepository() }
     var cards by remember { mutableStateOf(repository.getCards()) }
-    var chosenCardId by remember { mutableStateOf<String?>(null) } // null means Dynamic
+    var chosenCardId by remember { mutableStateOf<String?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
     var editingCard by remember { mutableStateOf<CardConfig?>(null) }
     
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
+    val windowSize = LocalWindowSize.current
     
-    var currentMode by remember { mutableIntStateOf(0) } // 0: P1, 1: P2
+    var currentMode by remember { mutableIntStateOf(0) }
     val modeColor = if (currentMode == 0) Color(0xFF008080) else Color(0xFF800080)
     val modeLabel = if (currentMode == 0) "P1" else "P2"
 
-    // Listen for NFC tags
     LaunchedEffect(connection, chosenCardId) {
         if (connection == null) return@LaunchedEffect
         NfcManager.tagIdFlow.collect { id ->
             if (chosenCardId == null) {
-                // Dynamic mode: insert whatever we scan
                 connection.cardInsert(currentMode, id)
                 VibratorManager.vibrate(100)
-            } else {
-                // Fixed mode: NFC scan doesn't auto-insert (user must tap pill)
-                // OR we can make it so it inserts the CHOSEN card when any tag is detected?
-                // spicecompanion says: "Dynamic... dynamic reading. Chosen... insert CHOSEN card."
-                // I'll stick to: if chosen, ignore NFC, only insert on pill click.
             }
         }
     }
@@ -82,12 +80,7 @@ fun KeypadScreen(onBack: () -> Unit) {
         }
     }
 
-    val keys = listOf(
-        "7", "8", "9",
-        "4", "5", "6",
-        "1", "2", "3",
-        "0", "00", "."
-    )
+    val keys = listOf("7", "8", "9", "4", "5", "6", "1", "2", "3", "0", "00", ".")
 
     if (showAddDialog || editingCard != null) {
         CardEditDialog(
@@ -105,7 +98,7 @@ fun KeypadScreen(onBack: () -> Unit) {
                     if (chosenCardId == it.id) chosenCardId = null
                     cards = repository.getCards()
                 }
-                showAddDialog = false // Also for new card case
+                showAddDialog = false
                 editingCard = null
             },
             onDismiss = {
@@ -115,75 +108,124 @@ fun KeypadScreen(onBack: () -> Unit) {
         )
     }
 
+    val isLarge = windowSize != WindowSize.Compact
+
+    @Composable
+    fun KeypadGrid() {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            userScrollEnabled = false
+        ) {
+            items(keys) { key ->
+                if (LocalUiMode.current == UiMode.Miuix) {
+                    KeyButtonMiuix(key) { onKeyClick(if (key == ".") "D" else if (key == "00") "A" else key) }
+                } else {
+                    KeyButtonMaterial(key) { onKeyClick(if (key == ".") "D" else if (key == "00") "A" else key) }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun ControlBar() {
+        if (LocalUiMode.current == UiMode.Miuix) {
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = modeLabel,
+                onClick = { currentMode = (currentMode + 1) % 2 },
+                modifier = Modifier.fillMaxWidth(),
+                colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
+            )
+        } else {
+            androidx.compose.material3.Button(
+                onClick = { currentMode = (currentMode + 1) % 2 },
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = modeColor)
+            ) {
+                androidx.compose.material3.Text(modeLabel)
+            }
+        }
+    }
+
+    @Composable
+    fun CardManagement() {
+        val uiMode = LocalUiMode.current
+        Column(Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (uiMode == UiMode.Miuix) {
+                    top.yukonga.miuix.kmp.basic.Text("Card Management", fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.weight(1f))
+                    top.yukonga.miuix.kmp.basic.IconButton(onClick = { showAddDialog = true }) {
+                        top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Add, null)
+                    }
+                } else {
+                    androidx.compose.material3.Text("Card Management", style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.weight(1f))
+                    androidx.compose.material3.IconButton(onClick = { showAddDialog = true }) {
+                        androidx.compose.material3.Icon(Icons.Rounded.Add, null)
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (uiMode == UiMode.Miuix) {
+                    PillMiuix("Dynamic", chosenCardId == null, { chosenCardId = null }, {})
+                    cards.forEach { card ->
+                        PillMiuix(card.name, chosenCardId == card.id, { chosenCardId = card.id; onInsert(card.cardId) }, { editingCard = card })
+                    }
+                } else {
+                    FilterChip(
+                        selected = chosenCardId == null,
+                        onClick = { chosenCardId = null },
+                        label = { androidx.compose.material3.Text("Dynamic") }
+                    )
+                    cards.forEach { card ->
+                        Box(Modifier.combinedClickable(
+                            onClick = { chosenCardId = card.id; onInsert(card.cardId) },
+                            onLongClick = { editingCard = card }
+                        )) {
+                            FilterChip(
+                                selected = chosenCardId == card.id,
+                                onClick = { chosenCardId = card.id; onInsert(card.cardId) },
+                                label = { androidx.compose.material3.Text(card.name) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
                     SmallTopAppBar(
                         title = strings.keypadScanner,
-                        navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
-                                top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
-                            }
-                        }
+                        navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } }
                     )
                 }
             ) { innerPadding ->
-                Column(Modifier.fillMaxSize().padding(innerPadding)) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier.weight(1f).padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(keys) { key ->
-                            KeyButtonMiuix(key) { onKeyClick(if (key == ".") "D" else if (key == "00") "A" else key) }
+                if (isLarge) {
+                    Row(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            KeypadGrid()
+                            Spacer(Modifier.height(16.dp))
+                            ControlBar()
+                        }
+                        Box(Modifier.weight(1f)) {
+                            CardManagement()
                         }
                     }
-                    
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        top.yukonga.miuix.kmp.basic.TextButton(
-                            text = modeLabel,
-                            onClick = { currentMode = (currentMode + 1) % 2 },
-                            modifier = Modifier.weight(1f),
-                            colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
-                        )
-                    }
-
-                    // Card Management Container
-                    top.yukonga.miuix.kmp.basic.Card(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp)
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                top.yukonga.miuix.kmp.basic.Text("Card Management", fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.weight(1f))
-                                top.yukonga.miuix.kmp.basic.IconButton(onClick = { showAddDialog = true }) {
-                                    top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Add, null)
-                                }
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            // Pills row
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                PillMiuix(
-                                    label = "Dynamic", 
-                                    selected = chosenCardId == null, 
-                                    onClick = { chosenCardId = null },
-                                    onLongClick = {}
-                                )
-                                cards.forEach { card ->
-                                    PillMiuix(
-                                        label = card.name, 
-                                        selected = chosenCardId == card.id, 
-                                        onClick = { 
-                                            chosenCardId = card.id
-                                            onInsert(card.cardId)
-                                        },
-                                        onLongClick = { editingCard = card }
-                                    )
-                                }
-                            }
-                        }
+                } else {
+                    Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp)) {
+                        KeypadGrid()
+                        Spacer(Modifier.height(16.dp))
+                        ControlBar()
+                        Spacer(Modifier.height(24.dp))
+                        CardManagement()
                     }
                 }
             }
@@ -194,73 +236,28 @@ fun KeypadScreen(onBack: () -> Unit) {
                     @OptIn(ExperimentalMaterial3Api::class)
                     androidx.compose.material3.TopAppBar(
                         title = { androidx.compose.material3.Text(strings.keypadScanner) },
-                        navigationIcon = {
-                            androidx.compose.material3.IconButton(onClick = onBack) {
-                                androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
-                            }
-                        }
+                        navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } }
                     )
                 }
             ) { innerPadding ->
-                Column(Modifier.fillMaxSize().padding(innerPadding)) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier.weight(1f).padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(keys) { key ->
-                            KeyButtonMaterial(key) { onKeyClick(if (key == ".") "D" else if (key == "00") "A" else key) }
+                if (isLarge) {
+                    Row(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            KeypadGrid()
+                            Spacer(Modifier.height(16.dp))
+                            ControlBar()
+                        }
+                        Box(Modifier.weight(1f)) {
+                            CardManagement()
                         }
                     }
-                    
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        androidx.compose.material3.Button(
-                            onClick = { currentMode = (currentMode + 1) % 2 },
-                            modifier = Modifier.weight(1f),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = modeColor)
-                        ) {
-                            androidx.compose.material3.Text(modeLabel)
-                        }
-                    }
-
-                    // Card Management Container
-                    TonalCard(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Column(Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                androidx.compose.material3.Text("Card Management", style = MaterialTheme.typography.titleSmall)
-                                Spacer(Modifier.weight(1f))
-                                androidx.compose.material3.IconButton(onClick = { showAddDialog = true }) {
-                                    androidx.compose.material3.Icon(Icons.Rounded.Add, null)
-                                }
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = chosenCardId == null,
-                                    onClick = { chosenCardId = null },
-                                    label = { androidx.compose.material3.Text("Dynamic") }
-                                )
-                                cards.forEach { card ->
-                                    Box(Modifier.combinedClickable(
-                                        onClick = { 
-                                            chosenCardId = card.id
-                                            onInsert(card.cardId)
-                                        },
-                                        onLongClick = { editingCard = card }
-                                    )) {
-                                        FilterChip(
-                                            selected = chosenCardId == card.id,
-                                            onClick = { 
-                                                chosenCardId = card.id
-                                                onInsert(card.cardId)
-                                            },
-                                            label = { androidx.compose.material3.Text(card.name) }
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                } else {
+                    Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp)) {
+                        KeypadGrid()
+                        Spacer(Modifier.height(16.dp))
+                        ControlBar()
+                        Spacer(Modifier.height(24.dp))
+                        CardManagement()
                     }
                 }
             }
@@ -268,7 +265,24 @@ fun KeypadScreen(onBack: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun KeyButtonMiuix(label: String, onClick: () -> Unit) {
+    top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.aspectRatio(1.5f), onClick = onClick) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            top.yukonga.miuix.kmp.basic.Text(label, fontSize = 28.sp)
+        }
+    }
+}
+
+@Composable
+fun KeyButtonMaterial(label: String, onClick: () -> Unit) {
+    ElevatedCard(modifier = Modifier.aspectRatio(1.5f), onClick = onClick) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            androidx.compose.material3.Text(label, fontSize = 28.sp)
+        }
+    }
+}
+
 @Composable
 fun PillMiuix(label: String, selected: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
     top.yukonga.miuix.kmp.basic.Card(
@@ -280,35 +294,7 @@ fun PillMiuix(label: String, selected: Boolean, onClick: () -> Unit, onLongClick
         onLongPress = onLongClick
     ) {
         Box(Modifier.fillMaxHeight().padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
-            top.yukonga.miuix.kmp.basic.Text(
-                label, 
-                fontSize = 14.sp, 
-                color = if (selected) Color.White else MiuixTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-fun KeyButtonMiuix(label: String, onClick: () -> Unit) {
-    top.yukonga.miuix.kmp.basic.Card(
-        modifier = Modifier.aspectRatio(1.5f),
-        onClick = onClick
-    ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            top.yukonga.miuix.kmp.basic.Text(label, fontSize = 28.sp)
-        }
-    }
-}
-
-@Composable
-fun KeyButtonMaterial(label: String, onClick: () -> Unit) {
-    ElevatedCard(
-        modifier = Modifier.aspectRatio(1.5f),
-        onClick = onClick
-    ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            androidx.compose.material3.Text(label, fontSize = 28.sp)
+            top.yukonga.miuix.kmp.basic.Text(label, fontSize = 14.sp, color = if (selected) Color.White else MiuixTheme.colorScheme.onSurface)
         }
     }
 }

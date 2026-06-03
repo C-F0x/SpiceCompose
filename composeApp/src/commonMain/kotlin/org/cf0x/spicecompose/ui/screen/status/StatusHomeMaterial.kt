@@ -24,28 +24,9 @@ import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-
-@Composable
-fun TonalCard(
-    modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
-    onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    ElevatedCard(
-        modifier = modifier,
-        colors = CardDefaults.elevatedCardColors(containerColor = containerColor)
-    ) {
-        Box(Modifier.combinedClickable(
-            onClick = onClick ?: {},
-            onLongClick = onLongClick,
-            enabled = onClick != null
-        )) {
-            Column(content = content)
-        }
-    }
-}
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.component.TonalCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,17 +36,16 @@ fun StatusHomeMaterial(
     avsInfo: Map<String, String>,
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
-    onServerClick: () -> Unit,
-    onServerLongClick: () -> Unit,
+    onServerAction: (Boolean) -> Unit,
     onStatusClick: () -> Unit
 ) {
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val windowSize = LocalWindowSize.current
 
     Scaffold(
         topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
             LargeTopAppBar(
                 title = { Text(strings.status) },
                 scrollBehavior = scrollBehavior
@@ -82,6 +62,7 @@ fun StatusHomeMaterial(
         ) {
             // Status Card (Top Large)
             TonalCard(
+                modifier = Modifier.fillMaxWidth(),
                 containerColor = if (isConnected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.errorContainer,
                 onClick = onStatusClick
             ) {
@@ -99,30 +80,29 @@ fun StatusHomeMaterial(
                             text = if (isConnected) strings.connected else strings.disconnected,
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(Modifier.height(4.dp))
                         if (isConnected) {
                             Text(
                                 text = launcherInfo["compile_date"] ?: "",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
                 }
             }
 
-            // Bottom Row of 2 Cards
+            // Row of 2 Cards
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TonalCard(
                     modifier = Modifier.weight(1f),
-                    onClick = onServerClick,
-                    onLongClick = onServerLongClick
+                    onClick = { onServerAction(false) }, // Try Connect
+                    onLongClick = { onServerAction(true) } // List
                 ) {
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+                    Column(Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                         Text(strings.targetServer, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-                        Spacer(Modifier.height(4.dp))
                         Text(
                             currentServer?.name ?: "None",
                             style = MaterialTheme.typography.bodyMedium,
@@ -135,7 +115,6 @@ fun StatusHomeMaterial(
                 ) {
                     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
                         Text(strings.bonjour, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-                        Spacer(Modifier.height(4.dp))
                         Text(
                             "SpiceCompose",
                             style = MaterialTheme.typography.bodyMedium,
@@ -145,25 +124,40 @@ fun StatusHomeMaterial(
                 }
             }
 
-            // Info items
+            // Info items (Grid for large screen)
+            val cols = if (windowSize == WindowSize.Compact) 1 else 2
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 InfoItemMaterial(
                     title = "AVS Info",
                     content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
                               else "model-dest.spec.rev-ext"
                 )
-                InfoItemMaterial(
-                    title = strings.backendUrl,
-                    content = avsInfo["services"] ?: "..."
-                )
-                InfoItemMaterial(
-                    title = strings.spiceCompile,
-                    content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "..."
-                )
+                
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(Modifier.weight(1f)) {
+                        InfoItemMaterial(title = strings.backendUrl, content = avsInfo["services"] ?: "...")
+                    }
+                    if (cols > 1) {
+                        Box(Modifier.weight(1f)) {
+                            InfoItemMaterial(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                        }
+                    }
+                }
+                if (cols == 1) {
+                    InfoItemMaterial(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                }
+
                 MemoryStackedMaterial(strings.memoryStacked, memoryInfo, isConnected)
                 
-                InfoItemMaterial(strings.spiceVersion, launcherInfo["version"] ?: "...")
-                InfoItemMaterial(strings.systemTime, launcherInfo["system_time"] ?: "...")
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(Modifier.weight(1f)) {
+                        InfoItemMaterial(strings.spiceVersion, launcherInfo["version"] ?: "...")
+                    }
+                    Box(Modifier.weight(1f)) {
+                        InfoItemMaterial(strings.systemTime, launcherInfo["system_time"] ?: "...")
+                    }
+                }
+
                 InfoItemMaterial(strings.launcherArgs, (launcherInfo["args"] ?: "...").replace("[", "").replace("]", ""))
             }
             Spacer(Modifier.height(16.dp))

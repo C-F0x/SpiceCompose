@@ -68,14 +68,6 @@ fun UtilsPagerMiuix(
                         },
                         onClick = actions.onOpenPatches,
                     )
-                    ArrowPreference(
-                        title = strings.cardManager,
-                        summary = strings.cardManagerSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.Nfc, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = actions.onOpenCardMgr,
-                    )
                 }
             }
         }

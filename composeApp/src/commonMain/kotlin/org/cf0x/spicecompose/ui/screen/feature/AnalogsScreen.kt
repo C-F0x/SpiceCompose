@@ -2,8 +2,9 @@ package org.cf0x.spicecompose.ui.screen.feature
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Lock
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -25,6 +27,8 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.analogsWriteReset
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -36,6 +40,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
+    val windowSize = LocalWindowSize.current
     
     var analogStates by remember { mutableStateOf<List<AnalogState>>(emptyList()) }
     var locked by remember { mutableStateOf(false) }
@@ -51,7 +56,6 @@ fun AnalogsScreen(onBack: () -> Unit) {
         while (isActive) {
             try {
                 val newState = connection.analogsRead()
-                // Update non-dragging ones
                 analogStates = newState.map { fresh ->
                     if (draggingNames.contains(fresh.name)) {
                         analogStates.find { it.name == fresh.name } ?: fresh
@@ -75,7 +79,6 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val onValueChange: (AnalogState, Float) -> Unit = { analog, value ->
         val updated = analog.copy(state = value.toDouble(), active = true)
         analogStates = analogStates.map { if (it.name == analog.name) updated else it }
-        // Local state update only
     }
 
     val onValueCommit: (AnalogState) -> Unit = { analog ->
@@ -96,19 +99,24 @@ fun AnalogsScreen(onBack: () -> Unit) {
         }
     }
 
+    val columns = when (windowSize) {
+        WindowSize.Compact -> 1
+        else -> 2
+    }
+
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    top.yukonga.miuix.kmp.basic.SmallTopAppBar(
+                    SmallTopAppBar(
                         title = strings.analogs,
                         navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
+                            IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
                             }
                         },
                         actions = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onLockToggle) {
+                            IconButton(onClick = onLockToggle) {
                                 top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
                             }
                         }
@@ -120,7 +128,11 @@ fun AnalogsScreen(onBack: () -> Unit) {
                         top.yukonga.miuix.kmp.basic.Text("No analogs available :(")
                     }
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
                         items(analogStates) { analog ->
                             AnalogItemMiuix(
                                 analog = analog,
@@ -161,7 +173,10 @@ fun AnalogsScreen(onBack: () -> Unit) {
                         androidx.compose.material3.Text("No analogs available :(")
                     }
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                    ) {
                         items(analogStates) { analog ->
                             AnalogItemMaterial(
                                 analog = analog,

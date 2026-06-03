@@ -3,6 +3,8 @@ package org.cf0x.spicecompose.ui.screen.status
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
@@ -19,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -34,14 +38,14 @@ fun StatusHomeMiuix(
     avsInfo: Map<String, String>,
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
-    onServerClick: () -> Unit,
-    onServerLongClick: () -> Unit,
+    onServerAction: (Boolean) -> Unit,
     onStatusClick: () -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
     val isMonet = MiuixTheme.isDynamicColor
+    val windowSize = LocalWindowSize.current
 
     Scaffold(
         topBar = {
@@ -122,54 +126,30 @@ fun StatusHomeMiuix(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Target Server Card
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
                             insideMargin = PaddingValues(16.dp),
-                            onClick = onServerClick,
-                            onLongPress = onServerLongClick,
+                            onClick = onStatusClick, // Re-tap to toggle
+                            onLongPress = { onServerAction(false) }, // Long press on left card maybe? or this one? User said "单点切换" on status block.
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = strings.targetServer,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 15.sp,
-                                    color = colorScheme.onSurfaceVariantSummary,
-                                )
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = currentServer?.name ?: "None",
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = colorScheme.onSurface,
-                                    maxLines = 1
-                                )
+                                Text(strings.targetServer, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = colorScheme.onSurfaceVariantSummary)
+                                Text(currentServer?.name ?: "None", fontSize = 26.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
                             }
                         }
-                        // Bonjour Card
+                        // We use the second small block to show server list trigger or just Bonjour
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
                             insideMargin = PaddingValues(16.dp),
+                            onClick = { onServerAction(true) }, // Click target server or this one to open list? 
+                            // User said: "目标服务器这个栏也变成单点进入服务器列表。"
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = strings.bonjour,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 15.sp,
-                                    color = colorScheme.onSurfaceVariantSummary,
-                                )
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = "SpiceCompose",
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = colorScheme.onSurface,
-                                )
+                                Text(strings.bonjour, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = colorScheme.onSurfaceVariantSummary)
+                                Text("SpiceCompose", fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -177,29 +157,43 @@ fun StatusHomeMiuix(
             }
 
             item {
-                Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // AVS Info item
+                Spacer(Modifier.height(12.dp))
+                // On large screen, we use a custom grid layout for info items
+                val cols = if (windowSize == WindowSize.Compact) 1 else 2
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Manual chunking for grid-like feel in LazyColumn or just use sub-layout
+                    // AVS Info
                     CardItemMiuix(
                         title = "AVS Info",
                         content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
                                   else "model-dest.spec.rev-ext"
                     )
-                    // Services URL
-                    CardItemMiuix(
-                        title = strings.backendUrl,
-                        content = avsInfo["services"] ?: "..."
-                    )
-                    // Spice Compile Info
-                    CardItemMiuix(
-                        title = strings.spiceCompile,
-                        content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "..."
-                    )
-                    // Memory
+                    
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Box(Modifier.weight(1f)) {
+                             CardItemMiuix(title = strings.backendUrl, content = avsInfo["services"] ?: "...")
+                        }
+                        if (cols > 1) {
+                             Box(Modifier.weight(1f)) {
+                                 CardItemMiuix(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                             }
+                        }
+                    }
+                    if (cols == 1) {
+                        CardItemMiuix(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                    }
+
                     MemoryStackedCardMiuix(strings.memoryStacked, memoryInfo, isConnected)
                     
-                    // Launcher info
-                    CardItemMiuix(strings.spiceVersion, launcherInfo["version"] ?: "...")
-                    CardItemMiuix(strings.systemTime, launcherInfo["system_time"] ?: "...")
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Box(Modifier.weight(1f)) {
+                            CardItemMiuix(strings.spiceVersion, launcherInfo["version"] ?: "...")
+                        }
+                        Box(Modifier.weight(1f)) {
+                            CardItemMiuix(strings.systemTime, launcherInfo["system_time"] ?: "...")
+                        }
+                    }
+                    
                     CardItemMiuix(strings.launcherArgs, (launcherInfo["args"] ?: "...").replace("[", "").replace("]", ""))
                 }
             }
@@ -227,11 +221,8 @@ fun MemoryStackedCardMiuix(title: String, memory: Map<String, Long>, isConnected
         Column(Modifier.padding(16.dp)) {
             Text(title, fontSize = 14.sp, color = colorScheme.onSurfaceVariantSummary)
             Spacer(Modifier.height(8.dp))
-            // Stacked bar
             Box(Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)).background(colorScheme.surfaceVariant)) {
-                // Total used
                 Box(Modifier.fillMaxWidth(if (total > 0) totalUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary.copy(alpha = 0.3f)))
-                // Game used
                 Box(Modifier.fillMaxWidth(if (total > 0) gameUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary))
             }
             Spacer(Modifier.height(8.dp))

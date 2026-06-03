@@ -2,8 +2,9 @@ package org.cf0x.spicecompose.ui.screen.feature
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Lock
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -25,6 +27,8 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsWriteReset
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -36,6 +40,7 @@ fun LightsScreen(onBack: () -> Unit) {
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
+    val windowSize = LocalWindowSize.current
     
     var lightStates by remember { mutableStateOf<List<LightState>>(emptyList()) }
     var locked by remember { mutableStateOf(false) }
@@ -51,7 +56,6 @@ fun LightsScreen(onBack: () -> Unit) {
         while (isActive) {
             try {
                 val newState = connection.lightsRead()
-                // Update non-dragging ones
                 lightStates = newState.map { fresh ->
                     if (draggingNames.contains(fresh.name)) {
                         lightStates.find { it.name == fresh.name } ?: fresh
@@ -75,7 +79,6 @@ fun LightsScreen(onBack: () -> Unit) {
     val onValueChange: (LightState, Float) -> Unit = { light, value ->
         val updated = light.copy(state = value.toDouble(), active = true)
         lightStates = lightStates.map { if (it.name == light.name) updated else it }
-        // Local only
     }
 
     val onValueCommit: (LightState) -> Unit = { light ->
@@ -94,6 +97,11 @@ fun LightsScreen(onBack: () -> Unit) {
                 connection?.lightsWrite(lightStates)
             }
         }
+    }
+
+    val columns = when (windowSize) {
+        WindowSize.Compact -> 1
+        else -> 2
     }
 
     when (LocalUiMode.current) {
@@ -120,7 +128,11 @@ fun LightsScreen(onBack: () -> Unit) {
                         top.yukonga.miuix.kmp.basic.Text("No lights available :(")
                     }
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
                         items(lightStates) { light ->
                             LightItemMiuix(
                                 light = light,
@@ -161,7 +173,10 @@ fun LightsScreen(onBack: () -> Unit) {
                         androidx.compose.material3.Text("No lights available :(")
                     }
                 } else {
-                    LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                    ) {
                         items(lightStates) { light ->
                             LightItemMaterial(
                                 light = light,

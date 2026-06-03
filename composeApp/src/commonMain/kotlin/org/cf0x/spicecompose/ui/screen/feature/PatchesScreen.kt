@@ -2,8 +2,9 @@ package org.cf0x.spicecompose.ui.screen.feature
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.*
@@ -22,6 +23,8 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
+import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -34,26 +37,20 @@ fun PatchesScreen(onBack: () -> Unit) {
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
+    val windowSize = LocalWindowSize.current
 
     var customPatches by remember { mutableStateOf(repository.getCustomPatches()) }
     var presetPatches by remember { mutableStateOf<List<PatchConfig>>(emptyList()) }
     
-    // Status cache
     val patchStates = remember { mutableStateMapOf<String, PatchStatus>() }
-
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Preset", "Custom")
 
     LaunchedEffect(connection) {
         if (connection == null) return@LaunchedEffect
-        // Refresh statuses
         try {
             val avs = connection.infoAVS()
             val dateCode = avs["ext"]?.toIntOrNull() ?: 0
-            
-            // In a real app, we'd load presets from assets here
-            // For now, only custom patches are shown
-            
             val allVisible = customPatches.filter { it.isInRange(dateCode) }
             allVisible.forEach { patch ->
                 scope.launch {
@@ -73,6 +70,8 @@ fun PatchesScreen(onBack: () -> Unit) {
         }
     }
 
+    val columns = if (windowSize == WindowSize.Compact) 1 else 2
+
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
@@ -80,7 +79,7 @@ fun PatchesScreen(onBack: () -> Unit) {
                     SmallTopAppBar(
                         title = strings.patches,
                         navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
+                            IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
                             }
                         }
@@ -88,8 +87,6 @@ fun PatchesScreen(onBack: () -> Unit) {
                 }
             ) { innerPadding ->
                 Column(Modifier.fillMaxSize().padding(innerPadding)) {
-                    // Miuix doesn't have a standard TabRow in basic, we can use a SegmentedControl or similar if available, 
-                    // or just a Row of buttons for now
                     Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.Center) {
                         tabs.forEachIndexed { index, title ->
                             top.yukonga.miuix.kmp.basic.TextButton(
@@ -106,7 +103,11 @@ fun PatchesScreen(onBack: () -> Unit) {
                             top.yukonga.miuix.kmp.basic.Text("No patches found")
                         }
                     } else {
-                        LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(columns),
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            contentPadding = PaddingValues(4.dp)
+                        ) {
                             items(list) { patch ->
                                 PatchItemMiuix(patch, patchStates[patch.name] ?: PatchStatus.Unknown, onToggle)
                             }
@@ -142,7 +143,10 @@ fun PatchesScreen(onBack: () -> Unit) {
                             androidx.compose.material3.Text("No patches found")
                         }
                     } else {
-                        LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(columns),
+                            modifier = Modifier.weight(1f).fillMaxWidth()
+                        ) {
                             items(list) { patch ->
                                 PatchItemMaterial(patch, patchStates[patch.name] ?: PatchStatus.Unknown, onToggle)
                             }
@@ -168,7 +172,7 @@ fun PatchItemMiuix(patch: PatchConfig, status: PatchStatus, onToggle: (PatchConf
     }
 
     top.yukonga.miuix.kmp.basic.Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         onClick = { onToggle(patch) }
     ) {
         Column(Modifier.padding(16.dp)) {

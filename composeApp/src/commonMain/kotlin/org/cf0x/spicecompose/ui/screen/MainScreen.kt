@@ -8,7 +8,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalInSubPage
+import org.cf0x.spicecompose.ui.component.DraggableFullscreenButton
 import org.cf0x.spicecompose.ui.component.navigation.BottomBar
 import org.cf0x.spicecompose.ui.component.navigation.SideRail
 import org.cf0x.spicecompose.ui.navigation.*
@@ -29,7 +31,6 @@ fun MainScreen(
 
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
-        // Disable swipe while a sub-page is open
         val inSubPage      = LocalInSubPage.current.value
 
         LaunchedEffect(pagerState.settledPage) {
@@ -41,54 +42,56 @@ fun MainScreen(
         }
 
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val windowSize = getWindowSize(maxWidth)
             val useRail = when (navLayoutMode) {
                 NavLayoutMode.Auto      -> maxWidth >= 600.dp
                 NavLayoutMode.SideRail  -> true
                 NavLayoutMode.BottomBar -> false
             }
 
-            when {
-                useRail -> {
-                    Scaffold { innerPadding ->
-                        Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                            SideRail()
-                            Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                                PageContent(
-                                    pagerState      = pagerState,
-                                    bottomPadding   = 0.dp,
-                                    userScrollEnabled = !inSubPage,
-                                    settingsContent = settingsContent,
-                                )
+            CompositionLocalProvider(LocalWindowSize provides windowSize) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (useRail) {
+                        Scaffold { innerPadding ->
+                            Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                                SideRail()
+                                Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                                    PageContent(
+                                        pagerState = pagerState,
+                                        bottomPadding = 0.dp,
+                                        userScrollEnabled = !inSubPage,
+                                        settingsContent = settingsContent,
+                                    )
+                                }
                             }
                         }
+                    } else if (isFloating) {
+                        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            PageContent(
+                                pagerState = pagerState,
+                                bottomPadding = 56.dp + 12.dp + 12.dp + navBarHeight,
+                                userScrollEnabled = !inSubPage,
+                                settingsContent = settingsContent,
+                            )
+                            BottomBar(modifier = Modifier.align(Alignment.BottomCenter))
+                        }
+                    } else {
+                        Scaffold(
+                            bottomBar = { BottomBar() },
+                        ) { innerPadding ->
+                            PageContent(
+                                pagerState = pagerState,
+                                bottomPadding = innerPadding.calculateBottomPadding(),
+                                userScrollEnabled = !inSubPage,
+                                settingsContent = settingsContent,
+                            )
+                        }
                     }
-                }
 
-                isFloating -> {
-                    // Floating bar: overlay approach — content goes edge-to-edge
-                    val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        PageContent(
-                            pagerState        = pagerState,
-                            // Reserve enough space so content isn't hidden behind the floating pill
-                            bottomPadding     = 56.dp + 12.dp + 12.dp + navBarHeight,
-                            userScrollEnabled = !inSubPage,
-                            settingsContent   = settingsContent,
-                        )
-                        BottomBar(modifier = Modifier.align(Alignment.BottomCenter))
-                    }
-                }
-
-                else -> {
-                    Scaffold(
-                        bottomBar = { BottomBar() },
-                    ) { innerPadding ->
-                        PageContent(
-                            pagerState        = pagerState,
-                            bottomPadding     = innerPadding.calculateBottomPadding(),
-                            userScrollEnabled = !inSubPage,
-                            settingsContent   = settingsContent,
-                        )
+                    // Global Draggable Fullscreen Button
+                    Box(modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = if (useRail || inSubPage) 0.dp else 80.dp)) {
+                        DraggableFullscreenButton()
                     }
                 }
             }

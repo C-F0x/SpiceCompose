@@ -80,8 +80,12 @@ fun StatusScreen() {
         }
     }
     
-    val onTargetServerClick = {
-        showServerList = true
+    val onServerAction: (Boolean) -> Unit = { isLong ->
+        if (isLong) {
+            showServerList = true
+        } else {
+            chosenServer?.let { connectionManager.connect(it) } ?: run { showServerList = true }
+        }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -143,8 +147,7 @@ fun StatusScreen() {
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
-                        onServerClick = onTargetServerClick,
-                        onServerLongClick = onTargetServerClick,
+                        onServerAction = onServerAction,
                         onStatusClick = onStatusBlockClick
                     )
                     UiMode.Material -> StatusHomeMaterial(
@@ -153,8 +156,7 @@ fun StatusScreen() {
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
-                        onServerClick = onTargetServerClick,
-                        onServerLongClick = onTargetServerClick,
+                        onServerAction = onServerAction,
                         onStatusClick = onStatusBlockClick
                     )
                 }
