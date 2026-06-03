@@ -32,6 +32,7 @@ fun MainScreen(
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
         val inSubPage      = LocalInSubPage.current.value
+        val fullscreen     = LocalFullscreenMode.current.value
 
         LaunchedEffect(pagerState.settledPage) {
             if (mainPagerState.lastPage != pagerState.settledPage) {
@@ -51,7 +52,14 @@ fun MainScreen(
 
             CompositionLocalProvider(LocalWindowSize provides windowSize) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (useRail) {
+                    if (fullscreen) {
+                        PageContent(
+                            pagerState = pagerState,
+                            bottomPadding = 0.dp,
+                            userScrollEnabled = !inSubPage,
+                            settingsContent = settingsContent,
+                        )
+                    } else if (useRail) {
                         Scaffold { innerPadding ->
                             Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                                 SideRail()
@@ -90,7 +98,7 @@ fun MainScreen(
                     }
 
                     // Global Draggable Fullscreen Button
-                    Box(modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = if (useRail || inSubPage) 0.dp else 80.dp)) {
+                    Box(modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = if (useRail || inSubPage || fullscreen) 0.dp else 80.dp)) {
                         DraggableFullscreenButton()
                     }
                 }
