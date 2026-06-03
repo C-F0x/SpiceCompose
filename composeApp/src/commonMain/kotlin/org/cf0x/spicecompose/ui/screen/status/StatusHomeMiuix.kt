@@ -1,13 +1,11 @@
 package org.cf0x.spicecompose.ui.screen.status
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
-import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,8 +21,8 @@ import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -37,11 +35,12 @@ fun StatusHomeMiuix(
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
     onServerClick: () -> Unit,
-    onConnectLongClick: () -> Unit
+    onServerLongClick: () -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
+    val isMonet = MiuixTheme.isDynamicColor
 
     Scaffold(
         topBar = {
@@ -70,10 +69,14 @@ fun StatusHomeMiuix(
                 ) {
                     // Left Large Card: Connection Status
                     Card(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        modifier = Modifier.weight(1.3f).fillMaxHeight(),
                         colors = CardDefaults.defaultColors(
                             color = when {
-                                isConnected -> if (isInDarkTheme()) Color(0xFF1A3825) else Color(0xFFDFFAE4)
+                                isConnected -> {
+                                    if (isMonet) colorScheme.secondaryContainer
+                                    else if (isInDarkTheme()) Color(0xFF1A3825)
+                                    else Color(0xFFDFFAE4)
+                                }
                                 else -> colorScheme.surfaceVariant
                             }
                         ),
@@ -81,21 +84,30 @@ fun StatusHomeMiuix(
                     ) {
                         Box(modifier = Modifier.fillMaxSize()) {
                             Icon(
-                                modifier = Modifier.size(150.dp).align(Alignment.BottomEnd).offset(30.dp, 40.dp),
+                                modifier = Modifier.size(170.dp).align(Alignment.BottomEnd).offset(38.dp, 45.dp),
                                 imageVector = if (isConnected) Icons.Rounded.CheckCircleOutline else Icons.Rounded.ErrorOutline,
-                                tint = if (isConnected) Color(0xFF36D167).copy(alpha = 0.5f) else colorScheme.onSurfaceVariantActions.copy(alpha = 0.2f),
+                                tint = if (isConnected) {
+                                    if (isMonet) colorScheme.primary.copy(alpha = 0.8f)
+                                    else Color(0xFF36D167)
+                                } else {
+                                    colorScheme.onSurfaceVariantActions.copy(alpha = 0.2f)
+                                },
                                 contentDescription = null
                             )
-                            Column(Modifier.padding(16.dp)) {
+                            Column(Modifier.padding(all = 16.dp)) {
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(),
                                     text = if (isConnected) strings.connected else strings.disconnected,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
+                                Spacer(Modifier.height(2.dp))
                                 if (isConnected) {
                                     Text(
+                                        modifier = Modifier.fillMaxWidth(),
                                         text = launcherInfo["compile_date"] ?: "",
-                                        fontSize = 12.sp,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
                                         color = colorScheme.onSurfaceVariantSummary
                                     )
                                 }
@@ -111,50 +123,82 @@ fun StatusHomeMiuix(
                         // Target Server Card
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
+                            insideMargin = PaddingValues(16.dp),
                             onClick = onServerClick,
-                            onLongPress = onConnectLongClick,
+                            onLongPress = onServerLongClick,
+                            showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
-                            Column(Modifier.padding(16.dp)) {
-                                Text(strings.targetServer, fontSize = 14.sp, color = colorScheme.onSurfaceVariantSummary)
-                                Text(currentServer?.name ?: "None", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = strings.targetServer,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                    color = colorScheme.onSurfaceVariantSummary,
+                                )
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = currentServer?.name ?: "None",
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colorScheme.onSurface,
+                                    maxLines = 1
+                                )
                             }
                         }
                         // Bonjour Card
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
+                            insideMargin = PaddingValues(16.dp),
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
-                            Column(Modifier.padding(16.dp)) {
-                                Text(strings.bonjour, fontSize = 14.sp, color = colorScheme.onSurfaceVariantSummary)
-                                Text("SpiceCompose", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = strings.bonjour,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                    color = colorScheme.onSurfaceVariantSummary,
+                                )
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "SpiceCompose",
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colorScheme.onSurface,
+                                )
                             }
                         }
                     }
                 }
             }
 
-            if (isConnected) {
-                item {
-                    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        // AVS Info item
-                        CardItemMiuix(
-                            title = "AVS Info",
-                            content = "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
-                        )
-                        // Spice Compile Info
-                        CardItemMiuix(
-                            title = strings.spiceCompile,
-                            content = "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}"
-                        )
-                        // Memory
-                        MemoryStackedCardMiuix(strings.memoryStacked, memoryInfo)
-                        
-                        // Launcher info
-                        CardItemMiuix(strings.spiceVersion, launcherInfo["version"] ?: "")
-                        CardItemMiuix(strings.systemTime, launcherInfo["system_time"] ?: "")
-                        CardItemMiuix(strings.launcherArgs, (launcherInfo["args"] ?: "").replace("[", "").replace("]", ""))
-                    }
+            item {
+                Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // AVS Info item
+                    CardItemMiuix(
+                        title = "AVS Info",
+                        content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
+                                  else "model-dest.spec.rev-ext"
+                    )
+                    // Services URL
+                    CardItemMiuix(
+                        title = strings.backendUrl,
+                        content = avsInfo["services"] ?: "..."
+                    )
+                    // Spice Compile Info
+                    CardItemMiuix(
+                        title = strings.spiceCompile,
+                        content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "..."
+                    )
+                    // Memory
+                    MemoryStackedCardMiuix(strings.memoryStacked, memoryInfo, isConnected)
+                    
+                    // Launcher info
+                    CardItemMiuix(strings.spiceVersion, launcherInfo["version"] ?: "...")
+                    CardItemMiuix(strings.systemTime, launcherInfo["system_time"] ?: "...")
+                    CardItemMiuix(strings.launcherArgs, (launcherInfo["args"] ?: "...").replace("[", "").replace("]", ""))
                 }
             }
         }
@@ -172,10 +216,10 @@ fun CardItemMiuix(title: String, content: String) {
 }
 
 @Composable
-fun MemoryStackedCardMiuix(title: String, memory: Map<String, Long>) {
-    val gameUsed = memory["mem_used"] ?: 0L
-    val totalUsed = memory["mem_total_used"] ?: 1L
-    val total = memory["mem_total"] ?: 1L
+fun MemoryStackedCardMiuix(title: String, memory: Map<String, Long>, isConnected: Boolean) {
+    val gameUsed = if (isConnected) (memory["mem_used"] ?: 0L) else 0L
+    val totalUsed = if (isConnected) (memory["mem_total_used"] ?: 1L) else 0L
+    val total = if (isConnected) (memory["mem_total"] ?: 1L) else 1L
     
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
@@ -184,9 +228,9 @@ fun MemoryStackedCardMiuix(title: String, memory: Map<String, Long>) {
             // Stacked bar
             Box(Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)).background(colorScheme.surfaceVariant)) {
                 // Total used
-                Box(Modifier.fillMaxWidth(totalUsed.toFloat() / total).fillMaxHeight().background(colorScheme.primary.copy(alpha = 0.3f)))
+                Box(Modifier.fillMaxWidth(if (total > 0) totalUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary.copy(alpha = 0.3f)))
                 // Game used
-                Box(Modifier.fillMaxWidth(gameUsed.toFloat() / total).fillMaxHeight().background(colorScheme.primary))
+                Box(Modifier.fillMaxWidth(if (total > 0) gameUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary))
             }
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

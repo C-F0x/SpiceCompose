@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import org.cf0x.spicecompose.data.ServerConfig
-import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -21,14 +21,13 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import androidx.compose.material.icons.rounded.Check
 
 @Composable
 fun StatusPagerMiuix(
     servers: List<ServerConfig>,
-    connectionStatus: ConnectionStatus,
-    currentServer: ServerConfig?,
-    onConnect: (ServerConfig) -> Unit,
-    onDisconnect: () -> Unit,
+    chosenId: String?,
+    onSelect: (String?) -> Unit,
     onAddClick: () -> Unit,
     onDelete: (String) -> Unit
 ) {
@@ -38,7 +37,7 @@ fun StatusPagerMiuix(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = "Status",
+                title = "Servers",
                 scrollBehavior = scrollBehavior,
                 actions = {
                     IconButton(onClick = onAddClick) {
@@ -63,15 +62,10 @@ fun StatusPagerMiuix(
                 contentPadding = innerPadding,
             ) {
                 items(servers, key = { it.id }) { server ->
-                    val isActive = (currentServer?.id == server.id) && (connectionStatus == ConnectionStatus.Connected)
-                    val isConnecting = (currentServer?.id == server.id) && (connectionStatus == ConnectionStatus.Connecting)
-                    
                     ServerCardMiuix(
                         server = server, 
-                        isActive = isActive,
-                        isConnecting = isConnecting,
-                        onConnect = { onConnect(server) },
-                        onDisconnect = onDisconnect,
+                        isChosen = server.id == chosenId,
+                        onSelect = { onSelect(if (server.id == chosenId) null else server.id) },
                         onDelete = onDelete
                     )
                 }
@@ -83,13 +77,11 @@ fun StatusPagerMiuix(
 @Composable
 fun ServerCardMiuix(
     server: ServerConfig,
-    isActive: Boolean,
-    isConnecting: Boolean,
-    onConnect: () -> Unit,
-    onDisconnect: () -> Unit,
+    isChosen: Boolean,
+    onSelect: () -> Unit,
     onDelete: (String) -> Unit
 ) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showConfirm by remember { mutableStateOf(false) }
     val strings = LocalAppStrings.current
 
     Card(
@@ -98,58 +90,63 @@ fun ServerCardMiuix(
             .padding(vertical = 6.dp),
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
-        onClick = { if (isActive) onDisconnect() else onConnect() },
-        onLongPress = { showDeleteDialog = true }
+        onClick = { showConfirm = true }
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Computer,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = if (isActive) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text(server.name, fontSize = 18.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                val statusText = when {
-                    isConnecting -> "Connecting..."
-                    isActive -> "Connected"
-                    else -> "${server.host}:${server.port}"
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Rounded.Computer,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (isChosen) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(server.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                if (isChosen) {
+                    Icon(Icons.Rounded.Check, null, tint = MiuixTheme.colorScheme.primary)
                 }
-                Text(statusText, fontSize = 14.sp, color = MiuixTheme.colorScheme.onSurface)
             }
+            Spacer(Modifier.height(12.dp))
+            // Always show all 4 fields
+            InfoLineMiuix(strings.serverHost, server.host)
+            InfoLineMiuix(strings.serverPort, server.port.toString())
+            InfoLineMiuix(strings.serverPassword, server.password)
         }
     }
 
-    if (showDeleteDialog) {
+    if (showConfirm) {
         OverlayDialog(
-            show = showDeleteDialog,
-            title = strings.delete,
-            onDismissRequest = { showDeleteDialog = false },
+            show = showConfirm,
+            onDismissRequest = { showConfirm = false },
+            title = "Confirm Action",
             content = {
-                Text("Delete \"${server.name}\"?")
-                Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
                     TextButton(
-                        text = strings.cancel,
-                        onClick = { showDeleteDialog = false },
-                        modifier = Modifier.weight(1f)
+                        text = if (isChosen) "Unselect" else "Select",
+                        onClick = { onSelect(); showConfirm = false },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(Modifier.width(20.dp))
                     TextButton(
                         text = strings.delete,
-                        onClick = {
-                            onDelete(server.id)
-                            showDeleteDialog = false
-                        },
-                        modifier = Modifier.weight(1f),
+                        onClick = { onDelete(server.id); showConfirm = false },
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+                    TextButton(
+                        text = strings.cancel,
+                        onClick = { showConfirm = false },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         )
+    }
+}
+
+@Composable
+fun InfoLineMiuix(label: String, value: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Text(label, fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary, modifier = Modifier.width(80.dp))
+        Text(value, fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
     }
 }

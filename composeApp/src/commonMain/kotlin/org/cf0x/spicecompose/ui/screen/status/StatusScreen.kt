@@ -1,6 +1,13 @@
 package org.cf0x.spicecompose.ui.screen.status
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.cf0x.spicecompose.data.ServerConfig
@@ -20,6 +27,7 @@ import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 fun StatusScreen() {
     val repository = remember { ServerRepository() }
     var servers by remember { mutableStateOf(repository.getServers()) }
+    var chosenId by remember { mutableStateOf(repository.chosenServerId) }
     var showAddDialog by remember { mutableStateOf(false) }
     var showServerList by remember { mutableStateOf(false) }
     
@@ -27,6 +35,8 @@ fun StatusScreen() {
     val mainState = LocalMainPagerState.current
     val status by connectionManager.status.collectAsState()
     val currentServer by connectionManager.currentServer.collectAsState()
+
+    val chosenServer = remember(chosenId, servers) { servers.find { it.id == chosenId } }
 
     var avsInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var launcherInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
@@ -62,28 +72,88 @@ fun StatusScreen() {
         }
     }
 
-    if (showServerList) {
-        SpiceBackHandler(enabled = true) { showServerList = false }
+    // Logic: Clicking a card in StatusHome calls onServerCardAction
+    val onServerCardAction: (Boolean) -> Unit = { isLong ->
+        if (isLong) {
+            showServerList = true
+        } else {
+            chosenServer?.let { connectionManager.connect(it) } ?: run { showServerList = true }
+        }
+    }
 
-        when (LocalUiMode.current) {
-            UiMode.Miuix -> StatusPagerMiuix(
-                servers = servers,
-                connectionStatus = status,
-                currentServer = currentServer,
-                onConnect = { connectionManager.connect(it); showServerList = false },
-                onDisconnect = { connectionManager.disconnect() },
-                onAddClick = { showAddDialog = true },
-                onDelete = { id -> repository.deleteServer(id); servers = repository.getServers() }
-            )
-            UiMode.Material -> StatusPagerMaterial(
-                servers = servers,
-                connectionStatus = status,
-                currentServer = currentServer,
-                onConnect = { connectionManager.connect(it); showServerList = false },
-                onDisconnect = { connectionManager.disconnect() },
-                onAddClick = { showAddDialog = true },
-                onDelete = { id -> repository.deleteServer(id); servers = repository.getServers() }
-            )
+    Box(Modifier.fillMaxSize()) {
+        AnimatedContent(
+            targetState = showServerList,
+            transitionSpec = {
+                if (targetState) {
+                    (fadeIn(tween(400)) + expandVertically(tween(400), expandFrom = Alignment.Top))
+                        .togetherWith(fadeOut(tween(400)) + shrinkVertically(tween(400), shrinkTowards = Alignment.Top))
+                } else {
+                    (fadeIn(tween(400)) + expandVertically(tween(400), expandFrom = Alignment.Top))
+                        .togetherWith(fadeOut(tween(400)) + shrinkVertically(tween(400), shrinkTowards = Alignment.Top))
+                }.using(SizeTransform(clip = false))
+            },
+            label = "ServerListTransition"
+        ) { isList ->
+            if (isList) {
+                Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+                    SpiceBackHandler(enabled = true) { showServerList = false }
+
+                    when (LocalUiMode.current) {
+                        UiMode.Miuix -> StatusPagerMiuix(
+                            servers = servers,
+                            chosenId = chosenId,
+                            onSelect = { id ->
+                                repository.chosenServerId = id
+                                chosenId = id
+                                servers = repository.getServers() // Refresh UI
+                            },
+                            onAddClick = { showAddDialog = true },
+                            onDelete = { id ->
+                                repository.deleteServer(id)
+                                servers = repository.getServers()
+                                chosenId = repository.chosenServerId
+                            }
+                        )
+                        UiMode.Material -> StatusPagerMaterial(
+                            servers = servers,
+                            chosenId = chosenId,
+                            onSelect = { id ->
+                                repository.chosenServerId = id
+                                chosenId = id
+                                servers = repository.getServers()
+                            },
+                            onAddClick = { showAddDialog = true },
+                            onDelete = { id ->
+                                repository.deleteServer(id)
+                                servers = repository.getServers()
+                                chosenId = repository.chosenServerId
+                            }
+                        )
+                    }
+                }
+            } else {
+                when (LocalUiMode.current) {
+                    UiMode.Miuix -> StatusHomeMiuix(
+                        connectionStatus = status,
+                        currentServer = chosenServer, // Show chosen instead of active conn for UI consistent
+                        avsInfo = avsInfo,
+                        launcherInfo = launcherInfo,
+                        memoryInfo = memoryInfo,
+                        onServerClick = { onServerCardAction(false) }, // Click: Try Connect
+                        onServerLongClick = { onServerCardAction(true) } // Long: List
+                    )
+                    UiMode.Material -> StatusHomeMaterial(
+                        connectionStatus = status,
+                        currentServer = chosenServer,
+                        avsInfo = avsInfo,
+                        launcherInfo = launcherInfo,
+                        memoryInfo = memoryInfo,
+                        onServerClick = { onServerCardAction(false) },
+                        onServerLongClick = { onServerCardAction(true) }
+                    )
+                }
+            }
         }
 
         ServerEditDialog(
@@ -95,26 +165,5 @@ fun StatusScreen() {
             },
             onDismiss = { showAddDialog = false }
         )
-    } else {
-        when (LocalUiMode.current) {
-            UiMode.Miuix -> StatusHomeMiuix(
-                connectionStatus = status,
-                currentServer = currentServer,
-                avsInfo = avsInfo,
-                launcherInfo = launcherInfo,
-                memoryInfo = memoryInfo,
-                onServerClick = { showServerList = true },
-                onConnectLongClick = { currentServer?.let { connectionManager.connect(it) } }
-            )
-            UiMode.Material -> StatusHomeMaterial(
-                connectionStatus = status,
-                currentServer = currentServer,
-                avsInfo = avsInfo,
-                launcherInfo = launcherInfo,
-                memoryInfo = memoryInfo,
-                onServerClick = { showServerList = true },
-                onConnectLongClick = { currentServer?.let { connectionManager.connect(it) } }
-            )
-        }
     }
 }

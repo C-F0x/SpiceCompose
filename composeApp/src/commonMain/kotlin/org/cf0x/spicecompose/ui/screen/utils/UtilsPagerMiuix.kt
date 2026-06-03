@@ -77,19 +77,6 @@ fun UtilsPagerMiuix(
                         onClick = actions.onOpenCardMgr,
                     )
                 }
-
-                Card(
-                    modifier = Modifier.padding(top = 12.dp, bottom = 12.dp).fillMaxWidth(),
-                ) {
-                    ArrowPreference(
-                        title = strings.cabinetInfo,
-                        summary = strings.cabinetInfoSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.Info, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = actions.onOpenCabinet,
-                    )
-                }
             }
         }
     }

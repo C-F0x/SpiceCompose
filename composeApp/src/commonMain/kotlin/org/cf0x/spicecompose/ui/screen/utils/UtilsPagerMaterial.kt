@@ -40,8 +40,6 @@ fun UtilsPagerMaterial(
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                 FeatureItem(strings.patches, strings.patchesSummary, Icons.Rounded.Build, actions.onOpenPatches)
                 FeatureItem(strings.cardManager, strings.cardManagerSummary, Icons.Rounded.Nfc, actions.onOpenCardMgr)
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                FeatureItem(strings.cabinetInfo, strings.cabinetInfoSummary, Icons.Rounded.Info, actions.onOpenCabinet)
             }
         }
     }
