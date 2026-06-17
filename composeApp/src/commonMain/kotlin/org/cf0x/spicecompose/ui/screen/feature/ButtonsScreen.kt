@@ -7,12 +7,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Fullscreen
-import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +27,9 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWriteReset
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.platform.VibratorManager
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -45,13 +44,6 @@ fun ButtonsScreen(onBack: () -> Unit) {
     val fullscreen = LocalFullscreenMode.current
     val windowSize = LocalWindowSize.current
     
-    // Auto exit fullscreen on dispose
-    DisposableEffect(Unit) {
-        onDispose {
-            fullscreen.value = false
-        }
-    }
-
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
@@ -59,23 +51,25 @@ fun ButtonsScreen(onBack: () -> Unit) {
     var buttonStates by remember { mutableStateOf<List<ButtonState>>(emptyList()) }
     var locked by remember { mutableStateOf(false) }
 
+    // Intercept back key to exit fullscreen
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
+
     // Polling logic
     LaunchedEffect(connection) {
         if (connection == null) {
             buttonStates = emptyList()
             return@LaunchedEffect
         }
-        
         while (isActive) {
             try {
-                val newState = connection.buttonsRead()
-                buttonStates = newState
+                buttonStates = connection.buttonsRead()
             } catch (_: Exception) { }
             delay(200)
         }
     }
     
-    // Cleanup on dispose
     DisposableEffect(connection) {
         onDispose {
             scope.launch {
@@ -111,45 +105,46 @@ fun ButtonsScreen(onBack: () -> Unit) {
         WindowSize.Expanded -> 3
     }
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> {
-            top.yukonga.miuix.kmp.basic.Scaffold(
-                topBar = {
+    val uiMode = LocalUiMode.current
+
+    if (uiMode == UiMode.Miuix) {
+        top.yukonga.miuix.kmp.basic.Scaffold(
+            topBar = {
+                if (!fullscreen.value) {
                     SmallTopAppBar(
                         title = strings.buttons,
-                        navigationIcon = {
-                            IconButton(onClick = onBack) {
-                                top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
-                            }
-                        },
+                        navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
                         actions = {
+                            FullscreenAction()
                             IconButton(onClick = onLockToggle) {
                                 top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
                             }
                         }
                     )
                 }
-            ) { innerPadding ->
-                if (buttonStates.isEmpty()) {
-                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                        top.yukonga.miuix.kmp.basic.Text("No buttons available :(")
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
-                        contentPadding = PaddingValues(4.dp)
-                    ) {
-                        items(buttonStates) { button ->
-                            ButtonMiuix(button, onToggle)
-                        }
+            }
+        ) { innerPadding ->
+            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            if (buttonStates.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    top.yukonga.miuix.kmp.basic.Text("No buttons available :(")
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(4.dp)
+                ) {
+                    items(buttonStates) { button ->
+                        ButtonMiuix(button, onToggle)
                     }
                 }
             }
         }
-        UiMode.Material -> {
-            androidx.compose.material3.Scaffold(
-                topBar = {
+    } else {
+        androidx.compose.material3.Scaffold(
+            topBar = {
+                if (!fullscreen.value) {
                     @OptIn(ExperimentalMaterial3Api::class)
                     androidx.compose.material3.TopAppBar(
                         title = { androidx.compose.material3.Text(strings.buttons) },
@@ -159,33 +154,27 @@ fun ButtonsScreen(onBack: () -> Unit) {
                             }
                         },
                         actions = {
+                            FullscreenAction()
                             androidx.compose.material3.IconButton(onClick = onLockToggle) {
                                 androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
                             }
                         }
                     )
-                },
-                floatingActionButton = {
-                    androidx.compose.material3.FloatingActionButton(
-                        onClick = onLockToggle,
-                        containerColor = if (locked) androidx.compose.material3.MaterialTheme.colorScheme.errorContainer else androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
-                    }
                 }
-            ) { innerPadding ->
-                if (buttonStates.isEmpty()) {
-                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                        androidx.compose.material3.Text("No buttons available :(")
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
-                    ) {
-                        items(buttonStates) { button ->
-                            ButtonMaterial(button, onToggle)
-                        }
+            }
+        ) { innerPadding ->
+            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            if (buttonStates.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.Text("No buttons available :(")
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier.fillMaxSize().padding(padding)
+                ) {
+                    items(buttonStates) { button ->
+                        ButtonMaterial(button, onToggle)
                     }
                 }
             }

@@ -27,7 +27,9 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.keypadsWrite
 import org.cf0x.spicecompose.platform.NfcManager
 import org.cf0x.spicecompose.platform.VibratorManager
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
@@ -51,10 +53,15 @@ fun KeypadScreen(onBack: () -> Unit) {
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
+    val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
     
     var currentMode by remember { mutableIntStateOf(0) }
     val modeColor = if (currentMode == 0) Color(0xFF008080) else Color(0xFF800080)
     val modeLabel = if (currentMode == 0) "P1" else "P2"
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     LaunchedEffect(connection, chosenCardId) {
         if (connection == null) return@LaunchedEffect
@@ -202,14 +209,20 @@ fun KeypadScreen(onBack: () -> Unit) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    SmallTopAppBar(
-                        title = strings.keypadScanner,
-                        navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } }
-                    )
+                    if (!fullscreen.value) {
+                        SmallTopAppBar(
+                            title = strings.keypadScanner,
+                            navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
+                            actions = {
+                                FullscreenAction()
+                            }
+                        )
+                    }
                 }
             ) { innerPadding ->
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 if (isLarge) {
-                    Row(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Row(Modifier.fillMaxSize().padding(padding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(Modifier.weight(1f)) {
                             KeypadGrid()
                             Spacer(Modifier.height(16.dp))
@@ -220,7 +233,7 @@ fun KeypadScreen(onBack: () -> Unit) {
                         }
                     }
                 } else {
-                    Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp)) {
+                    Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp)) {
                         KeypadGrid()
                         Spacer(Modifier.height(16.dp))
                         ControlBar()
@@ -233,15 +246,21 @@ fun KeypadScreen(onBack: () -> Unit) {
         UiMode.Material -> {
             androidx.compose.material3.Scaffold(
                 topBar = {
-                    @OptIn(ExperimentalMaterial3Api::class)
-                    androidx.compose.material3.TopAppBar(
-                        title = { androidx.compose.material3.Text(strings.keypadScanner) },
-                        navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } }
-                    )
+                    if (!fullscreen.value) {
+                        @OptIn(ExperimentalMaterial3Api::class)
+                        androidx.compose.material3.TopAppBar(
+                            title = { androidx.compose.material3.Text(strings.keypadScanner) },
+                            navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } },
+                            actions = {
+                                FullscreenAction()
+                            }
+                        )
+                    }
                 }
             ) { innerPadding ->
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 if (isLarge) {
-                    Row(Modifier.fillMaxSize().padding(innerPadding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Row(Modifier.fillMaxSize().padding(padding).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         Column(Modifier.weight(1f)) {
                             KeypadGrid()
                             Spacer(Modifier.height(16.dp))
@@ -252,7 +271,7 @@ fun KeypadScreen(onBack: () -> Unit) {
                         }
                     }
                 } else {
-                    Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp)) {
+                    Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp)) {
                         KeypadGrid()
                         Spacer(Modifier.height(16.dp))
                         ControlBar()

@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,7 @@ fun StatusHomeMiuix(
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
+    val isConnecting = connectionStatus == ConnectionStatus.Connecting
     val isMonet = MiuixTheme.isDynamicColor
     val windowSize = LocalWindowSize.current
 
@@ -82,6 +84,10 @@ fun StatusHomeMiuix(
                                     else if (isInDarkTheme()) Color(0xFF1A3825)
                                     else Color(0xFFDFFAE4)
                                 }
+                                isConnecting -> {
+                                    if (isMonet) colorScheme.primaryContainer
+                                    else Color(0xFFFFF4E5)
+                                }
                                 else -> colorScheme.surfaceVariant
                             }
                         ),
@@ -91,19 +97,26 @@ fun StatusHomeMiuix(
                         Box(modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 modifier = Modifier.size(170.dp).align(Alignment.BottomEnd).offset(38.dp, 45.dp),
-                                imageVector = if (isConnected) Icons.Rounded.CheckCircleOutline else Icons.Rounded.ErrorOutline,
-                                tint = if (isConnected) {
-                                    if (isMonet) colorScheme.primary.copy(alpha = 0.8f)
-                                    else Color(0xFF36D167)
-                                } else {
-                                    colorScheme.onSurfaceVariantActions.copy(alpha = 0.2f)
+                                imageVector = when {
+                                    isConnected -> Icons.Rounded.CheckCircleOutline
+                                    isConnecting -> Icons.Rounded.Refresh
+                                    else -> Icons.Rounded.ErrorOutline
+                                },
+                                tint = when {
+                                    isConnected -> if (isMonet) colorScheme.primary.copy(alpha = 0.8f) else Color(0xFF36D167)
+                                    isConnecting -> colorScheme.primary.copy(alpha = 0.8f)
+                                    else -> colorScheme.onSurfaceVariantActions.copy(alpha = 0.2f)
                                 },
                                 contentDescription = null
                             )
                             Column(Modifier.padding(all = 16.dp)) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = if (isConnected) strings.connected else strings.disconnected,
+                                    text = when {
+                                        isConnected -> strings.connected
+                                        isConnecting -> "Connecting..."
+                                        else -> strings.disconnected
+                                    },
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -129,8 +142,7 @@ fun StatusHomeMiuix(
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
                             insideMargin = PaddingValues(16.dp),
-                            onClick = onStatusClick, // Re-tap to toggle
-                            onLongPress = { onServerAction(false) }, // Long press on left card maybe? or this one? User said "单点切换" on status block.
+                            onClick = { onServerAction(true) }, // Single tap: Server List
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
@@ -139,12 +151,9 @@ fun StatusHomeMiuix(
                                 Text(currentServer?.name ?: "None", fontSize = 26.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
                             }
                         }
-                        // We use the second small block to show server list trigger or just Bonjour
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
                             insideMargin = PaddingValues(16.dp),
-                            onClick = { onServerAction(true) }, // Click target server or this one to open list? 
-                            // User said: "目标服务器这个栏也变成单点进入服务器列表。"
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
@@ -158,11 +167,8 @@ fun StatusHomeMiuix(
 
             item {
                 Spacer(Modifier.height(12.dp))
-                // On large screen, we use a custom grid layout for info items
                 val cols = if (windowSize == WindowSize.Compact) 1 else 2
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Manual chunking for grid-like feel in LazyColumn or just use sub-layout
-                    // AVS Info
                     CardItemMiuix(
                         title = "AVS Info",
                         content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"

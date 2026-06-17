@@ -1,12 +1,14 @@
 package org.cf0x.spicecompose.ui.screen.utils.subscreen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,6 +54,7 @@ fun SubScreenContent() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.Black)
             .onGloballyPositioned { displaySize = it.size }
             .pointerInput(Unit) {
                 awaitPointerEventScope {
@@ -106,6 +109,7 @@ fun SubScreenContent() {
                                                 touchControl.touchUp(id)
                                             }
                                         }
+                                        else -> {}
                                     }
                                 }
                             }
@@ -124,7 +128,7 @@ fun SubScreenContent() {
                 contentScale = ContentScale.Fit
             )
         } else {
-            Text("Sub Screen not available :(")
+            Text("Sub Screen not available :(", color = Color.White)
         }
     }
 }

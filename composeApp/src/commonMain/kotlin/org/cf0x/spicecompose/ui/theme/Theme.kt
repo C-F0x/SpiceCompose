@@ -36,6 +36,7 @@ fun SpiceComposeTheme(
     paletteStyle: PaletteStyle            = PaletteStyle.TonalSpot,
     specVersion:  ColorSpec.SpecVersion   = ColorSpec.SpecVersion.SPEC_2021,
     pageScale:    Float                   = 1.0f,
+    isM3E:        Boolean                 = false,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
@@ -48,18 +49,37 @@ fun SpiceComposeTheme(
 
     val isAmoled = isDark && amoledDark
 
-    // Material3 color scheme: Monet (wallpaper) takes priority over seed
+    // Material 3 / You Color Scheme
     val monetScheme = if (useMonet) rememberPlatformMonetScheme(isDark) else null
-    val m3Scheme = monetScheme ?: rememberDynamicColorScheme(
+    
+    // M3E Adjustment: More aggressive/vibrant palette choices
+    val effectiveStyle = if (isM3E && !useMonet) PaletteStyle.Vibrant else paletteStyle
+
+    var m3Scheme = monetScheme ?: rememberDynamicColorScheme(
         seedColor   = keyColor,
         isDark      = isDark,
         isAmoled    = isAmoled,
-        style       = paletteStyle,
+        style       = effectiveStyle,
         specVersion = specVersion,
     )
 
+    // Force AMOLED black if enabled
+    if (isAmoled) {
+        m3Scheme = m3Scheme.copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color.Black,
+            surfaceContainer = Color.Black,
+            surfaceContainerLow = Color.Black,
+            surfaceContainerLowest = Color.Black,
+            surfaceContainerHigh = Color(0xFF1C1B1F), // Dark enough but visible
+            surfaceContainerHighest = Color(0xFF25232A)
+        )
+    }
+
+    // Miuix compatibility
     val miuixPaletteStyle = try {
-        ThemePaletteStyle.valueOf(paletteStyle.name)
+        ThemePaletteStyle.valueOf(effectiveStyle.name)
     } catch (_: Exception) {
         ThemePaletteStyle.TonalSpot
     }
@@ -99,7 +119,6 @@ fun SpiceComposeTheme(
         colorSpec = miuixColorSpec,
     )
 
-    // ── Apply page scale by overriding LocalDensity ──────────────────────────
     val baseDensity = LocalDensity.current
     val scaledDensity = if (pageScale != 1.0f)
         Density(baseDensity.density * pageScale, baseDensity.fontScale)
@@ -111,7 +130,10 @@ fun SpiceComposeTheme(
             CompositionLocalProvider(
                 top.yukonga.miuix.kmp.theme.LocalContentColor provides MiuixTheme.colorScheme.onBackground,
             ) {
-                MaterialTheme(colorScheme = m3Scheme) {
+                MaterialTheme(
+                    colorScheme = m3Scheme,
+                    typography = getTypography(isM3E)
+                ) {
                     content()
                 }
             }

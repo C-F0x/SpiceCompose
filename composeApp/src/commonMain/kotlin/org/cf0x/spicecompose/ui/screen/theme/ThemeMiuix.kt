@@ -58,9 +58,6 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
         )
     }
 
-    val effectiveNav = uiState.navLayoutMode   // Auto, BottomBar, SideRail
-    val isBottomMode = effectiveNav == NavLayoutMode.Auto || effectiveNav == NavLayoutMode.BottomBar
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -166,40 +163,39 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
 
                 // ── Layout ───────────────────────────────────────────────────
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    // Nav mode: hide when floating bar is on (mutually exclusive)
-                    if (!uiState.floatingBottomBar) {
-                        OverlayDropdownPreference(
-                            title   = strings.navBarStyle,
-                            summary = listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal],
-                            items   = listOf(strings.navAuto, strings.navBottom, strings.navRail),
-                            selectedIndex = uiState.navLayoutMode.ordinal,
-                            onSelectedIndexChange = { actions.onSetNavLayoutMode(NavLayoutMode.entries[it]) },
-                            startAction = { PrefIcon(Icons.AutoMirrored.Rounded.MenuOpen) },
-                        )
-                    }
+                    // Nav mode: disabled when floating bar is on
+                    OverlayDropdownPreference(
+                        title   = strings.navBarStyle,
+                        summary = listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal],
+                        items   = listOf(strings.navAuto, strings.navBottom, strings.navRail),
+                        selectedIndex = uiState.navLayoutMode.ordinal,
+                        onSelectedIndexChange = { actions.onSetNavLayoutMode(NavLayoutMode.entries[it]) },
+                        startAction = { PrefIcon(Icons.AutoMirrored.Rounded.MenuOpen) },
+                        enabled = !uiState.floatingBottomBar
+                    )
 
-                    /*
-                    // Floating bar: only show when actual nav mode is bottom (not rail)
-                    if (isBottomMode) {
+                    // Floating bar: Forced to Bottom Bar when enabled
+                    SwitchPreference(
+                        title   = strings.floatingBottomBar,
+                        summary = strings.floatingBottomBarSummary,
+                        checked = uiState.floatingBottomBar,
+                        onCheckedChange = { enabled ->
+                            actions.onSetFloatingBottomBar(enabled)
+                            if (enabled) actions.onSetNavLayoutMode(NavLayoutMode.BottomBar)
+                        },
+                        startAction = { PrefIcon(Icons.Rounded.WebAsset) },
+                    )
+
+                    // Liquid Glass sub-option
+                    if (uiState.floatingBottomBar) {
                         SwitchPreference(
-                            title   = strings.floatingBottomBar,
-                            summary = strings.floatingBottomBarSummary,
-                            checked = uiState.floatingBottomBar,
-                            onCheckedChange = actions.onSetFloatingBottomBar,
-                            startAction = { PrefIcon(Icons.Rounded.WebAsset) },
+                            title   = strings.floatingBottomBarBlur,
+                            summary = strings.floatingBottomBarBlurSummary,
+                            checked = uiState.floatingBottomBarBlur,
+                            onCheckedChange = actions.onSetFloatingBottomBarBlur,
+                            startAction = { PrefIcon(Icons.Rounded.BlurOn) },
                         )
-                        // Blur sub-option (hidden when no floating bar)
-                        if (uiState.floatingBottomBar) {
-                            SwitchPreference(
-                                title   = strings.floatingBottomBarBlur,
-                                summary = strings.floatingBottomBarBlurSummary,
-                                checked = uiState.floatingBottomBarBlur,
-                                onCheckedChange = actions.onSetFloatingBottomBarBlur,
-                                startAction = { PrefIcon(Icons.Rounded.BlurOn) },
-                            )
-                        }
                     }
-                    */
                 }
                 Spacer(Modifier.height(12.dp))
 

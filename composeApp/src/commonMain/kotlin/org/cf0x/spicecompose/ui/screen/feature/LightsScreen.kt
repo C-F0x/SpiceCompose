@@ -7,8 +7,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +24,9 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsRead
 import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsWrite
 import org.cf0x.spicecompose.network.spiceapi.wrappers.lightsWriteReset
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -41,10 +42,15 @@ fun LightsScreen(onBack: () -> Unit) {
     val connection = connectionManager.getConnection()
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
+    val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
     
     var lightStates by remember { mutableStateOf<List<LightState>>(emptyList()) }
     var locked by remember { mutableStateOf(false) }
     val draggingNames = remember { mutableStateListOf<String>() }
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     // Polling logic
     LaunchedEffect(connection) {
@@ -52,7 +58,6 @@ fun LightsScreen(onBack: () -> Unit) {
             lightStates = emptyList()
             return@LaunchedEffect
         }
-        
         while (isActive) {
             try {
                 val newState = connection.lightsRead()
@@ -104,51 +109,52 @@ fun LightsScreen(onBack: () -> Unit) {
         else -> 2
     }
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> {
-            top.yukonga.miuix.kmp.basic.Scaffold(
-                topBar = {
-                    top.yukonga.miuix.kmp.basic.SmallTopAppBar(
+    val uiMode = LocalUiMode.current
+
+    if (uiMode == UiMode.Miuix) {
+        top.yukonga.miuix.kmp.basic.Scaffold(
+            topBar = {
+                if (!fullscreen.value) {
+                    SmallTopAppBar(
                         title = strings.lights,
-                        navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
-                                top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
-                            }
-                        },
+                        navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
                         actions = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onLockToggle) {
+                            FullscreenAction()
+                            IconButton(onClick = onLockToggle) {
                                 top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
                             }
                         }
                     )
                 }
-            ) { innerPadding ->
-                if (lightStates.isEmpty()) {
-                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                        top.yukonga.miuix.kmp.basic.Text("No lights available :(")
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
-                        contentPadding = PaddingValues(4.dp)
-                    ) {
-                        items(lightStates) { light ->
-                            LightItemMiuix(
-                                light = light,
-                                onValueChange = { onValueChange(light, it) },
-                                onValueCommit = { onValueCommit(light) },
-                                onDragStart = { draggingNames.add(light.name) },
-                                onDragEnd = { draggingNames.remove(light.name) }
-                            )
-                        }
+            }
+        ) { innerPadding ->
+            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            if (lightStates.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    top.yukonga.miuix.kmp.basic.Text("No lights available :(")
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(4.dp)
+                ) {
+                    items(lightStates) { light ->
+                        LightItemMiuix(
+                            light = light,
+                            onValueChange = { onValueChange(light, it) },
+                            onValueCommit = { onValueCommit(light) },
+                            onDragStart = { draggingNames.add(light.name) },
+                            onDragEnd = { draggingNames.remove(light.name) }
+                        )
                     }
                 }
             }
         }
-        UiMode.Material -> {
-            androidx.compose.material3.Scaffold(
-                topBar = {
+    } else {
+        androidx.compose.material3.Scaffold(
+            topBar = {
+                if (!fullscreen.value) {
                     @OptIn(ExperimentalMaterial3Api::class)
                     androidx.compose.material3.TopAppBar(
                         title = { androidx.compose.material3.Text(strings.lights) },
@@ -156,36 +162,35 @@ fun LightsScreen(onBack: () -> Unit) {
                             androidx.compose.material3.IconButton(onClick = onBack) {
                                 androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
                             }
+                        },
+                        actions = {
+                            FullscreenAction()
+                            androidx.compose.material3.IconButton(onClick = onLockToggle) {
+                                androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
+                            }
                         }
                     )
-                },
-                floatingActionButton = {
-                    androidx.compose.material3.FloatingActionButton(
-                        onClick = onLockToggle,
-                        containerColor = if (locked) androidx.compose.material3.MaterialTheme.colorScheme.errorContainer else androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
-                    }
                 }
-            ) { innerPadding ->
-                if (lightStates.isEmpty()) {
-                    Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                        androidx.compose.material3.Text("No lights available :(")
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
-                    ) {
-                        items(lightStates) { light ->
-                            LightItemMaterial(
-                                light = light,
-                                onValueChange = { onValueChange(light, it) },
-                                onValueCommit = { onValueCommit(light) },
-                                onDragStart = { draggingNames.add(light.name) },
-                                onDragEnd = { draggingNames.remove(light.name) }
-                            )
-                        }
+            }
+        ) { innerPadding ->
+            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            if (lightStates.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.Text("No lights available :(")
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier.fillMaxSize().padding(padding)
+                ) {
+                    items(lightStates) { light ->
+                        LightItemMaterial(
+                            light = light,
+                            onValueChange = { onValueChange(light, it) },
+                            onValueCommit = { onValueCommit(light) },
+                            onDragStart = { draggingNames.add(light.name) },
+                            onDragEnd = { draggingNames.remove(light.name) }
+                        )
                     }
                 }
             }

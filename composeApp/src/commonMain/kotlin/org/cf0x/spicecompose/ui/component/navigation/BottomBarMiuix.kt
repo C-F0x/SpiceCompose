@@ -26,7 +26,7 @@ fun BottomBarMiuix(
     if (isFloating) {
         FloatingBottomBar(
             modifier = modifier
-                .padding(bottom = 12.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
+                .padding(bottom = 12.dp), // MainScreen handles the safe area padding now
             selectedIndex = { mainState.selectedPage },
             onSelected    = { mainState.animateToPage(it) },
             tabsCount     = Destination.PAGE_COUNT,

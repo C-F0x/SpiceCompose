@@ -1,39 +1,22 @@
 package org.cf0x.spicecompose.ui.screen.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ContactPage
-import androidx.compose.material.icons.rounded.Dashboard
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Translate
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.component.TonalCard
+import org.cf0x.spicecompose.ui.theme.SpiceTheme
 
-@ExperimentalMaterial3Api
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPagerMaterial(
     uiState: SettingsUiState,
@@ -41,6 +24,8 @@ fun SettingsPagerMaterial(
 ) {
     val strings = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var langExpanded by remember { mutableStateOf(false) }
+    var uiModeDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -53,26 +38,34 @@ fun SettingsPagerMaterial(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── Language ──────────────────────────────────────────────────────
+            item { Spacer(Modifier.height(8.dp)) }
+
+            // ── Language ─────────────────────────────────────────────────────
             item {
-                var langExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = langExpanded,
-                    onExpandedChange = { langExpanded = it },
+                    onExpandedChange = { langExpanded = it }
                 ) {
-                    ListItem(
-                        modifier = Modifier.menuAnchor(),
-                        headlineContent = { Text(strings.language) },
-                        supportingContent = { Text(uiState.language.displayName) },
-                        leadingContent = { Icon(Icons.Rounded.Translate, null) },
-                        trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(langExpanded) },
-                    )
+                    TonalCard(
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        shape = SpiceTheme.containerShape()
+                    ) {
+                        ListItem(
+                            headlineContent = { Text(strings.language) },
+                            supportingContent = { Text(uiState.language.displayName) },
+                            leadingContent = { Icon(Icons.Rounded.Translate, null) },
+                            trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(langExpanded) },
+                            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                        )
+                    }
                     ExposedDropdownMenu(
                         expanded = langExpanded,
-                        onDismissRequest = { langExpanded = false },
+                        onDismissRequest = { langExpanded = false }
                     ) {
                         AppLanguage.entries.forEach { lang ->
                             DropdownMenuItem(
@@ -80,81 +73,77 @@ fun SettingsPagerMaterial(
                                 onClick = {
                                     actions.onSetLanguage(lang)
                                     langExpanded = false
-                                },
+                                }
                             )
                         }
                     }
                 }
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             }
-
-            // ── Appearance ────────────────────────────────────────────────────
+            
+            // ── UI Style (Pop-up Dialog) ─────────────────────────────────────
             item {
-                Text(
-                    text = strings.appearance,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
-                )
-            }
-            item {
-                var uiExpanded by remember { mutableStateOf(false) }
-                val uiLabels = listOf("Miuix", "Material")
-                ExposedDropdownMenuBox(
-                    expanded = uiExpanded,
-                    onExpandedChange = { uiExpanded = it },
-                ) {
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = { uiModeDialog = true }) {
                     ListItem(
-                        modifier = Modifier.menuAnchor(),
                         headlineContent = { Text(strings.uiStyle) },
-                        supportingContent = { Text(strings.uiStyleSummary) },
-                        leadingContent = { Icon(Icons.Rounded.Dashboard, null) },
-                        trailingContent = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(uiExpanded)
-                        },
+                        supportingContent = { Text(if (uiState.uiMode == UiMode.Miuix) "Miuix" else "Material You") },
+                        leadingContent = { Icon(Icons.Rounded.Style, null) },
+                        trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
                     )
-                    ExposedDropdownMenu(
-                        expanded = uiExpanded,
-                        onDismissRequest = { uiExpanded = false },
-                    ) {
-                        uiLabels.forEachIndexed { i, label ->
-                            DropdownMenuItem(
-                                text = { Text(label) },
-                                onClick = {
-                                    actions.onSetUiModeIndex(i)
-                                    uiExpanded = false
-                                },
-                            )
-                        }
-                    }
                 }
             }
+
+            // ── Theme Settings ───────────────────────────────────────────────
             item {
-                ListItem(
-                    modifier = Modifier.clickable(onClick = actions.onOpenTheme),
-                    headlineContent = { Text(strings.themeSettings) },
-                    supportingContent = { Text(strings.themeSettingsSummary) },
-                    leadingContent = { Icon(Icons.Rounded.Palette, null) },
-                )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenTheme) {
+                    ListItem(
+                        headlineContent = { Text(strings.themeSettings) },
+                        supportingContent = { Text(strings.themeSettingsSummary) },
+                        leadingContent = { Icon(Icons.Rounded.Palette, null) },
+                        trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                    )
+                }
             }
 
-            // ── About ─────────────────────────────────────────────────────────
+            // ── About ────────────────────────────────────────────────────────
             item {
-                Text(
-                    text = strings.about,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
-                )
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenAbout) {
+                    ListItem(
+                        headlineContent = { Text(strings.about) },
+                        supportingContent = { Text("Version info and more") },
+                        leadingContent = { Icon(Icons.Rounded.Info, null) },
+                        trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                    )
+                }
             }
-            item {
-                ListItem(
-                    modifier = Modifier.clickable(onClick = actions.onOpenAbout),
-                    headlineContent = { Text(strings.about) },
-                    leadingContent = { Icon(Icons.Rounded.ContactPage, null) },
-                )
-            }
+            
+            item { Spacer(Modifier.height(24.dp)) }
         }
+    }
+
+    if (uiModeDialog) {
+        AlertDialog(
+            onDismissRequest = { uiModeDialog = false },
+            title = { Text(strings.uiStyle) },
+            text = {
+                Column {
+                    ListItem(
+                        modifier = Modifier.clickable { actions.onSetUiModeIndex(0); uiModeDialog = false },
+                        headlineContent = { Text("Miuix") },
+                        leadingContent = { RadioButton(selected = uiState.uiMode == UiMode.Miuix, onClick = null) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                    )
+                    ListItem(
+                        modifier = Modifier.clickable { actions.onSetUiModeIndex(1); uiModeDialog = false },
+                        headlineContent = { Text("Material You") },
+                        leadingContent = { RadioButton(selected = uiState.uiMode == UiMode.Material, onClick = null) },
+                        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = { uiModeDialog = false }) { Text(strings.cancel) } }
+        )
     }
 }

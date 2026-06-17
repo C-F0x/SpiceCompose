@@ -60,6 +60,7 @@ fun App() {
             paletteStyle = p.paletteStyle,
             specVersion  = p.colorSpecVersion,
             pageScale    = p.pageScale,
+            isM3E        = p.enableSmoothCorner,
         ) {
             MainScreen(
                 navLayoutMode         = p.navLayoutMode,

@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.miuix.ui)
             implementation(libs.miuix.icons)
             implementation(libs.miuix.preference)
+            implementation(libs.miuix.blur)
         }
 
         androidMain.dependencies {
@@ -47,6 +48,7 @@ kotlin {
             implementation(libs.androidx.ui.tooling.preview)
             implementation("androidx.compose.material3:material3")       // dynamicDarkColorScheme
             implementation(libs.androidx.activity.compose)               // BackHandler actual
+            implementation("top.yukonga.miuix.kmp:miuix-blur-android:0.9.2")
         }
 
         desktopMain.dependencies {

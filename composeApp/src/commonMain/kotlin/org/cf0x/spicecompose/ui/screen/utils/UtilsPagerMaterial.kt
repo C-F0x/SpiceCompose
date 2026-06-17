@@ -1,8 +1,6 @@
 package org.cf0x.spicecompose.ui.screen.utils
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -12,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.component.TonalCard
+import org.cf0x.spicecompose.ui.theme.SpiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,29 +32,40 @@ fun UtilsPagerMaterial(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item { Spacer(Modifier.height(8.dp)) }
+            
             item {
-                FeatureItem(strings.subScreen, strings.subScreenSummary, Icons.Rounded.Tv, actions.onOpenSubScreen)
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                FeatureItem(strings.patches, strings.patchesSummary, Icons.Rounded.Build, actions.onOpenPatches)
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenSubScreen) {
+                    FeatureItemCapsule(strings.subScreen, strings.subScreenSummary, Icons.Rounded.Tv)
+                }
             }
+
+            item {
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenPatches) {
+                    FeatureItemCapsule(strings.patches, strings.patchesSummary, Icons.Rounded.Build)
+                }
+            }
+            
+            item { Spacer(Modifier.height(16.dp)) }
         }
     }
 }
 
 @Composable
-private fun FeatureItem(
+private fun FeatureItemCapsule(
     title: String,
     summary: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
+    icon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
         headlineContent = { Text(title) },
         supportingContent = { Text(summary) },
         leadingContent = { Icon(icon, null) },
+        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
     )
 }

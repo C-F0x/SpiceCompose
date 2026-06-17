@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalInSubPage
-import org.cf0x.spicecompose.ui.component.DraggableFullscreenButton
 import org.cf0x.spicecompose.ui.component.navigation.BottomBar
 import org.cf0x.spicecompose.ui.component.navigation.SideRail
 import org.cf0x.spicecompose.ui.navigation.*
@@ -18,6 +17,8 @@ import org.cf0x.spicecompose.ui.screen.status.StatusScreen
 import org.cf0x.spicecompose.ui.screen.tools.ToolsScreen
 import org.cf0x.spicecompose.ui.screen.utils.UtilsScreen
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBar
+import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBarBlur
+import org.cf0x.spicecompose.ui.theme.LocalBottomBarPadding
 import top.yukonga.miuix.kmp.basic.Scaffold
 
 @Composable
@@ -32,12 +33,19 @@ fun MainScreen(
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
         val inSubPage      = LocalInSubPage.current.value
-        val fullscreen     = LocalFullscreenMode.current.value
+        val fullscreen     = LocalFullscreenMode.current
+
+        LaunchedEffect(inSubPage) {
+            if (!inSubPage) {
+                fullscreen.value = false
+            }
+        }
 
         LaunchedEffect(pagerState.settledPage) {
             if (mainPagerState.lastPage != pagerState.settledPage) {
                 mainPagerState.emitReset(mainPagerState.lastPage)
                 mainPagerState.lastPage = pagerState.settledPage
+                fullscreen.value = false
             }
             mainPagerState.syncPage()
         }
@@ -50,56 +58,44 @@ fun MainScreen(
                 NavLayoutMode.BottomBar -> false
             }
 
-            CompositionLocalProvider(LocalWindowSize provides windowSize) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (fullscreen) {
-                        PageContent(
-                            pagerState = pagerState,
-                            bottomPadding = 0.dp,
-                            userScrollEnabled = !inSubPage,
-                            settingsContent = settingsContent,
-                        )
-                    } else if (useRail) {
-                        Scaffold { innerPadding ->
-                            Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                                SideRail()
-                                Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                                    PageContent(
-                                        pagerState = pagerState,
-                                        bottomPadding = 0.dp,
-                                        userScrollEnabled = !inSubPage,
-                                        settingsContent = settingsContent,
-                                    )
-                                }
-                            }
-                        }
-                    } else if (isFloating) {
-                        val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            PageContent(
-                                pagerState = pagerState,
-                                bottomPadding = 56.dp + 12.dp + 12.dp + navBarHeight,
-                                userScrollEnabled = !inSubPage,
-                                settingsContent = settingsContent,
-                            )
-                            BottomBar(modifier = Modifier.align(Alignment.BottomCenter))
-                        }
-                    } else {
-                        Scaffold(
-                            bottomBar = { BottomBar() },
-                        ) { innerPadding ->
-                            PageContent(
-                                pagerState = pagerState,
-                                bottomPadding = innerPadding.calculateBottomPadding(),
-                                userScrollEnabled = !inSubPage,
-                                settingsContent = settingsContent,
-                            )
+            // Calculate bottom padding required to avoid the bar
+            val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val dynamicBottomPadding = when {
+                fullscreen.value -> 0.dp
+                useRail -> 0.dp
+                isFloating -> 56.dp + 12.dp + 12.dp + navBarHeight
+                else -> navBarHeight + 56.dp // Standard bottom bar height
+            }
+
+            CompositionLocalProvider(
+                LocalWindowSize provides windowSize,
+                LocalBottomBarPadding provides dynamicBottomPadding
+            ) {
+                Scaffold(
+                    bottomBar = {
+                        if (!fullscreen.value && !useRail && !isFloating) {
+                            BottomBar()
                         }
                     }
-
-                    // Global Draggable Fullscreen Button
-                    Box(modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = if (useRail || inSubPage || fullscreen) 0.dp else 80.dp)) {
-                        DraggableFullscreenButton()
+                ) { innerPadding ->
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        if (!fullscreen.value && useRail) {
+                            SideRail()
+                        }
+                        
+                        Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                            // PageContent now always fillMaxSize to let background flow through
+                            PageContent(
+                                pagerState = pagerState,
+                                userScrollEnabled = !inSubPage,
+                                settingsContent = settingsContent,
+                            )
+                            
+                            // Floating BottomBar on top of content
+                            if (!fullscreen.value && !useRail && isFloating) {
+                                BottomBar(modifier = Modifier.align(Alignment.BottomCenter))
+                            }
+                        }
                     }
                 }
             }
@@ -110,14 +106,13 @@ fun MainScreen(
 @Composable
 private fun PageContent(
     pagerState:        androidx.compose.foundation.pager.PagerState,
-    bottomPadding:     Dp,
     userScrollEnabled: Boolean,
     settingsContent:   @Composable () -> Unit,
 ) {
     HorizontalPager(
         state             = pagerState,
         userScrollEnabled = userScrollEnabled,
-        modifier          = Modifier.fillMaxSize().padding(bottom = bottomPadding),
+        modifier          = Modifier.fillMaxSize(), // Removed bottom padding here!
     ) { page ->
         when (page) {
             0    -> StatusScreen()

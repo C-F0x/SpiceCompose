@@ -39,16 +39,22 @@ class ConnectionManager {
                 connection?.dispose()
                 
                 val newConn = SpiceConnection(server.host, server.port, server.password)
-                newConn.connect()
                 
-                // Simple check if it's actually alive if needed, 
-                // but connect() should throw if failed.
+                // Set a timeout for the actual handshake/initial ping
+                withTimeout(5000) {
+                    newConn.connect()
+                    // If connect() is just starting a background loop, we might need a ping check here
+                    // Assuming for now connect() establishes the socket
+                }
+                
                 connection = newConn
                 _status.value = ConnectionStatus.Connected
             } catch (e: Exception) {
-                _status.value = ConnectionStatus.Error
-                _error.value = e.message ?: "Unknown connection error"
+                _status.value = ConnectionStatus.Disconnected // Rollback as requested
+                _error.value = if (e is TimeoutCancellationException) "Connection timed out" else (e.message ?: "Unknown error")
                 _currentServer.value = null
+                connection?.dispose()
+                connection = null
             }
         }
     }

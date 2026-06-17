@@ -10,7 +10,6 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.util.CardCipher
-import androidx.compose.material.icons.rounded.Delete
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
@@ -44,11 +43,11 @@ fun CardEditDialog(
     }
 
     // Update publicId when cardId changes
-// ... rest
     LaunchedEffect(cardId) {
         if (cardId.length == 16) {
             try {
-                publicId = CardCipher.encode(cardId)
+                val encoded = CardCipher.encode(cardId)
+                if (encoded != publicId) publicId = encoded
             } catch (e: Exception) {
                 publicId = ""
             }
@@ -57,10 +56,11 @@ fun CardEditDialog(
 
     // Update cardId when publicId changes
     val onPublicIdChange: (String) -> Unit = { newVal ->
-        publicId = newVal
-        if (newVal.length == 16) {
+        val upper = newVal.uppercase()
+        publicId = upper
+        if (upper.length == 16) {
             try {
-                val decoded = CardCipher.decode(newVal)
+                val decoded = CardCipher.decode(upper)
                 if (decoded.length == 16 && decoded != cardId) {
                     cardId = decoded
                 }
@@ -107,7 +107,7 @@ fun CardEditDialog(
                                 text = strings.discard,
                                 onClick = onDiscard,
                                 modifier = Modifier.weight(1f),
-                                colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary() // Miuix doesn't easily support contentColor change in this ver
+                                colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
                             )
                             TextButton(
                                 text = strings.save,

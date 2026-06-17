@@ -1,21 +1,16 @@
 package org.cf0x.spicecompose.ui.screen.utils.subscreen
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,22 +20,33 @@ fun SubScreenMaterial(
 ) {
     val strings = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val fullscreen = LocalFullscreenMode.current
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(strings.subScreen) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+            if (!fullscreen.value) {
+                TopAppBar(
+                    title = { Text(strings.subScreen) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
+                        }
+                    },
+                    actions = {
+                        FullscreenAction()
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
     ) { innerPadding ->
+        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         Box(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(padding),
             contentAlignment = Alignment.Center,
         ) {
             SubScreenContent()

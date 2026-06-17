@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -82,6 +84,9 @@ fun PatchesScreen(onBack: () -> Unit) {
                             IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
                             }
+                        },
+                        actions = {
+                            FullscreenAction()
                         }
                     )
                 }
@@ -126,6 +131,9 @@ fun PatchesScreen(onBack: () -> Unit) {
                             androidx.compose.material3.IconButton(onClick = onBack) {
                                 androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
                             }
+                        },
+                        actions = {
+                            FullscreenAction()
                         }
                     )
                 }

@@ -15,7 +15,6 @@ import org.cf0x.spicecompose.ui.screen.feature.*
 private const val ROUTE_MAIN        = "main"
 private const val ROUTE_SUB_SCREEN  = "sub_screen"
 private const val ROUTE_PATCHES     = "patches"
-private const val ROUTE_CARD_MGR    = "card_mgr"
 
 @Composable
 fun UtilsScreen() {
@@ -37,12 +36,10 @@ fun UtilsScreen() {
     when (route) {
         ROUTE_SUB_SCREEN -> SubScreen(onBack = { route = ROUTE_MAIN })
         ROUTE_PATCHES    -> PatchesScreen(onBack = { route = ROUTE_MAIN })
-        ROUTE_CARD_MGR   -> CardManagerScreen(onBack = { route = ROUTE_MAIN })
         else -> {
             val actions = UtilsScreenActions(
                 onOpenSubScreen = { route = ROUTE_SUB_SCREEN },
                 onOpenPatches   = { route = ROUTE_PATCHES },
-                onOpenCardMgr   = { route = ROUTE_CARD_MGR },
             )
             when (LocalUiMode.current) {
                 UiMode.Miuix    -> UtilsPagerMiuix(actions)
@@ -55,5 +52,4 @@ fun UtilsScreen() {
 data class UtilsScreenActions(
     val onOpenSubScreen: () -> Unit,
     val onOpenPatches:   () -> Unit,
-    val onOpenCardMgr:   () -> Unit,
 )
