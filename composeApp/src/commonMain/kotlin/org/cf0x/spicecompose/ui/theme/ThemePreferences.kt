@@ -40,6 +40,10 @@ object ThemePreferences {
         private set
     fun updateKeyColor(v: Color) { keyColor = v; s.putInt("keyColor", v.toArgb()) }
 
+    var materialKeyColor by mutableStateOf(Color(s.getInt("materialKeyColor", defaultKeyColor.toArgb())))
+        private set
+    fun updateMaterialKeyColor(v: Color) { materialKeyColor = v; s.putInt("materialKeyColor", v.toArgb()) }
+
     var paletteStyle by mutableStateOf(PaletteStyle.entries.getOrElse(s.getInt("paletteStyle", 0)) { PaletteStyle.TonalSpot })
         private set
     fun updatePaletteStyle(v: PaletteStyle) { paletteStyle = v; s.putInt("paletteStyle", v.ordinal) }

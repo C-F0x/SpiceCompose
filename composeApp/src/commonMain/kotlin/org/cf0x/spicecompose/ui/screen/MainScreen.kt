@@ -9,17 +9,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
-import org.cf0x.spicecompose.ui.LocalInSubPage
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.navigation.BottomBar
 import org.cf0x.spicecompose.ui.component.navigation.SideRail
 import org.cf0x.spicecompose.ui.navigation.*
 import org.cf0x.spicecompose.ui.screen.status.StatusScreen
 import org.cf0x.spicecompose.ui.screen.tools.ToolsScreen
 import org.cf0x.spicecompose.ui.screen.utils.UtilsScreen
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBar
-import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBarBlur
 import org.cf0x.spicecompose.ui.theme.LocalBottomBarPadding
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 
 @Composable
 fun MainScreen(
@@ -32,20 +36,15 @@ fun MainScreen(
 
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
-        val inSubPage      = LocalInSubPage.current.value
         val fullscreen     = LocalFullscreenMode.current
-
-        LaunchedEffect(inSubPage) {
-            if (!inSubPage) {
-                fullscreen.value = false
-            }
-        }
+        val enableBlur     = LocalEnableBlur.current
+        val uiMode         = LocalUiMode.current
+        val blurBackdrop   = rememberBlurBackdrop(enableBlur && uiMode == UiMode.Miuix)
 
         LaunchedEffect(pagerState.settledPage) {
             if (mainPagerState.lastPage != pagerState.settledPage) {
                 mainPagerState.emitReset(mainPagerState.lastPage)
                 mainPagerState.lastPage = pagerState.settledPage
-                fullscreen.value = false
             }
             mainPagerState.syncPage()
         }
@@ -63,7 +62,7 @@ fun MainScreen(
             val dynamicBottomPadding = when {
                 fullscreen.value -> 0.dp
                 useRail -> 0.dp
-                isFloating -> 56.dp + 12.dp + 12.dp + navBarHeight
+                isFloating -> navBarHeight // pill floats over content — no extra padding needed
                 else -> navBarHeight + 56.dp // Standard bottom bar height
             }
 
@@ -71,29 +70,30 @@ fun MainScreen(
                 LocalWindowSize provides windowSize,
                 LocalBottomBarPadding provides dynamicBottomPadding
             ) {
-                Scaffold(
-                    bottomBar = {
-                        if (!fullscreen.value && !useRail && !isFloating) {
-                            BottomBar()
-                        }
-                    }
-                ) { innerPadding ->
+                Scaffold { innerPadding ->
                     Row(modifier = Modifier.fillMaxSize()) {
                         if (!fullscreen.value && useRail) {
                             SideRail()
                         }
-                        
                         Box(modifier = Modifier.weight(1f).fillMaxSize()) {
-                            // PageContent now always fillMaxSize to let background flow through
                             PageContent(
                                 pagerState = pagerState,
-                                userScrollEnabled = !inSubPage,
+                                userScrollEnabled = false,
                                 settingsContent = settingsContent,
+                                blurBackdrop = if (enableBlur && uiMode == UiMode.Miuix) blurBackdrop else null,
                             )
-                            
-                            // Floating BottomBar on top of content
-                            if (!fullscreen.value && !useRail && isFloating) {
-                                BottomBar(modifier = Modifier.align(Alignment.BottomCenter))
+                            // Bottom bar as overlay: floating pill or standard bar
+                            if (!fullscreen.value && !useRail) {
+                                val barModifier = if (isFloating && uiMode == UiMode.Miuix) {
+                                    Modifier.align(Alignment.BottomCenter)
+                                } else {
+                                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                                }
+                                BottomBar(
+                                    blurBackdrop = blurBackdrop,
+                                    backdrop     = blurBackdrop,
+                                    modifier     = barModifier,
+                                )
                             }
                         }
                     }
@@ -108,17 +108,25 @@ private fun PageContent(
     pagerState:        androidx.compose.foundation.pager.PagerState,
     userScrollEnabled: Boolean,
     settingsContent:   @Composable () -> Unit,
+    blurBackdrop:      LayerBackdrop? = null,
 ) {
+    val blurModifier = if (blurBackdrop != null) {
+        Modifier.fillMaxSize().layerBackdrop(blurBackdrop)
+    } else {
+        Modifier.fillMaxSize()
+    }
     HorizontalPager(
         state             = pagerState,
         userScrollEnabled = userScrollEnabled,
-        modifier          = Modifier.fillMaxSize(), // Removed bottom padding here!
+        modifier          = blurModifier,
     ) { page ->
-        when (page) {
-            0    -> StatusScreen()
-            1    -> ToolsScreen()
-            2    -> UtilsScreen()
-            else -> settingsContent()
+        Box(modifier = Modifier.padding(bottom = LocalBottomBarPadding.current)) {
+            when (page) {
+                0    -> StatusScreen()
+                1    -> ToolsScreen()
+                2    -> UtilsScreen()
+                else -> settingsContent()
+            }
         }
     }
 }

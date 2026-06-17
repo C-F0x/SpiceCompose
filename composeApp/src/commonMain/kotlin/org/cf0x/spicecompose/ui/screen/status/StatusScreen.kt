@@ -16,6 +16,7 @@ import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoLauncher
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoMemory
+import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
@@ -51,6 +52,10 @@ fun StatusScreen() {
                 showServerList = false
             }
     }
+
+    // Disable main pager swipe when server list sub-page is open
+    val inSubPage = LocalInSubPage.current
+    SideEffect { inSubPage.value = showServerList }
 
     LaunchedEffect(status) {
         if (status == ConnectionStatus.Connected) {

@@ -28,6 +28,7 @@ import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
+import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,9 +137,9 @@ fun StatusHomeMaterial(
                         shape = SpiceTheme.cornerShape(24.dp)
                     ) {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
-                            Text(strings.bonjour, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            Text(strings.version, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                             Text(
-                                "SpiceCompose",
+                                APP_VERSION,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )

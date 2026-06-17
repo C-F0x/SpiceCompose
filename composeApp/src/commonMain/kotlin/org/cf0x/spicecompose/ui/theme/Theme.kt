@@ -50,18 +50,41 @@ fun SpiceComposeTheme(
     val isAmoled = isDark && amoledDark
 
     // Material 3 / You Color Scheme
-    val monetScheme = if (useMonet) rememberPlatformMonetScheme(isDark) else null
-    
-    // M3E Adjustment: More aggressive/vibrant palette choices
-    val effectiveStyle = if (isM3E && !useMonet) PaletteStyle.Vibrant else paletteStyle
-
-    var m3Scheme = monetScheme ?: rememberDynamicColorScheme(
-        seedColor   = keyColor,
-        isDark      = isDark,
-        isAmoled    = isAmoled,
-        style       = effectiveStyle,
-        specVersion = specVersion,
-    )
+    // Monet ON  → full dynamic palette from keyColor seed
+    // Monet OFF → simple two-tone: accent block colored, rest white/gray
+    var m3Scheme = if (useMonet) {
+        rememberDynamicColorScheme(
+            seedColor   = keyColor,
+            isDark      = isDark,
+            isAmoled    = isAmoled,
+            style       = paletteStyle,
+            specVersion = specVersion,
+        )
+    } else {
+        if (isDark) {
+            androidx.compose.material3.darkColorScheme(
+                primary          = keyColor,
+                primaryContainer = keyColor.copy(alpha = 0.3f),
+                onPrimary        = Color.White,
+                onPrimaryContainer = Color.White,
+                surface          = Color(0xFF1C1B1F),
+                surfaceVariant   = Color(0xFF2D2D2D),
+                background       = Color(0xFF1C1B1F),
+                outlineVariant   = Color(0xFF3D3D3D),
+            )
+        } else {
+            androidx.compose.material3.lightColorScheme(
+                primary          = keyColor,
+                primaryContainer = keyColor.copy(alpha = 0.12f),
+                onPrimary        = Color.White,
+                onPrimaryContainer = Color.Black,
+                surface          = Color.White,
+                surfaceVariant   = Color(0xFFF2F2F2),
+                background       = Color.White,
+                outlineVariant   = Color(0xFFE0E0E0),
+            )
+        }
+    }
 
     // Force AMOLED black if enabled
     if (isAmoled) {
@@ -78,8 +101,9 @@ fun SpiceComposeTheme(
     }
 
     // Miuix compatibility
+    val miuixStyle = if (useMonet) paletteStyle else PaletteStyle.TonalSpot
     val miuixPaletteStyle = try {
-        ThemePaletteStyle.valueOf(effectiveStyle.name)
+        ThemePaletteStyle.valueOf(miuixStyle.name)
     } catch (_: Exception) {
         ThemePaletteStyle.TonalSpot
     }

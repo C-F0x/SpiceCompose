@@ -12,9 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -30,7 +27,6 @@ import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.theme.ColorMode
-import org.cf0x.spicecompose.ui.theme.keyColorPresets
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -50,11 +46,10 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
     var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
     if (showAccentPicker) {
-        AccentColorDialog(
+        SpiceAccentColorDialog(
             current   = uiState.keyColor,
             onConfirm = { actions.onSetKeyColor(it); showAccentPicker = false },
             onDismiss = { showAccentPicker = false },
-            strings   = strings,
         )
     }
 
@@ -121,23 +116,8 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                         )
                     }
 
-                    // Accent color (only when Monet is OFF)
-                    if (!uiState.useMonet) {
-                        ArrowPreference(
-                            title   = strings.keyColor,
-                            summary = strings.keyColorSummary,
-                            startAction = {
-                                Box(
-                                    Modifier.size(20.dp).padding(end = 2.dp)
-                                        .clip(CircleShape).background(uiState.keyColor)
-                                )
-                            },
-                            onClick = { showAccentPicker = true },
-                        )
-                    }
-
-                    // Palette style (hide when Monet)
-                    if (!uiState.useMonet) {
+                    // ── Monet ON: palette style + accent color ──────
+                    if (uiState.useMonet) {
                         val paletteLabels = paletteStyleLabels(strings)
                         OverlayDropdownPreference(
                             title   = strings.paletteStyle,
@@ -147,15 +127,16 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                             onSelectedIndexChange = { actions.onSetPaletteStyle(PaletteStyle.entries[it]) },
                             startAction = { PrefIcon(Icons.Rounded.ColorLens) },
                         )
-                        OverlayDropdownPreference(
-                            title   = strings.colorSpec,
-                            summary = if (uiState.colorSpecVersion == ColorSpec.SpecVersion.SPEC_2025) strings.spec2025 else strings.spec2021,
-                            items   = listOf(strings.spec2021, strings.spec2025),
-                            selectedIndex = if (uiState.colorSpecVersion == ColorSpec.SpecVersion.SPEC_2025) 1 else 0,
-                            onSelectedIndexChange = {
-                                actions.onSetColorSpecVersion(if (it == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
+                        ArrowPreference(
+                            title   = strings.keyColor,
+                            summary = strings.keyColorSummary,
+                            startAction = {
+                                Box(
+                                    Modifier.padding(end = 6.dp).size(24.dp)
+                                        .clip(CircleShape).background(uiState.keyColor)
+                                )
                             },
-                            startAction = { PrefIcon(Icons.Rounded.Science) },
+                            onClick = { showAccentPicker = true },
                         )
                     }
                 }
@@ -189,8 +170,8 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                     // Liquid Glass sub-option
                     if (uiState.floatingBottomBar) {
                         SwitchPreference(
-                            title   = strings.floatingBottomBarBlur,
-                            summary = strings.floatingBottomBarBlurSummary,
+                            title   = strings.liquidGlass,
+                            summary = strings.liquidGlassSummary,
                             checked = uiState.floatingBottomBarBlur,
                             onCheckedChange = actions.onSetFloatingBottomBarBlur,
                             startAction = { PrefIcon(Icons.Rounded.BlurOn) },
@@ -255,78 +236,6 @@ private fun ColorModeChip(
 @Composable
 private fun PrefIcon(icon: ImageVector) =
     Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground)
-
-@Composable
-private fun AccentColorDialog(
-    current: Color, onConfirm: (Color) -> Unit, onDismiss: () -> Unit, strings: AppStrings,
-) {
-    var hexInput by remember { mutableStateOf(current.toHex()) }
-    var isError  by remember { mutableStateOf(false) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { androidx.compose.material3.Text(strings.keyColor) },
-        text = {
-            androidx.compose.foundation.lazy.LazyColumn {
-                // "Default" option
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clickable { onConfirm(org.cf0x.spicecompose.ui.theme.defaultKeyColor) }
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Box(Modifier.size(32.dp).clip(CircleShape).background(org.cf0x.spicecompose.ui.theme.defaultKeyColor)
-                            .border(2.dp, if (current == org.cf0x.spicecompose.ui.theme.defaultKeyColor) colorScheme.primary else Color.Transparent, CircleShape))
-                        androidx.compose.material3.Text(strings.specDefault)
-                    }
-                }
-                // Presets in rows of 5
-                item {
-                    val rows = keyColorPresets.chunked(5)
-                    rows.forEach { row ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            row.forEach { opt ->
-                                Box(Modifier.size(36.dp).clip(CircleShape).background(opt.color)
-                                    .border(2.dp, if (current == opt.color) colorScheme.primary else Color.Transparent, CircleShape)
-                                    .clickable { onConfirm(opt.color) },
-                                    contentAlignment = Alignment.Center) {
-                                    if (current == opt.color) Icon(Icons.Rounded.Check, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                }
-                            }
-                        }
-                    }
-                }
-                // Custom HEX input
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = hexInput, onValueChange = { hexInput = it.take(6).uppercase(); isError = false },
-                        label = { androidx.compose.material3.Text("#RRGGBB") }, isError = isError, singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = {
-                            Box(Modifier.size(24.dp).clip(CircleShape).background(
-                                runCatching { Color(("FF$hexInput").toLong(16)) }.getOrNull() ?: Color.Gray))
-                        },
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val c = runCatching { Color(("FF$hexInput").toLong(16)) }.getOrNull()
-                if (c != null) onConfirm(c) else isError = true
-            }) { androidx.compose.material3.Text(strings.ok) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { androidx.compose.material3.Text(strings.cancel) }
-        },
-    )
-}
-
-private fun Color.toHex(): String =
-    (value.toLong() and 0xFFFFFF).toString(16).uppercase().padStart(6, '0')
 
 private fun paletteStyleLabels(s: AppStrings) = listOf(
     s.paletteTonalSpot, s.paletteNeutral, s.paletteVibrant, s.paletteExpressive,

@@ -24,6 +24,7 @@ import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
 import org.cf0x.spicecompose.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -157,8 +158,8 @@ fun StatusHomeMiuix(
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-                                Text(strings.bonjour, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = colorScheme.onSurfaceVariantSummary)
-                                Text("SpiceCompose", fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+                                Text(strings.version, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = colorScheme.onSurfaceVariantSummary)
+                                Text(APP_VERSION, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
