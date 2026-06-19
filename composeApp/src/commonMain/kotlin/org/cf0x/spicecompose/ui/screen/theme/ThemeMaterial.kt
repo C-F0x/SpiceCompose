@@ -201,7 +201,7 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                         ListItem(
                             headlineContent = { Text(strings.pageScale) },
                             supportingContent = { Text(strings.pageScaleSummary) },
-                            trailingContent = { Text("${"%.0f".format(localScale * 100)}%", color = MaterialTheme.colorScheme.primary) },
+                            trailingContent = { Text("${(localScale * 100).toInt()}%", color = MaterialTheme.colorScheme.primary) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                         Slider(

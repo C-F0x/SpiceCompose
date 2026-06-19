@@ -201,7 +201,7 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                                 Text(strings.pageScale,   style = textStyles.main, color = colorScheme.onBackground)
                                 Text(strings.pageScaleSummary, style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
                             }
-                            Text("${"%.0f".format(localScale * 100)}%",
+                            Text("${(localScale * 100).toInt()}%",
                                 style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
                         }
                         Slider(

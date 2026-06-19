@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -20,9 +22,13 @@ kotlin {
     }
 
     jvm("desktop")
+    wasmJs {
+        browser()
+    }
 
     sourceSets {
         val desktopMain = sourceSets.getByName("desktopMain")
+        val wasmJsMain = sourceSets.getByName("wasmJsMain")
 
         commonMain.dependencies {
             implementation(libs.runtime)
@@ -49,15 +55,18 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.jetbrains.compose.ui.tooling)
             implementation(libs.androidx.ui.tooling.preview)
-            implementation("androidx.compose.material3:material3")       // dynamicDarkColorScheme
+            implementation(libs.androidx.material3)       // dynamicDarkColorScheme
             implementation(libs.androidx.activity.compose)               // BackHandler actual
-            implementation("top.yukonga.miuix.kmp:miuix-blur-android:0.9.2")
+            implementation(libs.miuix.blur)
             implementation(libs.ktor.client.okhttp)
         }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.java)
+        }
+
+        wasmJsMain.dependencies {
         }
     }
 }
@@ -66,4 +75,11 @@ compose.desktop {
     application {
         mainClass = "org.cf0x.spicecompose.MainKt"
     }
+}
+
+// Copy Wasm distribution to Rust backend's static directory
+tasks.register<Copy>("deployWasmToRustBackend") {
+    dependsOn("composeCompatibilityBrowserDistribution")
+    from(layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
+    into(rootProject.layout.projectDirectory.dir("rust-backend/static"))
 }

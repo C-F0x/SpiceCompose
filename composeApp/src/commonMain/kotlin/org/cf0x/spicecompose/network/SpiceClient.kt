@@ -57,7 +57,7 @@ class SpiceClient {
         return response
     }
 
-    fun close() {
+    suspend fun close() {
         SpiceNative.disconnect()
     }
 }

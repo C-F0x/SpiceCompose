@@ -67,7 +67,8 @@ fun ColorPickerWheel(
     LaunchedEffect(currentColor) {
         onColorChanged(currentColor)
         if (!isEditingHex) {
-            hexInput = "#%06X".format((currentColor.value shr 32).toInt() and 0xFFFFFF)
+            hexInput = "#" + ((currentColor.value shr 32).toInt() and 0xFFFFFF)
+                .toString(16).padStart(6, '0').uppercase()
         }
     }
 
@@ -154,7 +155,7 @@ fun ColorPickerWheel(
                 )
 
                 // Indicator on hue ring
-                val hRad = Math.toRadians(hue.toDouble())
+                val hRad = hue.toDouble() * kotlin.math.PI / 180.0
                 val ix   = center.x + midR * cos(hRad).toFloat()
                 val iy   = center.y + midR * sin(hRad).toFloat()
                 drawCircle(Color.White, ringWidth * 0.48f, Offset(ix, iy), style = Stroke(2.5.dp.toPx()))

@@ -6,16 +6,9 @@ use serde_json::Value;
 use std::sync::{LazyLock, Mutex};
 
 static CONNECTION: Mutex<Option<SpiceConnection>> = Mutex::new(None);
-static INIT: LazyLock<()> = LazyLock::new(|| {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .with_target(false)
-        .init();
-});
 
 /// Single persistent Tokio runtime — must outlive all connections.
 static RT: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
-    LazyLock::force(&INIT);
     tokio::runtime::Builder::new_multi_thread()
         .worker_threads(1)
         .enable_all()
@@ -26,7 +19,7 @@ static RT: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
 // ── connect ──
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_connect(
+pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeConnect(
     mut env: JNIEnv,
     _class: JClass,
     host: JString,
@@ -49,19 +42,16 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_connect(
                 RT.block_on(old.disconnect());
             }
             *guard = Some(conn);
-            1 // JNI_TRUE
+            1
         }
-        Err(e) => {
-            tracing::error!("connect failed: {e}");
-            0 // JNI_FALSE
-        }
+        Err(_) => 0,
     }
 }
 
 // ── request ──
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_request(
+pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeRequest(
     mut env: JNIEnv,
     _class: JClass,
     module: JString,
@@ -104,7 +94,7 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_request(
 // ── disconnect ──
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_disconnect(
+pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeDisconnect(
     _env: JNIEnv,
     _class: JClass,
 ) {
@@ -114,7 +104,6 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_disconnec
     }
 }
 
-// Helper macro for unwrapping JString to Rust String, returning null on error.
 macro_rules! unwrap_or_return_null {
     ($env:expr, $jstr:expr) => {
         match $env.get_string(&$jstr) {
