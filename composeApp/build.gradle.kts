@@ -56,3 +56,9 @@ kotlin {
         }
     }
 }
+
+compose.desktop {
+    application {
+        mainClass = "org.cf0x.spicecompose.MainKt"
+    }
+}

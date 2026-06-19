@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.navigation.BottomBar
@@ -37,6 +38,7 @@ fun MainScreen(
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
         val fullscreen     = LocalFullscreenMode.current
+        val inSubPage      = LocalInSubPage.current.value
         val enableBlur     = LocalEnableBlur.current
         val uiMode         = LocalUiMode.current
         val blurBackdrop   = rememberBlurBackdrop(enableBlur && uiMode == UiMode.Miuix)
@@ -72,7 +74,7 @@ fun MainScreen(
             ) {
                 Scaffold { innerPadding ->
                     Row(modifier = Modifier.fillMaxSize()) {
-                        if (!fullscreen.value && useRail) {
+                        if (!fullscreen.value && useRail && !inSubPage) {
                             SideRail()
                         }
                         Box(modifier = Modifier.weight(1f).fillMaxSize()) {
@@ -83,7 +85,7 @@ fun MainScreen(
                                 blurBackdrop = if (enableBlur && uiMode == UiMode.Miuix) blurBackdrop else null,
                             )
                             // Bottom bar as overlay: floating pill or standard bar
-                            if (!fullscreen.value && !useRail) {
+                            if (!fullscreen.value && !useRail && !inSubPage) {
                                 val barModifier = if (isFloating && uiMode == UiMode.Miuix) {
                                     Modifier.align(Alignment.BottomCenter)
                                 } else {
