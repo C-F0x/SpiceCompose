@@ -41,6 +41,9 @@ kotlin {
             implementation(libs.miuix.icons)
             implementation(libs.miuix.preference)
             implementation(libs.miuix.blur)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
 
         androidMain.dependencies {
@@ -49,10 +52,12 @@ kotlin {
             implementation("androidx.compose.material3:material3")       // dynamicDarkColorScheme
             implementation(libs.androidx.activity.compose)               // BackHandler actual
             implementation("top.yukonga.miuix.kmp:miuix-blur-android:0.9.2")
+            implementation(libs.ktor.client.okhttp)
         }
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.client.java)
         }
     }
 }

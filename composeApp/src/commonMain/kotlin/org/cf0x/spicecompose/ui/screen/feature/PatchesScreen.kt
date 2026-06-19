@@ -37,7 +37,7 @@ fun PatchesScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val repository = remember { PatchRepository() }
     val connectionManager = LocalConnectionManager.current
-    val connection = connectionManager.getConnection()
+    val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
 

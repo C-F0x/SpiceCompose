@@ -45,7 +45,7 @@ fun ButtonsScreen(onBack: () -> Unit) {
     val windowSize = LocalWindowSize.current
     
     val connectionManager = LocalConnectionManager.current
-    val connection = connectionManager.getConnection()
+    val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     
     var buttonStates by remember { mutableStateOf<List<ButtonState>>(emptyList()) }

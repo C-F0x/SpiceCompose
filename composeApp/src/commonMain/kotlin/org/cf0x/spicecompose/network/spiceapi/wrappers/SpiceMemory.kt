@@ -1,38 +1,35 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
-suspend fun SpiceConnection.memoryWrite(dllName: String, data: String, offset: Int) {
-    val req = SpiceRequest(
-        module = "memory",
-        function = "write",
+suspend fun SpiceClient.memoryWrite(dllName: String, data: String, offset: Int) {
+    request(
+        "memory",
+        "write",
         params = listOf(JsonPrimitive(dllName), JsonPrimitive(data), JsonPrimitive(offset))
     )
-    request(req)
 }
 
-suspend fun SpiceConnection.memoryRead(dllName: String, offset: Int, size: Int): String {
-    val req = SpiceRequest(
-        module = "memory",
-        function = "read",
+suspend fun SpiceClient.memoryRead(dllName: String, offset: Int, size: Int): String {
+    val res = request(
+        "memory",
+        "read",
         params = listOf(JsonPrimitive(dllName), JsonPrimitive(offset), JsonPrimitive(size))
     )
-    val res = request(req)
-    return res.data.getOrNull(0)?.jsonPrimitive?.content ?: ""
+    return res.jsonObject["data"]?.jsonArray?.getOrNull(0)?.jsonPrimitive?.content ?: ""
 }
 
-suspend fun SpiceConnection.memorySignature(
+suspend fun SpiceClient.memorySignature(
     dllName: String,
     signature: String,
     replacement: String,
     offset: Int,
     usage: Int
 ): Int {
-    val req = SpiceRequest(
-        module = "memory",
-        function = "signature",
+    val res = request(
+        "memory",
+        "signature",
         params = listOf(
             JsonPrimitive(dllName),
             JsonPrimitive(signature),
@@ -41,6 +38,5 @@ suspend fun SpiceConnection.memorySignature(
             JsonPrimitive(usage)
         )
     )
-    val res = request(req)
-    return res.data.getOrNull(0)?.jsonPrimitive?.int ?: 0
+    return res.jsonObject["data"]?.jsonArray?.getOrNull(0)?.jsonPrimitive?.int ?: 0
 }

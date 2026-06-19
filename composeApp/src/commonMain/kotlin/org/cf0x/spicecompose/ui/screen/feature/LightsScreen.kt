@@ -39,7 +39,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun LightsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val connectionManager = LocalConnectionManager.current
-    val connection = connectionManager.getConnection()
+    val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
     val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current

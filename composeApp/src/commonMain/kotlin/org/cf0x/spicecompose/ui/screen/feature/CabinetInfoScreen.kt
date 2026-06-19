@@ -29,7 +29,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun CabinetInfoScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val connectionManager = LocalConnectionManager.current
-    val connection = connectionManager.getConnection()
+    val connection = connectionManager.getClient()
     
     var avsInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var launcherInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }

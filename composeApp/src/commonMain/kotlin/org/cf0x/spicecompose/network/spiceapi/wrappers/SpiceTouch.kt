@@ -1,8 +1,7 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
 data class TouchState(
     val id: Int,
@@ -12,10 +11,10 @@ data class TouchState(
     var updated: Boolean = true
 )
 
-suspend fun SpiceConnection.touchRead(): List<TouchState> {
-    val req = SpiceRequest(module = "touch", function = "read")
-    val res = request(req)
-    return res.data.map {
+suspend fun SpiceClient.touchRead(): List<TouchState> {
+    val res = request("touch", "read")
+    val data = res.jsonObject["data"]?.jsonArray ?: return emptyList()
+    return data.map {
         val arr = it.jsonArray
         TouchState(
             id = arr[0].jsonPrimitive.int,
@@ -25,7 +24,7 @@ suspend fun SpiceConnection.touchRead(): List<TouchState> {
     }
 }
 
-suspend fun SpiceConnection.touchWrite(states: List<TouchState>) {
+suspend fun SpiceClient.touchWrite(states: List<TouchState>) {
     if (states.isEmpty()) return
     val params = states.map {
         buildJsonArray {
@@ -34,13 +33,11 @@ suspend fun SpiceConnection.touchWrite(states: List<TouchState>) {
             add(it.y)
         }
     }
-    val req = SpiceRequest(module = "touch", function = "write", params = params)
-    request(req)
+    request("touch", "write", params)
 }
 
-suspend fun SpiceConnection.touchWriteReset(ids: List<Int>) {
+suspend fun SpiceClient.touchWriteReset(ids: List<Int>) {
     if (ids.isEmpty()) return
     val params = ids.map { JsonPrimitive(it) }
-    val req = SpiceRequest(module = "touch", function = "write_reset", params = params)
-    request(req)
+    request("touch", "write_reset", params)
 }

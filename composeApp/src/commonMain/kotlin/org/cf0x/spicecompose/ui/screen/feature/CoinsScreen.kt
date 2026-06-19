@@ -26,7 +26,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun CoinsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val connectionManager = LocalConnectionManager.current
-    val connection = connectionManager.getConnection()
+    val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     
     val onInsert: (Int) -> Unit = { amount ->

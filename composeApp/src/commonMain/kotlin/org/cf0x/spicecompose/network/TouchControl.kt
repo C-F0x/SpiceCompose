@@ -17,7 +17,7 @@ class TouchControl(private val connectionManager: ConnectionManager) {
     private var curTouchID = 100000 + Random.nextInt(99999)
 
     private fun flushState() {
-        val connection = connectionManager.getConnection() ?: return
+        val connection = connectionManager.getClient() ?: return
         
         scope.launch {
             mutex.withLock {

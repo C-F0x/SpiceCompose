@@ -1,8 +1,7 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
 data class LightState(
     val name: String,
@@ -10,10 +9,10 @@ data class LightState(
     val active: Boolean = false
 )
 
-suspend fun SpiceConnection.lightsRead(): List<LightState> {
-    val req = SpiceRequest(module = "lights", function = "read")
-    val res = request(req)
-    return res.data.map {
+suspend fun SpiceClient.lightsRead(): List<LightState> {
+    val res = request("lights", "read")
+    val data = res.jsonObject["data"]?.jsonArray ?: return emptyList()
+    return data.map {
         val arr = it.jsonArray
         LightState(
             name = arr[0].jsonPrimitive.content,
@@ -23,7 +22,7 @@ suspend fun SpiceConnection.lightsRead(): List<LightState> {
     }
 }
 
-suspend fun SpiceConnection.lightsWrite(states: List<LightState>) {
+suspend fun SpiceClient.lightsWrite(states: List<LightState>) {
     if (states.isEmpty()) return
     val params = states.map {
         buildJsonArray {
@@ -31,12 +30,10 @@ suspend fun SpiceConnection.lightsWrite(states: List<LightState>) {
             add(it.state)
         }
     }
-    val req = SpiceRequest(module = "lights", function = "write", params = params)
-    request(req)
+    request("lights", "write", params)
 }
 
-suspend fun SpiceConnection.lightsWriteReset(names: List<String>) {
+suspend fun SpiceClient.lightsWriteReset(names: List<String>) {
     val params = names.map { JsonPrimitive(it) }
-    val req = SpiceRequest(module = "lights", function = "write_reset", params = params)
-    request(req)
+    request("lights", "write_reset", params)
 }

@@ -1,8 +1,7 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
 data class CaptureData(
     val timestamp: Long = 0,
@@ -11,24 +10,22 @@ data class CaptureData(
     val data: ByteArray = byteArrayOf()
 )
 
-suspend fun SpiceConnection.captureGetScreens(): List<Int> {
-    val req = SpiceRequest(module = "capture", function = "get_screens")
-    val res = request(req)
-    return res.data.map { it.jsonPrimitive.int }
+suspend fun SpiceClient.captureGetScreens(): List<Int> {
+    val res = request("capture", "get_screens")
+    return res.jsonObject["data"]?.jsonArray?.map { it.jsonPrimitive.int } ?: emptyList()
 }
 
-suspend fun SpiceConnection.captureGetJPG(
+suspend fun SpiceClient.captureGetJPG(
     screen: Int = 0,
     quality: Int = 60,
     divide: Int = 1
 ): CaptureData {
-    val req = SpiceRequest(
-        module = "capture",
-        function = "get_jpg",
-        params = listOf(JsonPrimitive(screen), JsonPrimitive(quality), JsonPrimitive(divide))
+    val res = request(
+        "capture",
+        "get_jpg",
+        listOf(JsonPrimitive(screen), JsonPrimitive(quality), JsonPrimitive(divide))
     )
-    val res = request(req)
-    val d = res.data
+    val d = res.jsonObject["data"]?.jsonArray ?: return CaptureData()
     if (d.size < 4) return CaptureData()
     
     return CaptureData(

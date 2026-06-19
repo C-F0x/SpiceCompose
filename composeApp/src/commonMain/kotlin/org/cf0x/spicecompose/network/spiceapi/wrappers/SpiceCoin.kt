@@ -1,30 +1,26 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
-import kotlinx.serialization.json.JsonPrimitive
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import kotlinx.serialization.json.*
+import org.cf0x.spicecompose.network.SpiceClient
 
-suspend fun SpiceConnection.coinGet(): Int {
-    val req = SpiceRequest(module = "coin", function = "get")
-    val res = request(req)
-    return res.data[0].toString().toInt()
+suspend fun SpiceClient.coinGet(): Int {
+    val res = request("coin", "get")
+    return res.jsonObject["data"]?.jsonArray?.getOrNull(0).toString().toInt()
 }
 
-suspend fun SpiceConnection.coinSet(amount: Int) {
-    val req = SpiceRequest(
-        module = "coin",
-        function = "set",
-        params = listOf(JsonPrimitive(amount))
+suspend fun SpiceClient.coinSet(amount: Int) {
+    request(
+        "coin",
+        "set",
+        listOf(JsonPrimitive(amount))
     )
-    request(req)
 }
 
-suspend fun SpiceConnection.coinInsert(amount: Int = 1) {
+suspend fun SpiceClient.coinInsert(amount: Int = 1) {
     val params = if (amount != 1) listOf(JsonPrimitive(amount)) else emptyList()
-    val req = SpiceRequest(
-        module = "coin",
-        function = "insert",
-        params = params
+    request(
+        "coin",
+        "insert",
+        params
     )
-    request(req)
 }

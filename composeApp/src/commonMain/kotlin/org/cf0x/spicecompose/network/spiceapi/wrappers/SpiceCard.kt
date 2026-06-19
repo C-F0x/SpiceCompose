@@ -1,14 +1,12 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.JsonPrimitive
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
-suspend fun SpiceConnection.cardInsert(unit: Int, cardID: String) {
-    val req = SpiceRequest(
-        module = "card",
-        function = "insert",
-        params = listOf(JsonPrimitive(unit), JsonPrimitive(cardID))
+suspend fun SpiceClient.cardInsert(unit: Int, cardID: String) {
+    request(
+        "card",
+        "insert",
+        listOf(JsonPrimitive(unit), JsonPrimitive(cardID))
     )
-    request(req)
 }

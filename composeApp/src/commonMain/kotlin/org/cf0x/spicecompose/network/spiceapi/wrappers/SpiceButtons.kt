@@ -1,8 +1,7 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
 data class ButtonState(
     val name: String,
@@ -10,10 +9,10 @@ data class ButtonState(
     val active: Boolean = false
 )
 
-suspend fun SpiceConnection.buttonsRead(): List<ButtonState> {
-    val req = SpiceRequest(module = "buttons", function = "read")
-    val res = request(req)
-    return res.data.map {
+suspend fun SpiceClient.buttonsRead(): List<ButtonState> {
+    val res = request("buttons", "read")
+    val data = res.jsonObject["data"]?.jsonArray ?: return emptyList()
+    return data.map {
         val arr = it.jsonArray
         ButtonState(
             name = arr[0].jsonPrimitive.content,
@@ -23,19 +22,17 @@ suspend fun SpiceConnection.buttonsRead(): List<ButtonState> {
     }
 }
 
-suspend fun SpiceConnection.buttonsWrite(states: List<ButtonState>) {
+suspend fun SpiceClient.buttonsWrite(states: List<ButtonState>) {
     val params = states.map {
         buildJsonArray {
             add(it.name)
             add(it.state)
         }
     }
-    val req = SpiceRequest(module = "buttons", function = "write", params = params)
-    request(req)
+    request("buttons", "write", params)
 }
 
-suspend fun SpiceConnection.buttonsWriteReset(names: List<String>) {
+suspend fun SpiceClient.buttonsWriteReset(names: List<String>) {
     val params = names.map { JsonPrimitive(it) }
-    val req = SpiceRequest(module = "buttons", function = "write_reset", params = params)
-    request(req)
+    request("buttons", "write_reset", params)
 }

@@ -1,8 +1,7 @@
 package org.cf0x.spicecompose.network.spiceapi.wrappers
 
 import kotlinx.serialization.json.*
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
-import org.cf0x.spicecompose.network.spiceapi.SpiceRequest
+import org.cf0x.spicecompose.network.SpiceClient
 
 data class AnalogState(
     val name: String,
@@ -10,10 +9,10 @@ data class AnalogState(
     val active: Boolean = false
 )
 
-suspend fun SpiceConnection.analogsRead(): List<AnalogState> {
-    val req = SpiceRequest(module = "analogs", function = "read")
-    val res = request(req)
-    return res.data.map {
+suspend fun SpiceClient.analogsRead(): List<AnalogState> {
+    val res = request("analogs", "read")
+    val data = res.jsonObject["data"]?.jsonArray ?: return emptyList()
+    return data.map {
         val arr = it.jsonArray
         AnalogState(
             name = arr[0].jsonPrimitive.content,
@@ -23,7 +22,7 @@ suspend fun SpiceConnection.analogsRead(): List<AnalogState> {
     }
 }
 
-suspend fun SpiceConnection.analogsWrite(states: List<AnalogState>) {
+suspend fun SpiceClient.analogsWrite(states: List<AnalogState>) {
     if (states.isEmpty()) return
     val params = states.map {
         buildJsonArray {
@@ -31,12 +30,10 @@ suspend fun SpiceConnection.analogsWrite(states: List<AnalogState>) {
             add(it.state)
         }
     }
-    val req = SpiceRequest(module = "analogs", function = "write", params = params)
-    request(req)
+    request("analogs", "write", params)
 }
 
-suspend fun SpiceConnection.analogsWriteReset(names: List<String>) {
+suspend fun SpiceClient.analogsWriteReset(names: List<String>) {
     val params = names.map { JsonPrimitive(it) }
-    val req = SpiceRequest(module = "analogs", function = "write_reset", params = params)
-    request(req)
+    request("analogs", "write_reset", params)
 }

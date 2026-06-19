@@ -59,7 +59,7 @@ fun StatusScreen() {
 
     LaunchedEffect(status) {
         if (status == ConnectionStatus.Connected) {
-            val connection = connectionManager.getConnection()
+            val connection = connectionManager.getClient()
             if (connection != null) {
                 while (true) {
                     try {

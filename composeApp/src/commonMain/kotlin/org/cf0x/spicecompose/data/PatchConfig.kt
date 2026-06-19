@@ -1,7 +1,7 @@
 package org.cf0x.spicecompose.data
 
 import kotlinx.serialization.Serializable
-import org.cf0x.spicecompose.network.spiceapi.SpiceConnection
+import org.cf0x.spicecompose.network.SpiceClient
 import org.cf0x.spicecompose.network.spiceapi.wrappers.memoryRead
 import org.cf0x.spicecompose.network.spiceapi.wrappers.memoryWrite
 import org.cf0x.spicecompose.network.spiceapi.wrappers.memorySignature
@@ -29,10 +29,10 @@ sealed class PatchConfig {
         return dateCode in dateCodeMin..dateCodeMax
     }
 
-    abstract suspend fun getStatus(connection: SpiceConnection): PatchStatus
-    abstract suspend fun setStatus(connection: SpiceConnection, status: PatchStatus): Boolean
+    abstract suspend fun getStatus(connection: SpiceClient): PatchStatus
+    abstract suspend fun setStatus(connection: SpiceClient, status: PatchStatus): Boolean
     
-    protected open suspend fun detectDllName(connection: SpiceConnection, dllName: String, gameModel: String, gameRev: String): String {
+    protected open suspend fun detectDllName(connection: SpiceClient, dllName: String, gameModel: String, gameRev: String): String {
         // Omnimix detection logic
         if (gameModel == "LDJ" && gameRev == "X") {
             return try {
@@ -65,7 +65,7 @@ data class MemoryPatchConfig(
     override var online: Boolean = false,
     val patches: List<MemoryPatchData> = emptyList()
 ) : PatchConfig() {
-    override suspend fun getStatus(connection: SpiceConnection): PatchStatus {
+    override suspend fun getStatus(connection: SpiceClient): PatchStatus {
         val states = patches.map { patch ->
             val dll = detectDllName(connection, patch.dllName, "", "") // TODO: Pass real gameModel/Rev
             try {
@@ -89,7 +89,7 @@ data class MemoryPatchConfig(
         else PatchStatus.Unknown
     }
 
-    override suspend fun setStatus(connection: SpiceConnection, status: PatchStatus): Boolean {
+    override suspend fun setStatus(connection: SpiceClient, status: PatchStatus): Boolean {
         if (status == PatchStatus.Unknown) return false
         return try {
             patches.forEach { patch ->
@@ -125,11 +125,11 @@ data class SignaturePatchConfig(
     private var rawOffset: Int = 0
     private var dataDisabled: String = ""
 
-    override suspend fun getStatus(connection: SpiceConnection): PatchStatus {
+    override suspend fun getStatus(connection: SpiceClient): PatchStatus {
         return if (rawOffset > 0) PatchStatus.Enabled else PatchStatus.Disabled
     }
 
-    override suspend fun setStatus(connection: SpiceConnection, status: PatchStatus): Boolean {
+    override suspend fun setStatus(connection: SpiceClient, status: PatchStatus): Boolean {
         val dll = detectDllName(connection, dllName, "", "")
         return try {
             if (status == PatchStatus.Enabled) {

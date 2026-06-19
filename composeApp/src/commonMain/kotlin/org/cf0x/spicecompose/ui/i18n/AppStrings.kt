@@ -14,6 +14,7 @@ data class AppStrings(
     val tools: String,
     val buttons: String, val buttonsSummary: String,
     val analogs: String, val analogsSummary: String,
+
     val lights: String, val lightsSummary: String,
     val coins: String, val coinsSummary: String,
     val keypad: String, val keypadSummary: String,
