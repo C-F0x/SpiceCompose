@@ -3,61 +3,95 @@ package org.cf0x.spicecompose.ui.screen.theme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.AspectRatio
+import androidx.compose.material.icons.rounded.BlurOn
+import androidx.compose.material.icons.rounded.Brightness1
+import androidx.compose.material.icons.rounded.ColorLens
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.Wallpaper
+import androidx.compose.material.icons.rounded.WebAsset
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.platform.vibrationAvailable
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.theme.ColorMode
-import top.yukonga.miuix.kmp.basic.*
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Slider
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.preference.*
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import kotlinx.coroutines.launch
-import org.cf0x.spicecompose.platform.maybeVibrate
-import org.cf0x.spicecompose.platform.vibrationAvailable
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+
+private val BlockSpacing = 8.dp
 
 @Composable
 fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActions) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings        = LocalAppStrings.current
-    val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
-    val scope = rememberCoroutineScope()
+    val fullscreen     = LocalFullscreenMode.current
+    val p              = ThemePreferences
+    val scope          = rememberCoroutineScope()
 
     SpiceBackHandler(enabled = fullscreen.value) {
         fullscreen.value = false
     }
 
     var showAccentPicker by rememberSaveable { mutableStateOf(false) }
-    // Local scale value — only committed on slider release
     var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
     if (showAccentPicker) {
@@ -88,7 +122,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
         popupHost = {},
     ) { innerPadding ->
         val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-        androidx.compose.foundation.lazy.LazyColumn(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
                 .scrollEndHaptic()
@@ -96,28 +130,31 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
             contentPadding = padding,
+            verticalArrangement = Arrangement.spacedBy(BlockSpacing),
             overscrollEffect = null,
         ) {
-            item {
-                Spacer(Modifier.height(12.dp))
+            // ── Top spacing ──────────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
 
-                // ── Phone preview ────────────────────────────────────────────
+            // ── Phone preview ────────────────────────────────────────────────
+            item {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     ThemePreviewCard(navLayoutMode = uiState.navLayoutMode)
                 }
-                Spacer(Modifier.height(16.dp))
+            }
 
-                // ── 3 mode chips (Auto | Light | Dark) ───────────
+            // ── 3 mode chips (Auto | Light | Dark) ───────────────────────────
+            item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ColorModeChip(Icons.Rounded.Star,      uiState.colorMode == ColorMode.SYSTEM, Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.SYSTEM) }
                     ColorModeChip(Icons.Rounded.LightMode, uiState.colorMode == ColorMode.LIGHT,  Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.LIGHT) }
                     ColorModeChip(Icons.Rounded.DarkMode,  uiState.colorMode == ColorMode.DARK,   Modifier.weight(1f)) { actions.onSetColorMode(ColorMode.DARK) }
                 }
-                Spacer(Modifier.height(12.dp))
+            }
 
-                // ── Color section ────────────────────────────────────────────
+            // ── Color section ────────────────────────────────────────────────
+            item {
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    // Enable Monet
                     SwitchPreference(
                         title   = strings.monetEnable,
                         summary = strings.monetEnableSummary,
@@ -125,8 +162,6 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         onCheckedChange = actions.onSetUseMonet,
                         startAction = { PrefIcon(Icons.Rounded.Wallpaper) },
                     )
-
-                    // AMOLED Dark
                     if (uiState.colorMode != ColorMode.LIGHT) {
                         SwitchPreference(
                             title   = strings.amoledDark,
@@ -136,8 +171,6 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                             startAction = { PrefIcon(Icons.Rounded.Brightness1) },
                         )
                     }
-
-                    // ── Monet ON: palette style + accent color ──────
                     if (uiState.useMonet) {
                         val paletteLabels = paletteStyleLabels(strings)
                         OverlayDropdownPreference(
@@ -161,11 +194,11 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+            }
 
-                // ── Layout ───────────────────────────────────────────────────
+            // ── Layout ───────────────────────────────────────────────────────
+            item {
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    // Nav mode: disabled when floating bar is on
                     OverlayDropdownPreference(
                         title   = strings.navBarStyle,
                         summary = listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal],
@@ -175,8 +208,6 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         startAction = { PrefIcon(Icons.AutoMirrored.Rounded.MenuOpen) },
                         enabled = !uiState.floatingBottomBar
                     )
-
-                    // Floating bar: Forced to Bottom Bar when enabled
                     SwitchPreference(
                         title   = strings.floatingBottomBar,
                         summary = strings.floatingBottomBarSummary,
@@ -187,8 +218,6 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         },
                         startAction = { PrefIcon(Icons.Rounded.WebAsset) },
                     )
-
-                    // Liquid Glass sub-option
                     if (uiState.floatingBottomBar) {
                         SwitchPreference(
                             title   = strings.liquidGlass,
@@ -199,9 +228,10 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+            }
 
-                // ── Effects (Miuix-only: blur) ───────────────────────────────
+            // ── Effects (Miuix-only: blur) ───────────────────────────────────
+            item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     SwitchPreference(
                         title   = strings.enableBlur,
@@ -211,9 +241,10 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         startAction = { PrefIcon(Icons.Rounded.BlurOn) },
                     )
                 }
-                Spacer(Modifier.height(12.dp))
+            }
 
-                // ── Scale (inline slider, apply on release) ──────────────────
+            // ── Scale (inline slider, apply on release) ──────────────────────
+            item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -222,24 +253,35 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                                 Text(strings.pageScale,   style = textStyles.main, color = colorScheme.onBackground)
                                 Text(strings.pageScaleSummary, style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
                             }
-                            Text("${(localScale * 100).toInt()}%",
-                                style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
+                            Text(
+                                "${(localScale * 100).toInt()}%",
+                                style = textStyles.main, color = colorScheme.onSurfaceVariantSummary
+                            )
                         }
                         Slider(
                             value              = localScale,
-                            onValueChange      = { localScale = it },           // update local preview
-                            onValueChangeFinished = { actions.onSetPageScale(localScale) }, // commit on release
+                            onValueChange      = { localScale = it },
+                            onValueChangeFinished = { actions.onSetPageScale(localScale) },
                             valueRange         = 0.6f..1.4f,
                             modifier           = Modifier.fillMaxWidth().padding(top = 4.dp),
                         )
                     }
                 }
-                Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            }
+
+            // ── Vibration ────────────────────────────────────────────────────
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp)) {
                         ArrowPreference(
                             title = "Vibration",
                             summary = if (p.vibrationEnabled) "On" else "Off",
-                            startAction = { Icon(Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp), colorScheme.onBackground) },
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Vibration, null,
+                                    Modifier.padding(end = 6.dp), colorScheme.onBackground
+                                )
+                            },
                             onClick = { p.updateVibrationEnabled(!p.vibrationEnabled) }
                         )
                         if (vibrationAvailable && p.vibrationEnabled) {
@@ -251,11 +293,18 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(Modifier.height(8.dp))
-                            TextButton(text = "Test ${p.vibDuration}ms", onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }, modifier = Modifier.fillMaxWidth())
+                            TextButton(
+                                text = "Test ${p.vibDuration}ms",
+                                onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
             }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
         }
     }
 }
@@ -271,8 +320,13 @@ private fun ColorModeChip(
         .background(if (selected) colorScheme.primary else colorScheme.secondaryContainer)
         .clickable(onClick = onClick),
     contentAlignment = Alignment.Center,
-) { Icon(icon, null, tint = if (selected) colorScheme.onPrimary else colorScheme.onSecondaryContainer,
-    modifier = Modifier.size(22.dp)) }
+) {
+    Icon(
+        icon, null,
+        tint = if (selected) colorScheme.onPrimary else colorScheme.onSecondaryContainer,
+        modifier = Modifier.size(22.dp)
+    )
+}
 
 @Composable
 private fun PrefIcon(icon: ImageVector) =
@@ -284,35 +338,42 @@ private fun VibrationCard() {
     val p = ThemePreferences
     val enabled = vibrationAvailable
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp)
-    ) {
+    Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
             ArrowPreference(
                 title = "Vibration Test",
                 summary = if (enabled) "${p.vibDuration}ms" else "Not supported",
-                startAction = { Icon(Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp), 
-                    tint = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.3f)) }
+                startAction = {
+                    Icon(
+                        Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp),
+                        tint = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.3f)
+                    )
+                }
             )
             if (enabled) {
                 Text("${p.vibDuration}ms", Modifier.padding(bottom = 4.dp))
-                top.yukonga.miuix.kmp.basic.Slider(
+                Slider(
                     value = p.vibDuration.toFloat(),
                     onValueChange = { p.updateVibDuration(it.toInt()) },
                     valueRange = 0f..200f,
                     modifier = Modifier.fillMaxWidth()
                 )
-                TextButton(text = "Test ${p.vibDuration}ms", onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }, modifier = Modifier.fillMaxWidth())
+                TextButton(
+                    text = "Test ${p.vibDuration}ms",
+                    onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ToggleCard(title: String, checked: Boolean, onToggle: (Boolean) -> Unit, icon: ImageVector = Icons.Rounded.Visibility) {
-    Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+private fun ToggleCard(
+    title: String, checked: Boolean, onToggle: (Boolean) -> Unit,
+    icon: ImageVector = Icons.Rounded.Visibility
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
         ArrowPreference(
             title = title,
             summary = if (checked) "On" else "Off",

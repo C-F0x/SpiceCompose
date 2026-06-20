@@ -1,53 +1,92 @@
 package org.cf0x.spicecompose.ui.screen.theme
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Brightness1
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.ColorLens
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import kotlinx.coroutines.launch
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.platform.vibrationAvailable
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
+import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.theme.ColorMode
-import org.cf0x.spicecompose.ui.theme.defaultKeyColor
-import org.cf0x.spicecompose.ui.theme.keyColorPresets
-import org.cf0x.spicecompose.ui.theme.rememberSystemAccentColor
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
-import org.cf0x.spicecompose.platform.LocalFullscreenMode
-import org.cf0x.spicecompose.ui.SpiceBackHandler
-import org.cf0x.spicecompose.ui.component.FullscreenAction
-import org.cf0x.spicecompose.ui.component.TonalCard
-import kotlinx.coroutines.launch
-import org.cf0x.spicecompose.platform.maybeVibrate
-import org.cf0x.spicecompose.platform.vibrationAvailable
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
+
+private val BlockSpacing = 8.dp
 
 @ExperimentalMaterial3Api
 @Composable
 fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenActions) {
     val strings        = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
-    val scope = rememberCoroutineScope()
+    val fullscreen     = LocalFullscreenMode.current
+    val p              = ThemePreferences
+    val scope          = rememberCoroutineScope()
 
     SpiceBackHandler(enabled = fullscreen.value) {
         fullscreen.value = false
@@ -86,16 +125,17 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
         },
     ) { padding ->
         val contentPadding = if (fullscreen.value) PaddingValues(0.dp) else padding
-        androidx.compose.foundation.lazy.LazyColumn(
+        LazyColumn(
             modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = contentPadding,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(BlockSpacing)
         ) {
-            item { Spacer(Modifier.height(8.dp)) }
+            // ── Top spacing ──────────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
 
             // ── Preview ──────────────────────────────────────────────────────
             item {
-                Box(Modifier.fillMaxWidth().padding(bottom = 12.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     ThemePreviewCard(navLayoutMode = uiState.navLayoutMode)
                 }
             }
@@ -116,7 +156,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                     shape = SpiceTheme.containerShape()
                 ) {
                     Column {
-                        // AMOLED
                         if (uiState.colorMode != ColorMode.LIGHT) {
                             ListItem(
                                 headlineContent = { Text(strings.amoledDark) },
@@ -127,7 +166,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             )
                         }
 
-                        // Palette Style
                         ExposedDropdownMenuBox(expanded = paletteExpanded, onExpandedChange = { paletteExpanded = it }) {
                             ListItem(
                                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -140,7 +178,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(paletteExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                            ExposedDropdownMenu(expanded = paletteExpanded, onDismissRequest = { paletteExpanded = false }) {
+                            DropdownMenu(expanded = paletteExpanded, onDismissRequest = { paletteExpanded = false }) {
                                 paletteStyleLabels(strings).forEachIndexed { i, label ->
                                     DropdownMenuItem(text = { Text(label) }, onClick = {
                                         actions.onSetPaletteStyle(PaletteStyle.entries[i]); paletteExpanded = false
@@ -149,7 +187,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             }
                         }
 
-                        // Accent Color
                         ListItem(
                             modifier = Modifier.clickable { showAccentPicker = true },
                             headlineContent = { Text(strings.keyColor) },
@@ -159,7 +196,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
 
-                        // Color Spec
                         ExposedDropdownMenuBox(expanded = specExpanded, onExpandedChange = { specExpanded = it }) {
                             ListItem(
                                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -171,7 +207,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(specExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                            ExposedDropdownMenu(expanded = specExpanded, onDismissRequest = { specExpanded = false }) {
+                            DropdownMenu(expanded = specExpanded, onDismissRequest = { specExpanded = false }) {
                                 listOf(strings.spec2021, strings.spec2025).forEachIndexed { i, label ->
                                     DropdownMenuItem(text = { Text(label) }, onClick = {
                                         actions.onSetColorSpecVersion(if (i == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
@@ -181,7 +217,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             }
                         }
 
-                        // M3E Switch
                         ListItem(
                             headlineContent = { Text(strings.m3e) },
                             supportingContent = { Text(strings.m3eSummary) },
@@ -190,7 +225,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
 
-                        // Nav Style
                         ExposedDropdownMenuBox(expanded = navExpanded, onExpandedChange = { navExpanded = it }) {
                             ListItem(
                                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -200,7 +234,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(navExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                            ExposedDropdownMenu(expanded = navExpanded, onDismissRequest = { navExpanded = false }) {
+                            DropdownMenu(expanded = navExpanded, onDismissRequest = { navExpanded = false }) {
                                 listOf(strings.navAuto, strings.navBottom, strings.navRail).forEachIndexed { i, label ->
                                     DropdownMenuItem(text = { Text(label) }, onClick = { actions.onSetNavLayoutMode(NavLayoutMode.entries[i]); navExpanded = false })
                                 }
@@ -230,29 +264,32 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                     }
                 }
             }
-            
-            item { Spacer(Modifier.height(24.dp)) }
+
+            // ── Vibration ────────────────────────────────────────────────────
             item {
-                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    TonalCard(shape = SpiceTheme.cornerShape(24.dp)) {
-                        Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
-                            ListItem(
-                                headlineContent = { Text("Vibration") },
-                                supportingContent = { Text(if (p.vibrationEnabled) "On" else "Off") },
-                                leadingContent = { Icon(Icons.Rounded.Vibration, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
-                                trailingContent = { Switch(p.vibrationEnabled, p::updateVibrationEnabled) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                            if (vibrationAvailable && p.vibrationEnabled) {
-                                Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
-                                Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
-                                TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
-                            }
+                TonalCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    shape = SpiceTheme.cornerShape(24.dp)
+                ) {
+                    Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+                        ListItem(
+                            headlineContent = { Text("Vibration") },
+                            supportingContent = { Text(if (p.vibrationEnabled) "On" else "Off") },
+                            leadingContent = { Icon(Icons.Rounded.Vibration, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+                            trailingContent = { Switch(p.vibrationEnabled, p::updateVibrationEnabled) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        if (vibrationAvailable && p.vibrationEnabled) {
+                            Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
+                            Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
+                            TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
                         }
                     }
                 }
             }
-            item { Spacer(Modifier.height(24.dp)) }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
         }
     }
 }

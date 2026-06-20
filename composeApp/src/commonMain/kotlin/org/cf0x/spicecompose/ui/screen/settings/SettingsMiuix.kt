@@ -1,7 +1,10 @@
 package org.cf0x.spicecompose.ui.screen.settings
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -9,7 +12,7 @@ import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Translate
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
@@ -28,6 +31,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
+private val BlockSpacing = 12.dp
+
 @Composable
 fun SettingsPagerMiuix(
     uiState: SettingsUiState,
@@ -35,13 +40,14 @@ fun SettingsPagerMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
+
     Scaffold(
         topBar = {
-                TopAppBar(
-                    title = strings.settings,
-                    actions = {},
-                    scrollBehavior = scrollBehavior,
-                )
+            TopAppBar(
+                title = strings.settings,
+                actions = {},
+                scrollBehavior = scrollBehavior,
+            )
         },
         popupHost = {},
     ) { innerPadding ->
@@ -51,23 +57,26 @@ fun SettingsPagerMiuix(
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = BlockSpacing),
             contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(BlockSpacing),
             overscrollEffect = null,
         ) {
+            // ── Top spacing ──────────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
+
+            // ── Language ─────────────────────────────────────────────────────
             item {
-                // ── Language (top-level, solo card) ──────────────────────────
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     OverlayDropdownPreference(
                         title = strings.language,
                         summary = uiState.language.displayName,
                         items = AppLanguage.entries.map { it.displayName },
                         selectedIndex = uiState.language.ordinal,
-                        onSelectedIndexChange = { maybeVibrate(15); actions.onSetLanguage(AppLanguage.entries[it]) },
+                        onSelectedIndexChange = {
+                            maybeVibrate(15)
+                            actions.onSetLanguage(AppLanguage.entries[it])
+                        },
                         startAction = {
                             Icon(
                                 imageVector = Icons.Rounded.Translate,
@@ -78,19 +87,20 @@ fun SettingsPagerMiuix(
                         },
                     )
                 }
+            }
 
-                // ── Appearance ────────────────────────────────────────────────
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                ) {
+            // ── Appearance ───────────────────────────────────────────────────
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     OverlayDropdownPreference(
                         title = strings.uiStyle,
                         summary = strings.uiStyleSummary,
                         items = listOf("Miuix", "Material"),
                         selectedIndex = if (uiState.uiMode == UiMode.Material) 1 else 0,
-                        onSelectedIndexChange = { maybeVibrate(15); actions.onSetUiModeIndex(it) },
+                        onSelectedIndexChange = {
+                            maybeVibrate(15)
+                            actions.onSetUiModeIndex(it)
+                        },
                         startAction = {
                             Icon(
                                 imageVector = Icons.Rounded.Dashboard,
@@ -114,13 +124,11 @@ fun SettingsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenTheme() },
                     )
                 }
+            }
 
-                // ── About ────────────────────────────────────────────────────
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp)
-                        .fillMaxWidth(),
-                ) {
+            // ── About ────────────────────────────────────────────────────────
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     ArrowPreference(
                         title = strings.about,
                         startAction = {
@@ -134,8 +142,10 @@ fun SettingsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenAbout() },
                     )
                 }
-
             }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(BlockSpacing)) }
         }
     }
 }
