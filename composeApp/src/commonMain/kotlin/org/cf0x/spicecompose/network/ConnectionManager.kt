@@ -24,6 +24,7 @@ class ConnectionManager {
     val currentServer: StateFlow<ServerConfig?> = _currentServer.asStateFlow()
 
     private var client: SpiceClient? = null
+    private var refreshJob: Job? = null
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -39,11 +40,13 @@ class ConnectionManager {
 
                 val newClient = SpiceClient()
                 withTimeout(5000) {
-                    newClient.connect(server.host, server.port, server.password)
+                    val result = newClient.connect(server.host, server.port, server.password)
+                    if (!result.connected) throw Exception("Connection refused or timed out")
                 }
 
                 client = newClient
                 _status.value = ConnectionStatus.Connected
+                startSessionRefresh()
             } catch (e: Exception) {
                 _status.value = ConnectionStatus.Disconnected
                 _error.value = if (e is TimeoutCancellationException) "Connection timed out"
@@ -55,7 +58,20 @@ class ConnectionManager {
         }
     }
 
+    private fun startSessionRefresh() {
+        refreshJob?.cancel()
+        refreshJob = scope.launch {
+            while (isActive && _status.value == ConnectionStatus.Connected) {
+                delay(60_000)
+                try {
+                    client?.let { it.request("control", "session_refresh") }
+                } catch (_: Exception) { /* best-effort */ }
+            }
+        }
+    }
+
     fun disconnect() {
+        refreshJob?.cancel()
         scope.launch {
             client?.close()
             client = null

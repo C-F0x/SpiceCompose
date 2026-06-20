@@ -31,6 +31,7 @@ fun StatusScreen() {
     var chosenId by remember { mutableStateOf(repository.chosenServerId) }
     var showAddDialog by remember { mutableStateOf(false) }
     var showServerList by remember { mutableStateOf(false) }
+    var editingServer by remember { mutableStateOf<ServerConfig?>(null) }
     
     val connectionManager = LocalConnectionManager.current
     val mainState = LocalMainPagerState.current
@@ -61,14 +62,17 @@ fun StatusScreen() {
         if (status == ConnectionStatus.Connected) {
             val connection = connectionManager.getClient()
             if (connection != null) {
-                while (true) {
+                var failCount = 0
+                while (failCount < 3) {
                     try {
                         avsInfo = connection.infoAVS()
                         launcherInfo = connection.infoLauncher().mapValues { it.value.toString().replace("\"", "") }
                         memoryInfo = connection.infoMemory()
-                    } catch (_: Exception) { }
+                        failCount = 0
+                    } catch (_: Exception) { failCount++ }
                     delay(2000)
                 }
+                connectionManager.disconnect()
             }
         } else {
             avsInfo = emptyMap()
@@ -78,14 +82,17 @@ fun StatusScreen() {
     }
 
     val onStatusBlockClick = {
-        if (status == ConnectionStatus.Connected) {
-            connectionManager.disconnect()
-        } else {
-            chosenServer?.let { connectionManager.connect(it) } ?: run { showServerList = true }
+        when (status) {
+            ConnectionStatus.Connecting -> { /* no-op */ }
+            ConnectionStatus.Connected -> connectionManager.disconnect()
+            ConnectionStatus.Disconnected, ConnectionStatus.Error -> {
+                chosenServer?.let { connectionManager.connect(it) } ?: run { showServerList = true }
+            }
         }
     }
-    
-    val onServerAction: (Boolean) -> Unit = { isLong ->
+
+    val onServerAction: (Boolean) -> Unit = onServerAction@{ isLong ->
+        if (status == ConnectionStatus.Connecting) return@onServerAction
         if (isLong) {
             showServerList = true
         } else {
@@ -118,14 +125,16 @@ fun StatusScreen() {
                             onSelect = { id ->
                                 repository.chosenServerId = id
                                 chosenId = id
-                                servers = repository.getServers() // Refresh UI
+                                servers = repository.getServers()
                             },
                             onAddClick = { showAddDialog = true },
+                            onEdit = { editingServer = it },
                             onDelete = { id ->
                                 repository.deleteServer(id)
                                 servers = repository.getServers()
                                 chosenId = repository.chosenServerId
-                            }
+                            },
+                            onBack = { showServerList = false }
                         )
                         UiMode.Material -> StatusPagerMaterial(
                             servers = servers,
@@ -136,11 +145,13 @@ fun StatusScreen() {
                                 servers = repository.getServers()
                             },
                             onAddClick = { showAddDialog = true },
+                            onEdit = { editingServer = it },
                             onDelete = { id ->
                                 repository.deleteServer(id)
                                 servers = repository.getServers()
                                 chosenId = repository.chosenServerId
-                            }
+                            },
+                            onBack = { showServerList = false }
                         )
                     }
                 }
@@ -153,7 +164,8 @@ fun StatusScreen() {
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
                         onServerAction = onServerAction,
-                        onStatusClick = onStatusBlockClick
+                        onStatusClick = onStatusBlockClick,
+                        onEditServer = { editingServer = chosenServer }
                     )
                     UiMode.Material -> StatusHomeMaterial(
                         connectionStatus = status,
@@ -162,7 +174,8 @@ fun StatusScreen() {
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
                         onServerAction = onServerAction,
-                        onStatusClick = onStatusBlockClick
+                        onStatusClick = onStatusBlockClick,
+                        onEditServer = { editingServer = chosenServer }
                     )
                 }
             }
@@ -175,7 +188,23 @@ fun StatusScreen() {
                 servers = repository.getServers()
                 showAddDialog = false
             },
-            onDismiss = { showAddDialog = false }
+            onCancel = { showAddDialog = false }
+        )
+        ServerEditDialog(
+            show = editingServer != null,
+            server = editingServer,
+            onSave = {
+                repository.addServer(it)
+                servers = repository.getServers()
+                editingServer = null
+            },
+            onDelete = {
+                editingServer?.let { repository.deleteServer(it.id) }
+                servers = repository.getServers()
+                chosenId = repository.chosenServerId
+                editingServer = null
+            },
+            onCancel = { editingServer = null }
         )
     }
 }

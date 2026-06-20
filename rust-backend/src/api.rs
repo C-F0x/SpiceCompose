@@ -12,6 +12,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::sync::Arc;
+use std::time::Duration;
 
 // ── Request/response types ──
 
@@ -73,7 +74,7 @@ async fn connect(
         existing.disconnect().await;
     }
 
-    let connection = SpiceConnection::connect(&req.host, req.port, &req.password)
+    let connection = SpiceConnection::connect(&req.host, req.port, &req.password, Duration::from_secs(5))
         .await
         .map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
 

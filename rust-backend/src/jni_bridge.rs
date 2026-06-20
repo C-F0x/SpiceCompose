@@ -4,6 +4,7 @@ use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jstring};
 use serde_json::Value;
 use std::sync::{LazyLock, Mutex};
+use std::time::Duration;
 
 static CONNECTION: Mutex<Option<SpiceConnection>> = Mutex::new(None);
 
@@ -35,7 +36,7 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeCon
         Err(_) => return 0,
     };
 
-    match RT.block_on(SpiceConnection::connect(&host, port as u16, &password)) {
+    match RT.block_on(SpiceConnection::connect(&host, port as u16, &password, Duration::from_secs(3))) {
         Ok(conn) => {
             let mut guard = CONNECTION.lock().unwrap();
             if let Some(old) = guard.take() {

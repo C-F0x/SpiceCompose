@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
@@ -43,9 +43,9 @@ fun LightsScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
     val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
+    val p = ThemePreferences
     
     var lightStates by remember { mutableStateOf<List<LightState>>(emptyList()) }
-    var locked by remember { mutableStateOf(false) }
     val draggingNames = remember { mutableStateListOf<String>() }
 
     SpiceBackHandler(enabled = fullscreen.value) {
@@ -76,7 +76,7 @@ fun LightsScreen(onBack: () -> Unit) {
     DisposableEffect(connection) {
         onDispose {
             scope.launch {
-                if (!locked) connection?.lightsWriteReset(emptyList())
+                connection?.lightsWriteReset(emptyList())
             }
         }
     }
@@ -92,17 +92,6 @@ fun LightsScreen(onBack: () -> Unit) {
         }
     }
 
-    val onLockToggle: () -> Unit = {
-        scope.launch {
-            if (locked) {
-                locked = false
-                connection?.lightsWriteReset(emptyList())
-            } else {
-                locked = true
-                connection?.lightsWrite(lightStates)
-            }
-        }
-    }
 
     val columns = when (windowSize) {
         WindowSize.Compact -> 1
@@ -114,15 +103,12 @@ fun LightsScreen(onBack: () -> Unit) {
     if (uiMode == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Scaffold(
             topBar = {
-                if (!fullscreen.value) {
+                if (!fullscreen.value && !p.toolbarHidden) {
                     SmallTopAppBar(
                         title = strings.lights,
                         navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
                         actions = {
                             FullscreenAction()
-                            IconButton(onClick = onLockToggle) {
-                                top.yukonga.miuix.kmp.basic.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
-                            }
                         }
                     )
                 }
@@ -154,7 +140,7 @@ fun LightsScreen(onBack: () -> Unit) {
     } else {
         androidx.compose.material3.Scaffold(
             topBar = {
-                if (!fullscreen.value) {
+                if (!fullscreen.value && !p.toolbarHidden) {
                     @OptIn(ExperimentalMaterial3Api::class)
                     androidx.compose.material3.TopAppBar(
                         title = { androidx.compose.material3.Text(strings.lights) },
@@ -165,9 +151,6 @@ fun LightsScreen(onBack: () -> Unit) {
                         },
                         actions = {
                             FullscreenAction()
-                            androidx.compose.material3.IconButton(onClick = onLockToggle) {
-                                androidx.compose.material3.Icon(if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen, null)
-                            }
                         }
                     )
                 }

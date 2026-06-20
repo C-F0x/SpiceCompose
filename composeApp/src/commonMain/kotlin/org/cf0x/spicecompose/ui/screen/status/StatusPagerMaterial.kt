@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,7 +37,9 @@ fun StatusPagerMaterial(
     chosenId: String?,
     onSelect: (String?) -> Unit,
     onAddClick: () -> Unit,
-    onDelete: (String) -> Unit
+    onEdit: (ServerConfig) -> Unit,
+    onDelete: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val strings = LocalAppStrings.current
@@ -43,8 +47,13 @@ fun StatusPagerMaterial(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Servers") },
+                title = { Text(strings.servers) },
                 scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    }
+                },
                 actions = {
                     IconButton(onClick = onAddClick) {
                         Icon(Icons.Rounded.Add, contentDescription = null)
@@ -69,6 +78,7 @@ fun StatusPagerMaterial(
                         server = server,
                         isChosen = server.id == chosenId,
                         onSelect = { onSelect(if (server.id == chosenId) null else server.id) },
+                        onEdit = { onEdit(server) },
                         onDelete = onDelete
                     )
                 }
@@ -83,18 +93,25 @@ fun ServerCardMaterial(
     server: ServerConfig,
     isChosen: Boolean,
     onSelect: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: (String) -> Unit
 ) {
-    var showConfirm by remember { mutableStateOf(false) }
     val strings = LocalAppStrings.current
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        onClick = { showConfirm = true }
+        onClick = onSelect
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(
+            Modifier
+                .padding(16.dp)
+                .combinedClickable(
+                    onClick = onSelect,
+                    onLongClick = onEdit
+                )
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Rounded.Computer,
@@ -112,29 +129,6 @@ fun ServerCardMaterial(
             InfoLineMaterial(strings.serverPort, server.port.toString())
             InfoLineMaterial(strings.serverPassword, server.password)
         }
-    }
-
-    if (showConfirm) {
-        AlertDialog(
-            onDismissRequest = { showConfirm = false },
-            title = { Text("Confirm Action") },
-            text = { Text("What would you like to do with \"${server.name}\"?") },
-            confirmButton = {
-                TextButton(onClick = { onSelect(); showConfirm = false }) {
-                    Text(if (isChosen) "Unselect" else "Select")
-                }
-            },
-            dismissButton = {
-                Row {
-                    TextButton(onClick = { onDelete(server.id); showConfirm = false }) {
-                        Text(strings.delete, color = MaterialTheme.colorScheme.error)
-                    }
-                    TextButton(onClick = { showConfirm = false }) {
-                        Text(strings.cancel)
-                    }
-                }
-            }
-        )
     }
 }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ fun TonalCard(
         if (onClick != null || onLongClick != null) {
             Box(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .clip(shape)
                     .combinedClickable(
                         onClick = onClick ?: {},

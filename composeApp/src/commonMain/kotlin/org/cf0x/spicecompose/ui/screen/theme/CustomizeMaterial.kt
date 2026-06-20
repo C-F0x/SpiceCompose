@@ -31,13 +31,27 @@ import org.cf0x.spicecompose.ui.theme.defaultKeyColor
 import org.cf0x.spicecompose.ui.theme.keyColorPresets
 import org.cf0x.spicecompose.ui.theme.rememberSystemAccentColor
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.component.TonalCard
+import kotlinx.coroutines.launch
+import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.platform.vibrationAvailable
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 
 @ExperimentalMaterial3Api
 @Composable
-fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
+fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenActions) {
     val strings        = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
+    val scope = rememberCoroutineScope()
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     var showAccentPicker by rememberSaveable { mutableStateOf(false) }
     var navExpanded      by rememberSaveable { mutableStateOf(false) }
@@ -55,20 +69,26 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(strings.themeSettings) },
-                navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+            if (!fullscreen.value && !p.toolbarHidden) {
+                TopAppBar(
+                    title = { Text(strings.themeSettings) },
+                    navigationIcon = {
+                        IconButton(onClick = actions.onBack) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                        }
+                    },
+                    actions = {
+                        FullscreenAction()
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
     ) { padding ->
+        val contentPadding = if (fullscreen.value) PaddingValues(0.dp) else padding
         androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-            contentPadding = padding,
+            contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item { Spacer(Modifier.height(8.dp)) }
@@ -91,10 +111,13 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
 
             // ── Color & Layout Section ───────────────────────────────────────
             item {
-                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // AMOLED
-                    if (uiState.colorMode != ColorMode.LIGHT) {
-                        TonalCard(shape = SpiceTheme.containerShape()) {
+                TonalCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    shape = SpiceTheme.containerShape()
+                ) {
+                    Column {
+                        // AMOLED
+                        if (uiState.colorMode != ColorMode.LIGHT) {
                             ListItem(
                                 headlineContent = { Text(strings.amoledDark) },
                                 supportingContent = { Text(strings.amoledDarkSummary) },
@@ -103,12 +126,11 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
                         }
-                    }
 
-                    // Palette Style (always visible in M3)
-                    ExposedDropdownMenuBox(expanded = paletteExpanded, onExpandedChange = { paletteExpanded = it }) {
-                        TonalCard(modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = SpiceTheme.containerShape()) {
+                        // Palette Style
+                        ExposedDropdownMenuBox(expanded = paletteExpanded, onExpandedChange = { paletteExpanded = it }) {
                             ListItem(
+                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                 headlineContent = { Text(strings.paletteStyle) },
                                 supportingContent = {
                                     val labels = paletteStyleLabels(strings)
@@ -118,32 +140,29 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(paletteExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                        }
-                        ExposedDropdownMenu(expanded = paletteExpanded, onDismissRequest = { paletteExpanded = false }) {
-                            paletteStyleLabels(strings).forEachIndexed { i, label ->
-                                DropdownMenuItem(text = { Text(label) }, onClick = {
-                                    actions.onSetPaletteStyle(PaletteStyle.entries[i])
-                                    paletteExpanded = false
-                                })
+                            ExposedDropdownMenu(expanded = paletteExpanded, onDismissRequest = { paletteExpanded = false }) {
+                                paletteStyleLabels(strings).forEachIndexed { i, label ->
+                                    DropdownMenuItem(text = { Text(label) }, onClick = {
+                                        actions.onSetPaletteStyle(PaletteStyle.entries[i]); paletteExpanded = false
+                                    })
+                                }
                             }
                         }
-                    }
 
-                    // Accent Color (always visible in M3)
-                    TonalCard(shape = SpiceTheme.containerShape(), onClick = { showAccentPicker = true }) {
+                        // Accent Color
                         ListItem(
+                            modifier = Modifier.clickable { showAccentPicker = true },
                             headlineContent = { Text(strings.keyColor) },
                             supportingContent = { Text(strings.keyColorSummary) },
                             leadingContent = { Box(Modifier.size(24.dp).clip(CircleShape).background(uiState.keyColor)) },
                             trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
-                    }
 
-                    // Color Spec (always visible)
-                    ExposedDropdownMenuBox(expanded = specExpanded, onExpandedChange = { specExpanded = it }) {
-                        TonalCard(modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = SpiceTheme.containerShape()) {
+                        // Color Spec
+                        ExposedDropdownMenuBox(expanded = specExpanded, onExpandedChange = { specExpanded = it }) {
                             ListItem(
+                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                 headlineContent = { Text(strings.colorSpec) },
                                 supportingContent = {
                                     Text(if (uiState.colorSpecVersion == ColorSpec.SpecVersion.SPEC_2025) strings.spec2025 else strings.spec2021)
@@ -152,19 +171,17 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(specExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                        }
-                        ExposedDropdownMenu(expanded = specExpanded, onDismissRequest = { specExpanded = false }) {
-                            listOf(strings.spec2021, strings.spec2025).forEachIndexed { i, label ->
-                                DropdownMenuItem(text = { Text(label) }, onClick = {
-                                    actions.onSetColorSpecVersion(if (i == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
-                                    specExpanded = false
-                                })
+                            ExposedDropdownMenu(expanded = specExpanded, onDismissRequest = { specExpanded = false }) {
+                                listOf(strings.spec2021, strings.spec2025).forEachIndexed { i, label ->
+                                    DropdownMenuItem(text = { Text(label) }, onClick = {
+                                        actions.onSetColorSpecVersion(if (i == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
+                                        specExpanded = false
+                                    })
+                                }
                             }
                         }
-                    }
 
-                    // M3E Switch
-                    TonalCard(shape = SpiceTheme.containerShape()) {
+                        // M3E Switch
                         ListItem(
                             headlineContent = { Text(strings.m3e) },
                             supportingContent = { Text(strings.m3eSummary) },
@@ -172,22 +189,21 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
                             trailingContent = { Switch(uiState.enableSmoothCorner, actions.onSetEnableSmoothCorner) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
-                    }
 
-                    // Nav Style
-                    ExposedDropdownMenuBox(expanded = navExpanded, onExpandedChange = { navExpanded = it }) {
-                        TonalCard(modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = SpiceTheme.containerShape()) {
+                        // Nav Style
+                        ExposedDropdownMenuBox(expanded = navExpanded, onExpandedChange = { navExpanded = it }) {
                             ListItem(
+                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                 headlineContent = { Text(strings.navBarStyle) },
                                 supportingContent = { Text(listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal]) },
                                 leadingContent = { Icon(Icons.AutoMirrored.Rounded.MenuOpen, null) },
                                 trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(navExpanded) },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
-                        }
-                        ExposedDropdownMenu(expanded = navExpanded, onDismissRequest = { navExpanded = false }) {
-                            listOf(strings.navAuto, strings.navBottom, strings.navRail).forEachIndexed { i, label ->
-                                DropdownMenuItem(text = { Text(label) }, onClick = { actions.onSetNavLayoutMode(NavLayoutMode.entries[i]); navExpanded = false })
+                            ExposedDropdownMenu(expanded = navExpanded, onDismissRequest = { navExpanded = false }) {
+                                listOf(strings.navAuto, strings.navBottom, strings.navRail).forEachIndexed { i, label ->
+                                    DropdownMenuItem(text = { Text(label) }, onClick = { actions.onSetNavLayoutMode(NavLayoutMode.entries[i]); navExpanded = false })
+                                }
                             }
                         }
                     }
@@ -216,6 +232,27 @@ fun ThemeScreenMaterial(uiState: ThemeUiState, actions: ThemeScreenActions) {
             }
             
             item { Spacer(Modifier.height(24.dp)) }
+            item {
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    TonalCard(shape = SpiceTheme.cornerShape(24.dp)) {
+                        Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+                            ListItem(
+                                headlineContent = { Text("Vibration") },
+                                supportingContent = { Text(if (p.vibrationEnabled) "On" else "Off") },
+                                leadingContent = { Icon(Icons.Rounded.Vibration, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+                                trailingContent = { Switch(p.vibrationEnabled, p::updateVibrationEnabled) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                            if (vibrationAvailable && p.vibrationEnabled) {
+                                Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
+                                Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
+                                TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
+                            }
+                        }
+                    }
+                }
+            }
+            item { Spacer(Modifier.height(24.dp)) }
         }
     }
 }
@@ -228,6 +265,48 @@ private fun M3ModeChip(icon: ImageVector, selected: Boolean, modifier: Modifier 
         modifier = modifier.height(56.dp).clip(CircleShape).background(bg).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) { Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp)) }
+}
+
+@Composable
+private fun VibrationCardMaterial() {
+    val scope = rememberCoroutineScope()
+    val p = ThemePreferences
+    val enabled = vibrationAvailable
+    TonalCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SpiceTheme.cornerShape(24.dp)
+    ) {
+        Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Vibration, null, Modifier.size(20.dp),
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
+                Spacer(Modifier.width(12.dp))
+                Text(if (enabled) "Vibration Test" else "Vibration (Not supported)", style = MaterialTheme.typography.titleMedium)
+            }
+            if (enabled) {
+                Spacer(Modifier.height(8.dp))
+                Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
+                Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
+                TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToggleCardMaterial(title: String, checked: Boolean, onToggle: (Boolean) -> Unit) {
+    TonalCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SpiceTheme.cornerShape(24.dp),
+        onClick = { onToggle(!checked) }
+    ) {
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = { Text(if (checked) "On" else "Off") },
+            trailingContent = { Switch(checked = checked, onCheckedChange = onToggle) },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+        )
+    }
 }
 
 private fun paletteStyleLabels(s: AppStrings) = listOf(

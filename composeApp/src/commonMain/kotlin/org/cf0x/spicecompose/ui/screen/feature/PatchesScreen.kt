@@ -21,10 +21,13 @@ import org.cf0x.spicecompose.data.PatchRepository
 import org.cf0x.spicecompose.data.PatchStatus
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import top.yukonga.miuix.kmp.basic.*
@@ -40,6 +43,12 @@ fun PatchesScreen(onBack: () -> Unit) {
     val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     var customPatches by remember { mutableStateOf(repository.getCustomPatches()) }
     var presetPatches by remember { mutableStateOf<List<PatchConfig>>(emptyList()) }
@@ -78,20 +87,23 @@ fun PatchesScreen(onBack: () -> Unit) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    SmallTopAppBar(
-                        title = strings.patches,
-                        navigationIcon = {
-                            IconButton(onClick = onBack) {
-                                top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
+                    if (!fullscreen.value && !p.toolbarHidden) {
+                        SmallTopAppBar(
+                            title = strings.patches,
+                            navigationIcon = {
+                                IconButton(onClick = onBack) {
+                                    top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
+                                }
+                            },
+                            actions = {
+                                FullscreenAction()
                             }
-                        },
-                        actions = {
-                            FullscreenAction()
-                        }
-                    )
+                        )
+                    }
                 }
             ) { innerPadding ->
-                Column(Modifier.fillMaxSize().padding(innerPadding)) {
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+                Column(Modifier.fillMaxSize().padding(padding)) {
                     Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.Center) {
                         tabs.forEachIndexed { index, title ->
                             top.yukonga.miuix.kmp.basic.TextButton(
@@ -124,21 +136,24 @@ fun PatchesScreen(onBack: () -> Unit) {
         UiMode.Material -> {
             androidx.compose.material3.Scaffold(
                 topBar = {
-                    @OptIn(ExperimentalMaterial3Api::class)
-                    androidx.compose.material3.TopAppBar(
-                        title = { androidx.compose.material3.Text(strings.patches) },
-                        navigationIcon = {
-                            androidx.compose.material3.IconButton(onClick = onBack) {
-                                androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                    if (!fullscreen.value && !p.toolbarHidden) {
+                        @OptIn(ExperimentalMaterial3Api::class)
+                        androidx.compose.material3.TopAppBar(
+                            title = { androidx.compose.material3.Text(strings.patches) },
+                            navigationIcon = {
+                                androidx.compose.material3.IconButton(onClick = onBack) {
+                                    androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                                }
+                            },
+                            actions = {
+                                FullscreenAction()
                             }
-                        },
-                        actions = {
-                            FullscreenAction()
-                        }
-                    )
+                        )
+                    }
                 }
             ) { innerPadding ->
-                Column(Modifier.fillMaxSize().padding(innerPadding)) {
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+                Column(Modifier.fillMaxSize().padding(padding)) {
                     SecondaryTabRow(selectedTabIndex = selectedTab) {
                         tabs.forEachIndexed { index, title ->
                             Tab(selected = selectedTab == index, onClick = { selectedTab = index }, text = { androidx.compose.material3.Text(title) })

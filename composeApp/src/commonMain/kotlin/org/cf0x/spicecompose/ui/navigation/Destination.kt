@@ -14,11 +14,10 @@ sealed class Destination(
 ) {
     data object Status   : Destination(0, "Status",   Icons.Outlined.Dashboard)
     data object Tools    : Destination(1, "Tools",    Icons.Outlined.Construction)
-    data object Utils    : Destination(2, "Utils",    Icons.Outlined.Tune)
-    data object Settings : Destination(3, "Settings", Icons.Outlined.Settings)
+    data object Settings : Destination(2, "Settings", Icons.Outlined.Settings)
 
     companion object {
-        val all        = listOf(Status, Tools, Utils, Settings)
+        val all        = listOf(Status, Tools, Settings)
         val PAGE_COUNT = all.size
     }
 }

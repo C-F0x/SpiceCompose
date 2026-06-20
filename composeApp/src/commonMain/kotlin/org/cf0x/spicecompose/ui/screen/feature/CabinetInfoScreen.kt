@@ -17,9 +17,13 @@ import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoLauncher
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoMemory
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -30,7 +34,13 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getClient()
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
     
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
+
     var avsInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var launcherInfo by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var memoryInfo by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
@@ -54,17 +64,23 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
-                    SmallTopAppBar(
-                        title = strings.cabinetInfo,
-                        navigationIcon = {
-                            top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
-                                top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
+                    if (!fullscreen.value && !p.toolbarHidden) {
+                        SmallTopAppBar(
+                            title = strings.cabinetInfo,
+                            navigationIcon = {
+                                top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
+                                    top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
+                                }
+                            },
+                            actions = {
+                                FullscreenAction()
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             ) { innerPadding ->
-                LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+                LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
                         InfoSectionMiuix("AVS Info", avsInfo)
                         InfoSectionMiuix("Launcher Info", launcherInfo)
@@ -76,18 +92,24 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
         UiMode.Material -> {
             androidx.compose.material3.Scaffold(
                 topBar = {
-                    @OptIn(ExperimentalMaterial3Api::class)
-                    androidx.compose.material3.TopAppBar(
-                        title = { androidx.compose.material3.Text(strings.cabinetInfo) },
-                        navigationIcon = {
-                            androidx.compose.material3.IconButton(onClick = onBack) {
-                                androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                    if (!fullscreen.value && !p.toolbarHidden) {
+                        @OptIn(ExperimentalMaterial3Api::class)
+                        androidx.compose.material3.TopAppBar(
+                            title = { androidx.compose.material3.Text(strings.cabinetInfo) },
+                            navigationIcon = {
+                                androidx.compose.material3.IconButton(onClick = onBack) {
+                                    androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                                }
+                            },
+                            actions = {
+                                FullscreenAction()
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             ) { innerPadding ->
-                LazyColumn(Modifier.fillMaxSize().padding(innerPadding)) {
+                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+                LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
                         InfoSectionMaterial("AVS Info", avsInfo)
                         InfoSectionMaterial("Launcher Info", launcherInfo)

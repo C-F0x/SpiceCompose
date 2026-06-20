@@ -1,5 +1,7 @@
 package org.cf0x.spicecompose.ui.screen
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,7 +19,6 @@ import org.cf0x.spicecompose.ui.component.navigation.SideRail
 import org.cf0x.spicecompose.ui.navigation.*
 import org.cf0x.spicecompose.ui.screen.status.StatusScreen
 import org.cf0x.spicecompose.ui.screen.tools.ToolsScreen
-import org.cf0x.spicecompose.ui.screen.utils.UtilsScreen
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBar
 import org.cf0x.spicecompose.ui.theme.LocalBottomBarPadding
@@ -62,7 +63,7 @@ fun MainScreen(
             // Calculate bottom padding required to avoid the bar
             val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             val dynamicBottomPadding = when {
-                fullscreen.value -> 0.dp
+                fullscreen.value || inSubPage -> 0.dp
                 useRail -> 0.dp
                 isFloating -> navBarHeight // pill floats over content — no extra padding needed
                 else -> navBarHeight + 56.dp // Standard bottom bar height
@@ -84,12 +85,16 @@ fun MainScreen(
                                 settingsContent = settingsContent,
                                 blurBackdrop = if (enableBlur && uiMode == UiMode.Miuix) blurBackdrop else null,
                             )
-                            // Bottom bar as overlay: floating pill or standard bar
-                            if (!fullscreen.value && !useRail && !inSubPage) {
+                            // Bottom bar as overlay
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = !fullscreen.value && !useRail && !inSubPage,
+                                enter = fadeIn(), exit = fadeOut(),
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            ) {
                                 val barModifier = if (isFloating && uiMode == UiMode.Miuix) {
-                                    Modifier.align(Alignment.BottomCenter)
+                                    Modifier.fillMaxWidth()
                                 } else {
-                                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                                    Modifier.fillMaxWidth()
                                 }
                                 BottomBar(
                                     blurBackdrop = blurBackdrop,
@@ -126,7 +131,6 @@ private fun PageContent(
             when (page) {
                 0    -> StatusScreen()
                 1    -> ToolsScreen()
-                2    -> UtilsScreen()
                 else -> settingsContent()
             }
         }

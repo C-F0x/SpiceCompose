@@ -1,5 +1,9 @@
 package org.cf0x.spicecompose.ui.screen.tools
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,12 +18,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.filter
 import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.LocalUiMode
-import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.screen.feature.*
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
 
@@ -29,6 +34,8 @@ private const val ROUTE_ANALOGS = "analogs"
 private const val ROUTE_LIGHTS  = "lights"
 private const val ROUTE_COINS   = "coins"
 private const val ROUTE_KEYPAD  = "keypad"
+private const val ROUTE_SUB     = "sub_screen"
+private const val ROUTE_PATCHES = "patches"
 
 data class ToolsScreenActions(
     val onOpenButtons: () -> Unit,
@@ -36,6 +43,8 @@ data class ToolsScreenActions(
     val onOpenLights:  () -> Unit,
     val onOpenCoins:   () -> Unit,
     val onOpenKeypad:  () -> Unit,
+    val onOpenSubScreen: () -> Unit,
+    val onOpenPatches:   () -> Unit,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,30 +61,43 @@ fun ToolsScreen() {
     }
 
     val inSubPage = LocalInSubPage.current
-    SideEffect { inSubPage.value = route != ROUTE_MAIN }
+    inSubPage.value = route != ROUTE_MAIN
 
     SpiceBackHandler(enabled = route != ROUTE_MAIN) { route = ROUTE_MAIN }
 
-    when (route) {
-        ROUTE_BUTTONS -> ButtonsScreen(onBack = { route = ROUTE_MAIN })
+    AnimatedContent(
+        targetState = route,
+        transitionSpec = { fadeIn() togetherWith fadeOut() }
+    ) { currentRoute ->
+        when (currentRoute) {
+            ROUTE_BUTTONS -> ButtonsScreen(onBack = { route = ROUTE_MAIN })
         ROUTE_ANALOGS -> AnalogsScreen(onBack = { route = ROUTE_MAIN })
         ROUTE_LIGHTS  -> LightsScreen(onBack = { route = ROUTE_MAIN })
         ROUTE_COINS   -> CoinsScreen(onBack = { route = ROUTE_MAIN })
         ROUTE_KEYPAD  -> KeypadScreen(onBack = { route = ROUTE_MAIN })
+        ROUTE_SUB     -> org.cf0x.spicecompose.ui.screen.utils.subscreen.SubScreen(onBack = { route = ROUTE_MAIN })
+        ROUTE_PATCHES -> PatchesScreen(onBack = { route = ROUTE_MAIN })
         else -> {
             val actions = ToolsScreenActions(
                 onOpenButtons = { route = ROUTE_BUTTONS },
                 onOpenAnalogs = { route = ROUTE_ANALOGS },
                 onOpenLights  = { route = ROUTE_LIGHTS },
                 onOpenCoins   = { route = ROUTE_COINS },
-                onOpenKeypad  = { route = ROUTE_KEYPAD }
+                onOpenKeypad  = { route = ROUTE_KEYPAD },
+                onOpenSubScreen = { route = ROUTE_SUB },
+                onOpenPatches   = { route = ROUTE_PATCHES }
             )
             when (LocalUiMode.current) {
                 UiMode.Miuix -> ToolsPagerMiuix(actions)
                 UiMode.Material -> {
                     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                     Scaffold(
-                        topBar = { TopAppBar(title = { Text(strings.tools) }, scrollBehavior = scrollBehavior) }
+                        topBar = {
+                            TopAppBar(
+                                title = { Text(strings.tools) },
+                                scrollBehavior = scrollBehavior
+                            )
+                        }
                     ) { innerPadding ->
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -84,11 +106,13 @@ fun ToolsScreen() {
                         ) {
                             item { Spacer(Modifier.height(8.dp)) }
                             val items = listOf(
-                                Triple(strings.buttons, strings.buttonsSummary, actions.onOpenButtons),
-                                Triple(strings.analogs, strings.analogsSummary, actions.onOpenAnalogs),
-                                Triple(strings.lights, strings.lightsSummary, actions.onOpenLights),
-                                Triple(strings.coins, strings.coinsSummary, actions.onOpenCoins),
-                                Triple(strings.keypadScanner, strings.keypadSummary, actions.onOpenKeypad)
+                                Triple(strings.buttons, strings.buttonsSummary, { maybeVibrate(15); actions.onOpenButtons() }),
+                                Triple(strings.analogs, strings.analogsSummary, { maybeVibrate(15); actions.onOpenAnalogs() }),
+                                Triple(strings.lights, strings.lightsSummary, { maybeVibrate(15); actions.onOpenLights() }),
+                                Triple(strings.coins, strings.coinsSummary, { maybeVibrate(15); actions.onOpenCoins() }),
+                                Triple(strings.keypadScanner, strings.keypadSummary, { maybeVibrate(15); actions.onOpenKeypad() }),
+                                Triple(strings.subScreen, strings.subScreenSummary, { maybeVibrate(15); actions.onOpenSubScreen() }),
+                                Triple(strings.patches, strings.patchesSummary, { maybeVibrate(15); actions.onOpenPatches() })
                             )
                             items(items) { (title, summary, onClick) ->
                                 Box(Modifier.padding(horizontal = 16.dp)) {
@@ -107,5 +131,6 @@ fun ToolsScreen() {
                 }
             }
         }
+    }
     }
 }

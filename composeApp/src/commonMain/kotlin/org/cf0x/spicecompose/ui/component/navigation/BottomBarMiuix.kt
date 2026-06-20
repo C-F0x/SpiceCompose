@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBar
 import org.cf0x.spicecompose.ui.theme.LocalFloatingBottomBarBlur
 import org.cf0x.spicecompose.ui.util.BlurredBar
@@ -53,7 +54,7 @@ fun BottomBarMiuix(
                             icon = dest.icon,
                             label = dest.label,
                             selected = mainState.selectedPage == dest.index,
-                            onClick = { mainState.animateToPage(dest.index) }
+                            onClick = { maybeVibrate(20); mainState.animateToPage(dest.index) }
                         )
                     }
                 }
@@ -69,14 +70,14 @@ fun BottomBarMiuix(
                 )
                 .padding(bottom = 12.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
             selectedIndex = { mainState.selectedPage },
-            onSelected = { mainState.animateToPage(it) },
+            onSelected = { maybeVibrate(20); mainState.animateToPage(it) },
             tabsCount = Destination.PAGE_COUNT,
             isBlurEnabled = enableFloatingBottomBarBlur,
             parentBackdrop = backdrop,
         ) {
             Destination.all.forEach { dest ->
                 FloatingBottomBarItem(
-                    onClick = { mainState.animateToPage(dest.index) },
+                    onClick = { maybeVibrate(20); mainState.animateToPage(dest.index) },
                 ) {
                     Icon(
                         imageVector = dest.icon,

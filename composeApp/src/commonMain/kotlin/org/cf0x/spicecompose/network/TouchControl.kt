@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.withLock
 import org.cf0x.spicecompose.network.spiceapi.wrappers.TouchState
 import org.cf0x.spicecompose.network.spiceapi.wrappers.touchWrite
 import org.cf0x.spicecompose.network.spiceapi.wrappers.touchWriteReset
+import org.cf0x.spicecompose.platform.maybeVibrate
 import kotlin.random.Random
 
 class TouchControl(private val connectionManager: ConnectionManager) {
@@ -58,6 +59,7 @@ class TouchControl(private val connectionManager: ConnectionManager) {
         touchStates.add(state)
         flushed = false
         flushState()
+        maybeVibrate(30)
         id
     }
 

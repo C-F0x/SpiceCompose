@@ -11,9 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,10 +30,11 @@ fun SettingsPagerMaterial(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(strings.settings) },
-                scrollBehavior = scrollBehavior,
-            )
+                TopAppBar(
+                    title = { Text(strings.settings) },
+                    actions = {},
+                    scrollBehavior = scrollBehavior,
+                )
         },
     ) { innerPadding ->
         LazyColumn(
@@ -71,6 +73,7 @@ fun SettingsPagerMaterial(
                             DropdownMenuItem(
                                 text = { Text(lang.displayName) },
                                 onClick = {
+                                    maybeVibrate(15)
                                     actions.onSetLanguage(lang)
                                     langExpanded = false
                                 }
@@ -82,7 +85,7 @@ fun SettingsPagerMaterial(
             
             // ── UI Style (Pop-up Dialog) ─────────────────────────────────────
             item {
-                TonalCard(shape = SpiceTheme.containerShape(), onClick = { uiModeDialog = true }) {
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = { maybeVibrate(15); uiModeDialog = true }) {
                     ListItem(
                         headlineContent = { Text(strings.uiStyle) },
                         supportingContent = { Text(if (uiState.uiMode == UiMode.Miuix) "Miuix" else "Material You") },
@@ -95,7 +98,7 @@ fun SettingsPagerMaterial(
 
             // ── Theme Settings ───────────────────────────────────────────────
             item {
-                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenTheme) {
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = { maybeVibrate(15); actions.onOpenTheme() }) {
                     ListItem(
                         headlineContent = { Text(strings.themeSettings) },
                         supportingContent = { Text(strings.themeSettingsSummary) },
@@ -108,7 +111,7 @@ fun SettingsPagerMaterial(
 
             // ── About ────────────────────────────────────────────────────────
             item {
-                TonalCard(shape = SpiceTheme.containerShape(), onClick = actions.onOpenAbout) {
+                TonalCard(shape = SpiceTheme.containerShape(), onClick = { maybeVibrate(15); actions.onOpenAbout() }) {
                     ListItem(
                         headlineContent = { Text(strings.about) },
                         supportingContent = { Text("Version info and more") },
@@ -130,13 +133,13 @@ fun SettingsPagerMaterial(
             text = {
                 Column {
                     ListItem(
-                        modifier = Modifier.clickable { actions.onSetUiModeIndex(0); uiModeDialog = false },
+                        modifier = Modifier.clickable { maybeVibrate(15); actions.onSetUiModeIndex(0); uiModeDialog = false },
                         headlineContent = { Text("Miuix") },
                         leadingContent = { RadioButton(selected = uiState.uiMode == UiMode.Miuix, onClick = null) },
                         colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
                     )
                     ListItem(
-                        modifier = Modifier.clickable { actions.onSetUiModeIndex(1); uiModeDialog = false },
+                        modifier = Modifier.clickable { maybeVibrate(15); actions.onSetUiModeIndex(1); uiModeDialog = false },
                         headlineContent = { Text("Material You") },
                         leadingContent = { RadioButton(selected = uiState.uiMode == UiMode.Material, onClick = null) },
                         colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)

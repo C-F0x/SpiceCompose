@@ -9,10 +9,11 @@ import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Translate
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
@@ -34,13 +35,13 @@ fun SettingsPagerMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
-
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = strings.settings,
-                scrollBehavior = scrollBehavior,
-            )
+                TopAppBar(
+                    title = strings.settings,
+                    actions = {},
+                    scrollBehavior = scrollBehavior,
+                )
         },
         popupHost = {},
     ) { innerPadding ->
@@ -66,7 +67,7 @@ fun SettingsPagerMiuix(
                         summary = uiState.language.displayName,
                         items = AppLanguage.entries.map { it.displayName },
                         selectedIndex = uiState.language.ordinal,
-                        onSelectedIndexChange = { actions.onSetLanguage(AppLanguage.entries[it]) },
+                        onSelectedIndexChange = { maybeVibrate(15); actions.onSetLanguage(AppLanguage.entries[it]) },
                         startAction = {
                             Icon(
                                 imageVector = Icons.Rounded.Translate,
@@ -89,7 +90,7 @@ fun SettingsPagerMiuix(
                         summary = strings.uiStyleSummary,
                         items = listOf("Miuix", "Material"),
                         selectedIndex = if (uiState.uiMode == UiMode.Material) 1 else 0,
-                        onSelectedIndexChange = actions.onSetUiModeIndex,
+                        onSelectedIndexChange = { maybeVibrate(15); actions.onSetUiModeIndex(it) },
                         startAction = {
                             Icon(
                                 imageVector = Icons.Rounded.Dashboard,
@@ -110,11 +111,11 @@ fun SettingsPagerMiuix(
                                 tint = colorScheme.onBackground,
                             )
                         },
-                        onClick = actions.onOpenTheme,
+                        onClick = { maybeVibrate(15); actions.onOpenTheme() },
                     )
                 }
 
-                // ── About ─────────────────────────────────────────────────────
+                // ── About ────────────────────────────────────────────────────
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp, bottom = 12.dp)
@@ -130,9 +131,10 @@ fun SettingsPagerMiuix(
                                 tint = colorScheme.onBackground,
                             )
                         },
-                        onClick = actions.onOpenAbout,
+                        onClick = { maybeVibrate(15); actions.onOpenAbout() },
                     )
                 }
+
             }
         }
     }

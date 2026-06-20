@@ -3,9 +3,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
+use tokio::time::timeout;
 
 /// SPICE request message.
 #[derive(Debug, Clone, Serialize)]
@@ -45,10 +47,11 @@ pub struct SpiceConnection {
 }
 
 impl SpiceConnection {
-    /// Connect and start a background reader immediately.
-    pub async fn connect(host: &str, port: u16, password: &str) -> Result<Self, String> {
-        let stream = TcpStream::connect((host, port))
+    /// Connect with a timeout, then start a background reader.
+    pub async fn connect(host: &str, port: u16, password: &str, connect_timeout: Duration) -> Result<Self, String> {
+        let stream = timeout(connect_timeout, TcpStream::connect((host, port)))
             .await
+            .map_err(|_| "Connection timed out".to_string())?
             .map_err(|e| format!("TCP connect failed: {e}"))?;
 
         let cipher: Option<RC4> = if password.is_empty() {

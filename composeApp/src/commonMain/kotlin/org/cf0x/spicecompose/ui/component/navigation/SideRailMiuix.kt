@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
+import org.cf0x.spicecompose.platform.maybeVibrate
 import top.yukonga.miuix.kmp.basic.NavigationRail
 import top.yukonga.miuix.kmp.basic.NavigationRailItem
 
@@ -17,7 +18,7 @@ fun SideRailMiuix(
         Destination.all.forEach { dest ->
             NavigationRailItem(
                 selected = mainState.selectedPage == dest.index,
-                onClick  = { mainState.animateToPage(dest.index) },
+                onClick  = { maybeVibrate(20); mainState.animateToPage(dest.index) },
                 icon     = dest.icon,
                 label    = dest.label,
             )

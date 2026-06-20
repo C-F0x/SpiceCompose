@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -37,7 +38,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 
 @ExperimentalMaterial3Api
 @Composable
@@ -49,6 +54,12 @@ fun AboutScreenMaterial(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val listState     = rememberLazyListState()
     var logoHeightPx by remember { mutableIntStateOf(0) }
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     val scrollProgress by remember {
         derivedStateOf {
@@ -65,23 +76,29 @@ fun AboutScreenMaterial(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(uiState.appName, modifier = Modifier.alpha(titleAlpha)) },
-                navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+            if (!fullscreen.value && !p.toolbarHidden) {
+                TopAppBar(
+                    title = { Text(uiState.appName, modifier = Modifier.alpha(titleAlpha)) },
+                    navigationIcon = {
+                        IconButton(onClick = actions.onBack) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                        }
+                    },
+                    actions = {
+                        FullscreenAction()
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
     ) { innerPadding ->
+        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
-            contentPadding = innerPadding,
+            contentPadding = padding,
         ) {
             // ── Logo header ───────────────────────────────────────────────────
             item {

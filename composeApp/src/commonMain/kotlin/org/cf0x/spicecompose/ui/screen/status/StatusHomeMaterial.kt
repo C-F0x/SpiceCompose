@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.network.ConnectionStatus
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -39,7 +40,8 @@ fun StatusHomeMaterial(
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
     onServerAction: (Boolean) -> Unit,
-    onStatusClick: () -> Unit
+    onStatusClick: () -> Unit,
+    onEditServer: () -> Unit
 ) {
     val strings = LocalAppStrings.current
     val isConnected = connectionStatus == ConnectionStatus.Connected
@@ -75,7 +77,7 @@ fun StatusHomeMaterial(
                         isConnecting -> MaterialTheme.colorScheme.secondaryContainer
                         else -> MaterialTheme.colorScheme.errorContainer
                     },
-                    onClick = onStatusClick
+                    onClick = { maybeVibrate(15); onStatusClick() }
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -94,7 +96,7 @@ fun StatusHomeMaterial(
                             Text(
                                 text = when {
                                     isConnected -> strings.connected
-                                    isConnecting -> "Connecting..."
+                                    isConnecting -> strings.connecting
                                     else -> strings.disconnected
                                 },
                                 style = MaterialTheme.typography.headlineSmall,
@@ -120,7 +122,8 @@ fun StatusHomeMaterial(
                     TonalCard(
                         modifier = Modifier.weight(1f),
                         shape = SpiceTheme.cornerShape(24.dp),
-                        onClick = { onServerAction(true) } // Single tap to list
+                        onClick = { maybeVibrate(15); onServerAction(true) },
+                        onLongClick = { maybeVibrate(15); onEditServer() }
                     ) {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
                             Text(strings.targetServer, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
@@ -183,7 +186,7 @@ fun StatusHomeMaterial(
                         }
                     }
 
-                    InfoItemMaterial(strings.launcherArgs, (launcherInfo["args"] ?: "...").replace("[", "").replace("]", ""))
+                    InfoItemMaterial(strings.launcherArgs, formatArgs(launcherInfo["args"]))
                 }
             }
             

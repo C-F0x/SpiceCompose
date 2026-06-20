@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +30,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -53,6 +58,12 @@ fun AboutScreenMiuix(
     val strings        = LocalAppStrings.current
     val listState      = rememberLazyListState()
     var logoHeightPx by remember { mutableIntStateOf(0) }
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     val scrollProgress by remember {
         derivedStateOf {
@@ -69,18 +80,24 @@ fun AboutScreenMiuix(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
-                title = uiState.appName,
-                navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
-                        Icon(MiuixIcons.Back, contentDescription = null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+            if (!fullscreen.value && !p.toolbarHidden) {
+                SmallTopAppBar(
+                    title = uiState.appName,
+                    navigationIcon = {
+                        IconButton(onClick = actions.onBack) {
+                            Icon(MiuixIcons.Back, contentDescription = null)
+                        }
+                    },
+                    actions = {
+                        FullscreenAction()
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         popupHost = {},
     ) { innerPadding ->
+        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -89,7 +106,7 @@ fun AboutScreenMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = innerPadding,
+            contentPadding = padding,
             overscrollEffect = null,
         ) {
             // ── Logo header ───────────────────────────────────────────────────

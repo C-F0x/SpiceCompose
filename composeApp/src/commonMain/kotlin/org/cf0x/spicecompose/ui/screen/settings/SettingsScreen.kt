@@ -1,5 +1,9 @@
 package org.cf0x.spicecompose.ui.screen.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
@@ -14,7 +18,7 @@ import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.screen.about.AboutScreen
-import org.cf0x.spicecompose.ui.screen.theme.ThemeScreen
+import org.cf0x.spicecompose.ui.screen.theme.CustomizeScreen
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import org.cf0x.spicecompose.ui.SpiceBackHandler
@@ -54,13 +58,17 @@ fun SettingsScreen(
 
     // Notify MainScreen to disable pager swipe when in a sub-page
     val inSubPage = LocalInSubPage.current
-    SideEffect { inSubPage.value = route != ROUTE_MAIN }
+    inSubPage.value = route != ROUTE_MAIN
 
     // Intercept back gesture on sub-pages only
     SpiceBackHandler(enabled = route != ROUTE_MAIN) { route = ROUTE_MAIN }
 
-    when (route) {
-        ROUTE_THEME -> ThemeScreen(
+    AnimatedContent(
+        targetState = route,
+        transitionSpec = { fadeIn() togetherWith fadeOut() }
+    ) { currentRoute ->
+        when (currentRoute) {
+        ROUTE_THEME -> CustomizeScreen(
             colorMode = colorMode,               onColorModeChange = onColorModeChange,
             useMonet = useMonet,                 onUseMonetChange = onUseMonetChange,
             amoledDark = amoledDark,             onAmoledDarkChange = onAmoledDarkChange,
@@ -90,5 +98,6 @@ fun SettingsScreen(
                 UiMode.Material -> SettingsPagerMaterial(uiState, actions)
             }
         }
+    }
     }
 }

@@ -18,11 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
@@ -35,11 +39,22 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import kotlinx.coroutines.launch
+import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.platform.vibrationAvailable
+import org.cf0x.spicecompose.ui.theme.ThemePreferences
 
 @Composable
-fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
+fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActions) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings        = LocalAppStrings.current
+    val fullscreen = LocalFullscreenMode.current
+    val p = ThemePreferences
+    val scope = rememberCoroutineScope()
+
+    SpiceBackHandler(enabled = fullscreen.value) {
+        fullscreen.value = false
+    }
 
     var showAccentPicker by rememberSaveable { mutableStateOf(false) }
     // Local scale value — only committed on slider release
@@ -55,18 +70,24 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title          = strings.themeSettings,
-                navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
-                        Icon(MiuixIcons.Back, contentDescription = null)
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+            if (!fullscreen.value && !p.toolbarHidden) {
+                TopAppBar(
+                    title          = strings.themeSettings,
+                    navigationIcon = {
+                        IconButton(onClick = actions.onBack) {
+                            Icon(MiuixIcons.Back, contentDescription = null)
+                        }
+                    },
+                    actions = {
+                        FullscreenAction()
+                    },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         popupHost = {},
     ) { innerPadding ->
+        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -74,7 +95,7 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = innerPadding,
+            contentPadding = padding,
             overscrollEffect = null,
         ) {
             item {
@@ -213,7 +234,27 @@ fun ThemeScreenMiuix(uiState: ThemeUiState, actions: ThemeScreenActions) {
                         )
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+                Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                    Column(Modifier.padding(12.dp)) {
+                        ArrowPreference(
+                            title = "Vibration",
+                            summary = if (p.vibrationEnabled) "On" else "Off",
+                            startAction = { Icon(Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp), colorScheme.onBackground) },
+                            onClick = { p.updateVibrationEnabled(!p.vibrationEnabled) }
+                        )
+                        if (vibrationAvailable && p.vibrationEnabled) {
+                            Text("${p.vibDuration}ms", Modifier.padding(top = 8.dp))
+                            Slider(
+                                value = p.vibDuration.toFloat(),
+                                onValueChange = { p.updateVibDuration(it.toInt()) },
+                                valueRange = 0f..200f,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            TextButton(text = "Test ${p.vibDuration}ms", onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }, modifier = Modifier.fillMaxWidth())
+                        }
+                    }
+                }
             }
         }
     }
@@ -236,6 +277,50 @@ private fun ColorModeChip(
 @Composable
 private fun PrefIcon(icon: ImageVector) =
     Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground)
+
+@Composable
+private fun VibrationCard() {
+    val scope = rememberCoroutineScope()
+    val p = ThemePreferences
+    val enabled = vibrationAvailable
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            ArrowPreference(
+                title = "Vibration Test",
+                summary = if (enabled) "${p.vibDuration}ms" else "Not supported",
+                startAction = { Icon(Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp), 
+                    tint = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.3f)) }
+            )
+            if (enabled) {
+                Text("${p.vibDuration}ms", Modifier.padding(bottom = 4.dp))
+                top.yukonga.miuix.kmp.basic.Slider(
+                    value = p.vibDuration.toFloat(),
+                    onValueChange = { p.updateVibDuration(it.toInt()) },
+                    valueRange = 0f..200f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                TextButton(text = "Test ${p.vibDuration}ms", onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }, modifier = Modifier.fillMaxWidth())
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToggleCard(title: String, checked: Boolean, onToggle: (Boolean) -> Unit, icon: ImageVector = Icons.Rounded.Visibility) {
+    Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+        ArrowPreference(
+            title = title,
+            summary = if (checked) "On" else "Off",
+            startAction = { Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground) },
+            onClick = { onToggle(!checked) }
+        )
+    }
+}
 
 private fun paletteStyleLabels(s: AppStrings) = listOf(
     s.paletteTonalSpot, s.paletteNeutral, s.paletteVibrant, s.paletteExpressive,

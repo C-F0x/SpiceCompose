@@ -15,15 +15,15 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import org.cf0x.spicecompose.platform.NfcManager
-import org.cf0x.spicecompose.platform.VibratorManager
+import org.cf0x.spicecompose.platform.maybeVibrate
 
 @Composable
 fun CardEditDialog(
     show: Boolean,
     card: CardConfig? = null,
     onSave: (CardConfig) -> Unit,
-    onDiscard: () -> Unit,
-    onDismiss: () -> Unit
+    onDelete: () -> Unit,
+    onCancel: () -> Unit
 ) {
     var name by remember(show) { mutableStateOf(card?.name ?: "") }
     var cardId by remember(show) { mutableStateOf(card?.cardId ?: "") }
@@ -37,7 +37,7 @@ fun CardEditDialog(
         if (show) {
             NfcManager.tagIdFlow.collect { id ->
                 cardId = id
-                VibratorManager.vibrate(100)
+                maybeVibrate(100)
             }
         }
     }
@@ -75,7 +75,7 @@ fun CardEditDialog(
             OverlayDialog(
                 show = show,
                 title = if (card == null) strings.addCard else strings.editCard,
-                onDismissRequest = onDismiss,
+                onDismissRequest = onCancel,
                 content = {
                     Column(Modifier.fillMaxWidth()) {
                         TextField(
@@ -104,10 +104,15 @@ fun CardEditDialog(
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(
-                                text = strings.discard,
-                                onClick = onDiscard,
+                                text = strings.delete,
+                                onClick = onDelete,
                                 modifier = Modifier.weight(1f),
-                                colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
+                                colors = ButtonDefaults.textButtonColorsPrimary()
+                            )
+                            TextButton(
+                                text = strings.cancel,
+                                onClick = onCancel,
+                                modifier = Modifier.weight(1f)
                             )
                             TextButton(
                                 text = strings.save,
@@ -132,37 +137,17 @@ fun CardEditDialog(
         }
         UiMode.Material -> {
             androidx.compose.material3.AlertDialog(
-                onDismissRequest = onDismiss,
+                onDismissRequest = onCancel,
                 title = { Text(if (card == null) strings.addCard else strings.editCard) },
                 text = {
                     Column(Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            label = { Text(strings.cardName) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text(strings.cardName) }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = cardId,
-                            onValueChange = { cardId = it.uppercase() },
-                            label = { Text(strings.cardId) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        OutlinedTextField(value = cardId, onValueChange = { cardId = it.uppercase() }, label = { Text(strings.cardId) }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = publicId,
-                            onValueChange = onPublicIdChange,
-                            label = { Text(strings.publicId) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        OutlinedTextField(value = publicId, onValueChange = onPublicIdChange, label = { Text(strings.publicId) }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = triggerId,
-                            onValueChange = { triggerId = it.uppercase() },
-                            label = { Text(strings.triggerId) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        OutlinedTextField(value = triggerId, onValueChange = { triggerId = it.uppercase() }, label = { Text(strings.triggerId) }, modifier = Modifier.fillMaxWidth())
                     }
                 },
                 confirmButton = {
@@ -170,22 +155,18 @@ fun CardEditDialog(
                         if (name.isEmpty() || cardId.length != 16) return@Button
                         val newCard = CardConfig(
                             id = card?.id ?: (1..16).map { "0123456789ABCDEF".random() }.joinToString(""),
-                            name = name,
-                            cardId = cardId,
-                            idTrigger = triggerId,
-                            active = card?.active ?: false
+                            name = name, cardId = cardId, idTrigger = triggerId, active = card?.active ?: false
                         )
                         onSave(newCard)
-                    }) {
-                        Text(strings.save)
-                    }
+                    }) { Text(strings.save) }
                 },
                 dismissButton = {
-                    androidx.compose.material3.TextButton(
-                        onClick = onDiscard,
-                        colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.Red)
-                    ) {
-                        Text(strings.discard)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.TextButton(
+                            onClick = onDelete,
+                            colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.Red)
+                        ) { Text(strings.delete) }
+                        androidx.compose.material3.TextButton(onClick = onCancel) { Text(strings.cancel) }
                     }
                 }
             )

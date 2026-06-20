@@ -12,7 +12,7 @@ import org.cf0x.spicecompose.ui.theme.ColorMode
 
 @ExperimentalMaterial3Api
 @Composable
-fun ThemeScreen(
+fun CustomizeScreen(
     colorMode: ColorMode,            onColorModeChange: (ColorMode) -> Unit,
     useMonet: Boolean,               onUseMonetChange: (Boolean) -> Unit,
     amoledDark: Boolean,             onAmoledDarkChange: (Boolean) -> Unit,
@@ -32,14 +32,14 @@ fun ThemeScreen(
     val effectiveKeyColor = if (uiMode == UiMode.Material) materialKeyColor else keyColor
     val effectiveOnKeyColorChange: (Color) -> Unit = if (uiMode == UiMode.Material) onMaterialKeyColorChange else onKeyColorChange
 
-    val uiState = ThemeUiState(
+    val uiState = CustomizeUiState(
         colorMode = colorMode, useMonet = useMonet, amoledDark = amoledDark,
         keyColor = effectiveKeyColor, paletteStyle = paletteStyle,
         colorSpecVersion = colorSpecVersion, navLayoutMode = navLayoutMode, pageScale = pageScale,
         floatingBottomBar = floatingBottomBar, floatingBottomBarBlur = floatingBottomBarBlur,
         enableBlur = enableBlur, enableSmoothCorner = enableSmoothCorner,
     )
-    val actions = ThemeScreenActions(
+    val actions = CustomizeScreenActions(
         onBack = onBack, onSetColorMode = onColorModeChange, 
         onSetUseMonet = onUseMonetChange, onSetAmoledDark = onAmoledDarkChange,
         onSetKeyColor = effectiveOnKeyColorChange,
@@ -50,7 +50,7 @@ fun ThemeScreen(
         onSetEnableBlur = onEnableBlurChange, onSetEnableSmoothCorner = onEnableSmoothCornerChange,
     )
     when (LocalUiMode.current) {
-        UiMode.Miuix    -> ThemeScreenMiuix(uiState, actions)
-        UiMode.Material -> ThemeScreenMaterial(uiState, actions)
+        UiMode.Miuix    -> CustomizeScreenMiuix(uiState, actions)
+        UiMode.Material -> CustomizeScreenMaterial(uiState, actions)
     }
 }

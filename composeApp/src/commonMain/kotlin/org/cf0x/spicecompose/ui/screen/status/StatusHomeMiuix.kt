@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.network.ConnectionStatus
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -41,7 +42,8 @@ fun StatusHomeMiuix(
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
     onServerAction: (Boolean) -> Unit,
-    onStatusClick: () -> Unit
+    onStatusClick: () -> Unit,
+    onEditServer: () -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
@@ -92,7 +94,7 @@ fun StatusHomeMiuix(
                                 else -> colorScheme.surfaceVariant
                             }
                         ),
-                        onClick = onStatusClick,
+                        onClick = { maybeVibrate(15); onStatusClick() },
                         pressFeedbackType = PressFeedbackType.Tilt
                     ) {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -115,7 +117,7 @@ fun StatusHomeMiuix(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = when {
                                         isConnected -> strings.connected
-                                        isConnecting -> "Connecting..."
+                                        isConnecting -> strings.connecting
                                         else -> strings.disconnected
                                     },
                                     fontSize = 20.sp,
@@ -143,7 +145,8 @@ fun StatusHomeMiuix(
                         Card(
                             modifier = Modifier.fillMaxWidth().weight(1f),
                             insideMargin = PaddingValues(16.dp),
-                            onClick = { onServerAction(true) }, // Single tap: Server List
+                            onClick = { maybeVibrate(15); onServerAction(true) },
+                            onLongPress = { maybeVibrate(15); onEditServer() },
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
@@ -201,7 +204,7 @@ fun StatusHomeMiuix(
                         }
                     }
                     
-                    CardItemMiuix(strings.launcherArgs, (launcherInfo["args"] ?: "...").replace("[", "").replace("]", ""))
+                    CardItemMiuix(strings.launcherArgs, formatArgs(launcherInfo["args"]))
                 }
             }
         }

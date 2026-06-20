@@ -3,6 +3,7 @@ package org.cf0x.spicecompose.ui.screen.status
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Computer
@@ -21,6 +22,8 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
 import androidx.compose.material.icons.rounded.Check
 
 @Composable
@@ -29,7 +32,9 @@ fun StatusPagerMiuix(
     chosenId: String?,
     onSelect: (String?) -> Unit,
     onAddClick: () -> Unit,
-    onDelete: (String) -> Unit
+    onEdit: (ServerConfig) -> Unit,
+    onDelete: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
@@ -37,8 +42,13 @@ fun StatusPagerMiuix(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = "Servers",
+                title = strings.servers,
                 scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, contentDescription = "Back")
+                    }
+                },
                 actions = {
                     IconButton(onClick = onAddClick) {
                         Icon(Icons.Rounded.Add, contentDescription = null)
@@ -66,6 +76,7 @@ fun StatusPagerMiuix(
                         server = server, 
                         isChosen = server.id == chosenId,
                         onSelect = { onSelect(if (server.id == chosenId) null else server.id) },
+                        onEdit = { onEdit(server) },
                         onDelete = onDelete
                     )
                 }
@@ -79,9 +90,9 @@ fun ServerCardMiuix(
     server: ServerConfig,
     isChosen: Boolean,
     onSelect: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: (String) -> Unit
 ) {
-    var showConfirm by remember { mutableStateOf(false) }
     val strings = LocalAppStrings.current
 
     Card(
@@ -90,9 +101,16 @@ fun ServerCardMiuix(
             .padding(vertical = 6.dp),
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
-        onClick = { showConfirm = true }
+        onClick = onSelect
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(
+            Modifier
+                .padding(16.dp)
+                .combinedClickable(
+                    onClick = onSelect,
+                    onLongClick = onEdit
+                )
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Rounded.Computer,
@@ -111,36 +129,8 @@ fun ServerCardMiuix(
             InfoLineMiuix(strings.serverHost, server.host)
             InfoLineMiuix(strings.serverPort, server.port.toString())
             InfoLineMiuix(strings.serverPassword, server.password)
-        }
-    }
-
-    if (showConfirm) {
-        OverlayDialog(
-            show = showConfirm,
-            onDismissRequest = { showConfirm = false },
-            title = "Confirm Action",
-            content = {
-                Column {
-                    TextButton(
-                        text = if (isChosen) "Unselect" else "Select",
-                        onClick = { onSelect(); showConfirm = false },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    TextButton(
-                        text = strings.delete,
-                        onClick = { onDelete(server.id); showConfirm = false },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.textButtonColorsPrimary()
-                    )
-                    TextButton(
-                        text = strings.cancel,
-                        onClick = { showConfirm = false },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
-        )
-    }
+        }
 }
 
 @Composable

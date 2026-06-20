@@ -9,7 +9,7 @@ import org.cf0x.spicecompose.ui.theme.ColorMode
 import org.cf0x.spicecompose.ui.theme.defaultKeyColor
 
 @Immutable
-data class ThemeUiState(
+data class CustomizeUiState(
     val colorMode:             ColorMode             = ColorMode.SYSTEM,
     val useMonet:              Boolean               = false,
     val amoledDark:            Boolean               = false,
@@ -25,7 +25,7 @@ data class ThemeUiState(
 )
 
 @Immutable
-data class ThemeScreenActions(
+data class CustomizeScreenActions(
     val onBack:                         () -> Unit,
     val onSetColorMode:                 (ColorMode) -> Unit,
     val onSetUseMonet:                  (Boolean) -> Unit,

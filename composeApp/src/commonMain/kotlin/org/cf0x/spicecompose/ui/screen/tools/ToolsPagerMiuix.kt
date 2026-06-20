@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -25,13 +26,13 @@ fun ToolsPagerMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
-
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = strings.tools,
-                scrollBehavior = scrollBehavior,
-            )
+                TopAppBar(
+                    title = strings.tools,
+                    actions = {},
+                    scrollBehavior = scrollBehavior,
+                )
         },
     ) { innerPadding ->
         LazyColumn(
@@ -53,7 +54,7 @@ fun ToolsPagerMiuix(
                         startAction = {
                             Icon(Icons.Rounded.RadioButtonChecked, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenButtons,
+                        onClick = { maybeVibrate(15); actions.onOpenButtons() },
                     )
                     ArrowPreference(
                         title = strings.analogs,
@@ -61,7 +62,7 @@ fun ToolsPagerMiuix(
                         startAction = {
                             Icon(Icons.Rounded.LinearScale, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenAnalogs,
+                        onClick = { maybeVibrate(15); actions.onOpenAnalogs() },
                     )
                     ArrowPreference(
                         title = strings.lights,
@@ -69,7 +70,7 @@ fun ToolsPagerMiuix(
                         startAction = {
                             Icon(Icons.Rounded.Lightbulb, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenLights,
+                        onClick = { maybeVibrate(15); actions.onOpenLights() },
                     )
                 }
 
@@ -82,7 +83,7 @@ fun ToolsPagerMiuix(
                         startAction = {
                             Icon(Icons.Rounded.MonetizationOn, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenCoins,
+                        onClick = { maybeVibrate(15); actions.onOpenCoins() },
                     )
                     ArrowPreference(
                         title = strings.keypad,
@@ -90,7 +91,28 @@ fun ToolsPagerMiuix(
                         startAction = {
                             Icon(Icons.Rounded.Apps, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = actions.onOpenKeypad,
+                        onClick = { maybeVibrate(15); actions.onOpenKeypad() },
+                    )
+                }
+
+                Card(
+                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                ) {
+                    ArrowPreference(
+                        title = strings.subScreen,
+                        summary = strings.subScreenSummary,
+                        startAction = {
+                            Icon(Icons.Rounded.ScreenshotMonitor, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenSubScreen() },
+                    )
+                    ArrowPreference(
+                        title = strings.patches,
+                        summary = strings.patchesSummary,
+                        startAction = {
+                            Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenPatches() },
                     )
                 }
             }

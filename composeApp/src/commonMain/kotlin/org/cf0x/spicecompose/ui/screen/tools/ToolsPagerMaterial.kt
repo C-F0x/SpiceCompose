@@ -19,13 +19,13 @@ fun ToolsPagerMaterial(
 ) {
     val strings = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(strings.tools) },
-                scrollBehavior = scrollBehavior,
-            )
+                TopAppBar(
+                    title = { Text(strings.tools) },
+                    actions = {},
+                    scrollBehavior = scrollBehavior,
+                )
         },
     ) { innerPadding ->
         LazyColumn(

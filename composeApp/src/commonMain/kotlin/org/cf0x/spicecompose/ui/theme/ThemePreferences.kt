@@ -2,6 +2,7 @@ package org.cf0x.spicecompose.ui.theme
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -78,4 +79,24 @@ object ThemePreferences {
     var enableSmoothCorner by mutableStateOf(s.getBoolean("enableSmoothCorner", true))
         private set
     fun updateEnableSmoothCorner(v: Boolean) { enableSmoothCorner = v; s.putBoolean("enableSmoothCorner", v) }
+
+    var ssQuality by mutableIntStateOf(s.getInt("ssQuality", 60))
+        private set
+    fun updateSsQuality(v: Int) { ssQuality = v; s.putInt("ssQuality", v) }
+
+    var ssDivide by mutableIntStateOf(s.getInt("ssDivide", 1))
+        private set
+    fun updateSsDivide(v: Int) { ssDivide = v; s.putInt("ssDivide", v) }
+
+    var vibDuration by mutableIntStateOf(s.getInt("vibDuration", 50))
+        private set
+    fun updateVibDuration(v: Int) { vibDuration = v; s.putInt("vibDuration", v) }
+
+    var toolbarHidden by mutableStateOf(s.getBoolean("toolbarHidden", false))
+        private set
+    fun updateToolbarHidden(v: Boolean) { toolbarHidden = v; s.putBoolean("toolbarHidden", v) }
+
+    var vibrationEnabled by mutableStateOf(s.getBoolean("vibrationEnabled", true))
+        private set
+    fun updateVibrationEnabled(v: Boolean) { vibrationEnabled = v; s.putBoolean("vibrationEnabled", v) }
 }
