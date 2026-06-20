@@ -6,13 +6,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Money
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.network.LocalConnectionManager
+import org.cf0x.spicecompose.network.spiceapi.wrappers.coinBlockerGet
 import org.cf0x.spicecompose.network.spiceapi.wrappers.coinInsert
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
@@ -45,6 +50,14 @@ fun CoinsScreen(onBack: () -> Unit) {
         }
     }
 
+    var coinBlocker by remember { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(connection) {
+        while (isActive) {
+            coinBlocker = try { connection?.coinBlockerGet() } catch (_: Exception) { null }
+            delay(2000)
+        }
+    }
+
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             top.yukonga.miuix.kmp.basic.Scaffold(
@@ -67,6 +80,7 @@ fun CoinsScreen(onBack: () -> Unit) {
                 val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
+                        CoinBlockerStatusMiuix(coinBlocker)
                         CoinActionMiuix("Insert 1 Coin", { onInsert(1) })
                         CoinActionMiuix("Insert 5 Coins", { onInsert(5) })
                         CoinActionMiuix("Insert 10 Coins", { onInsert(10) })
@@ -96,6 +110,7 @@ fun CoinsScreen(onBack: () -> Unit) {
                 val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
+                        CoinBlockerStatusMaterial(coinBlocker)
                         CoinActionMaterial("Insert 1 Coin", { onInsert(1) })
                         CoinActionMaterial("Insert 5 Coins", { onInsert(5) })
                         CoinActionMaterial("Insert 10 Coins", { onInsert(10) })
@@ -126,5 +141,46 @@ fun CoinActionMaterial(text: String, onClick: () -> Unit) {
         modifier = Modifier.clickable(onClick = onClick),
         headlineContent = { androidx.compose.material3.Text(text) },
         leadingContent = { androidx.compose.material3.Icon(Icons.Rounded.Add, null) }
+    )
+}
+
+@Composable
+private fun CoinBlockerStatusMiuix(blocked: Boolean?) {
+    val status = when (blocked) {
+        true  -> "BLOCKED"
+        false -> "Open"
+        null  -> "Checking..."
+    }
+    val color = when (blocked) {
+        true  -> Color(0xFFFFD000)
+        false -> Color(0xFF50B050)
+        null  -> Color(0xFF888888)
+    }
+    top.yukonga.miuix.kmp.basic.Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Money, null, tint = color)
+            Spacer(Modifier.width(12.dp))
+            top.yukonga.miuix.kmp.basic.Text("Coin Blocker: $status")
+        }
+    }
+}
+
+@Composable
+private fun CoinBlockerStatusMaterial(blocked: Boolean?) {
+    val status = when (blocked) {
+        true  -> "BLOCKED"
+        false -> "Open"
+        null  -> "Checking..."
+    }
+    val color = when (blocked) {
+        true  -> Color(0xFFFFD000)
+        false -> Color(0xFF50B050)
+        null  -> Color(0xFF888888)
+    }
+    ListItem(
+        headlineContent = { androidx.compose.material3.Text("Coin Blocker: $status", color = color) },
+        leadingContent = { androidx.compose.material3.Icon(Icons.Rounded.Money, null, tint = color) },
     )
 }

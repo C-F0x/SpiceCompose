@@ -18,6 +18,7 @@ import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.screen.about.AboutScreen
+import org.cf0x.spicecompose.ui.screen.settings.ControllerFaqScreen
 import org.cf0x.spicecompose.ui.screen.theme.CustomizeScreen
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 private const val ROUTE_MAIN  = "main"
 private const val ROUTE_THEME = "theme"
 private const val ROUTE_ABOUT = "about"
+private const val ROUTE_FAQ   = "faq"
 
 @ExperimentalMaterial3Api
 @Composable
@@ -84,7 +86,8 @@ fun SettingsScreen(
             enableSmoothCorner = enableSmoothCorner, onEnableSmoothCornerChange = onEnableSmoothCornerChange,
             onBack = { route = ROUTE_MAIN },
         )
-        ROUTE_ABOUT -> AboutScreen(onBack = { route = ROUTE_MAIN })
+        ROUTE_ABOUT -> AboutScreen(onBack = { route = ROUTE_MAIN }, onOpenFaq = { route = ROUTE_FAQ })
+        ROUTE_FAQ   -> ControllerFaqScreen(onBack = { route = ROUTE_MAIN })
         else -> {
             val uiState = SettingsUiState(language = appLanguage, uiMode = uiMode)
             val actions = SettingsScreenActions(

@@ -18,3 +18,11 @@ suspend fun SpiceClient.iidxTickerSet(text: String) {
 suspend fun SpiceClient.iidxTickerReset() {
     request("iidx", "ticker_reset")
 }
+
+suspend fun SpiceClient.iidxTapeledGet(vararg names: String): Map<String, List<Int>> {
+    val params = names.map { JsonPrimitive(it) }
+    val res = request("iidx", "tapeled_get", params)
+    return res.jsonObject["data"]?.jsonObject?.mapValues { (_, v) ->
+        v.jsonArray.map { it.jsonPrimitive.content.toInt() }
+    } ?: emptyMap()
+}

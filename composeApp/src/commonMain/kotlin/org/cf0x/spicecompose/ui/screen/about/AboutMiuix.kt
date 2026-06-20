@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -165,6 +166,26 @@ fun AboutScreenMiuix(
                             )
                         },
                         onClick = { actions.onOpenLink(GITHUB_URL) },
+                    )
+                }
+
+                Card(
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .fillMaxWidth(),
+                ) {
+                    ArrowPreference(
+                        title = "Controller FAQ",
+                        summary = "Game code to full name reference",
+                        startAction = {
+                            Icon(
+                                imageVector = Icons.Rounded.Gamepad,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 6.dp),
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        },
+                        onClick = { actions.onOpenFaq() },
                     )
                 }
             }

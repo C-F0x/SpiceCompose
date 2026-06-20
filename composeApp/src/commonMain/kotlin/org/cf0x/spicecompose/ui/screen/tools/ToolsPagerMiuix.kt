@@ -3,7 +3,16 @@ package org.cf0x.spicecompose.ui.screen.tools
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.AspectRatio
+import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Gamepad
+import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.LinearScale
+import androidx.compose.material.icons.rounded.MonetizationOn
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.ScreenshotMonitor
+import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -113,6 +122,40 @@ fun ToolsPagerMiuix(
                             Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
                         onClick = { maybeVibrate(15); actions.onOpenPatches() },
+                    )
+                }
+
+                Card(
+                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                ) {
+                    ArrowPreference(
+                        title = "Game Controller",
+                        summary = "Virtual arcade controller",
+                        startAction = {
+                            Icon(Icons.Rounded.Gamepad, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenController() },
+                    )
+                }
+
+                Card(
+                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                ) {
+                    ArrowPreference(
+                        title = "LCD Info",
+                        summary = "LCD touch panel diagnostics",
+                        startAction = {
+                            Icon(Icons.Rounded.Tv, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenLcd() },
+                    )
+                    ArrowPreference(
+                        title = "Screen Resize",
+                        summary = "Window layout presets",
+                        startAction = {
+                            Icon(Icons.Rounded.AspectRatio, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenResize() },
                     )
                 }
             }

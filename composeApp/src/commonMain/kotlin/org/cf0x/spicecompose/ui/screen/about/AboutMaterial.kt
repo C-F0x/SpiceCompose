@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Gamepad
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -139,6 +141,16 @@ fun AboutScreenMaterial(
                     supportingContent = { Text(GITHUB_URL) },
                     leadingContent = { Icon(Icons.Rounded.Code, null) },
                     trailingContent = { Icon(Icons.Rounded.OpenInBrowser, null) },
+                )
+            }
+            // ── Controller FAQ ────────────────────────────────────────────────
+            item {
+                ListItem(
+                    modifier = Modifier.clickable { actions.onOpenFaq() },
+                    headlineContent = { Text("Controller FAQ") },
+                    supportingContent = { Text("Game code to full name reference") },
+                    leadingContent = { Icon(Icons.Rounded.Gamepad, null) },
+                    trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
                 )
             }
         }

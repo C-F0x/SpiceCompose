@@ -5,8 +5,8 @@ import org.cf0x.spicecompose.network.SpiceClient
 
 data class ButtonState(
     val name: String,
-    val state: Double,
-    val active: Boolean = false
+    var state: Double,
+    var active: Boolean = false
 )
 
 suspend fun SpiceClient.buttonsRead(): List<ButtonState> {
