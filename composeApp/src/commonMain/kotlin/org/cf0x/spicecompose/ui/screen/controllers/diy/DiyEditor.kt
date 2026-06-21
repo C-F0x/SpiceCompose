@@ -109,9 +109,17 @@ fun DiyEditor(
                                     onDropWidget(dragWidgetType, fracX, fracY)
                                     return@awaitPointerEventScope
                                 }
-                                // Normal press: drag-to-move or pan
+                                // Wire drop on press
+                                if (dragWireBind != null) {
+                                    val hit = hitTest(layout.widgets, fracX, fracY)
+                                    if (hit != null) onDropBind(dragWireBind, hit.id)
+                                    else onCancelDrag()
+                                    return@awaitPointerEventScope
+                                }
+                                // Widget center snaps to finger immediately (first pointer only)
                                 val hit = hitTest(layout.widgets, fracX, fracY)
                                 if (canvasWidgetMove && hit != null && hit.id == selectedId) {
+                                    onWidgetMoved(selectedId, fracX, fracY)
                                     dragTarget = hit.id; dragStartX = fracX; dragStartY = fracY
                                     val wf = widgetFraction(hit); widgetStartX = wf.x; widgetStartY = wf.y
                                 } else if (canvasPanZoom) {
@@ -121,8 +129,7 @@ fun DiyEditor(
                             }
                             PointerEventType.Move -> {
                                 dragTarget?.let { id ->
-                                    val dx = fracX - dragStartX; val dy = fracY - dragStartY
-                                    var nx = widgetStartX + dx; var ny = widgetStartY + dy
+                                    var nx = fracX; var ny = fracY
                                     if (snapToGrid) { val sx=grid.xStep/100f; val sy=grid.yStep/100f; nx=(nx/sx).roundToInt()*sx; ny=(ny/sy).roundToInt()*sy }
                                     onWidgetMoved(id, nx.coerceIn(0f,1f), ny.coerceIn(0f,1f))
                                 }
@@ -179,6 +186,7 @@ fun DiyEditor(
                     sel -> Modifier.background(ControllerColors.primary().copy(alpha = 0.25f))
                     else -> Modifier
                 }
+                val selBorder = if (sel) Modifier.border(2.dp, ControllerColors.primary().copy(alpha = 0.6f)) else Modifier
                 val alphaMod = if (!enabled) Modifier.graphicsLayer { alpha = 0.3f } else Modifier
                 val rot = when (widget) { is DiyWidget.Button -> widget.rotation; is DiyWidget.Label -> widget.rotation; is DiyWidget.Icon -> widget.rotation; else -> 0f }
                 val diag = maxOf(iw, ih) * 1.42f
@@ -189,7 +197,7 @@ fun DiyEditor(
                         val buttonMod = Modifier.offset(x - (diag-iw)/2f, y - (diag-ih)/2f).size(diag).graphicsLayer { rotationZ = rot }.then(alphaMod)
                         if (widget.sides == 4) {
                             Box(buttonMod, contentAlignment = Alignment.Center) {
-                                Box(Modifier.size(iw, ih).clip(RoundedCornerShape(crPx)).background(ControllerColors.buttonIdle()).then(selOverlay), contentAlignment = Alignment.Center) {
+                                Box(Modifier.size(iw, ih).clip(RoundedCornerShape(crPx)).background(ControllerColors.buttonIdle()).then(selOverlay).then(selBorder), contentAlignment = Alignment.Center) {
                                     Text(widget.id, fontSize=8.sp, color=ControllerColors.onSurface(), textAlign=TextAlign.Center) }
                             }
                         } else {
@@ -215,12 +223,12 @@ fun DiyEditor(
                         }
                     }
                     is DiyWidget.Fader -> {
-                        Box(Modifier.offset(x,y).size(iw,ih).then(selOverlay).then(alphaMod).clip(RoundedCornerShape(4.dp)).background(ControllerColors.surface()), contentAlignment = Alignment.CenterStart) {
+                        Box(Modifier.offset(x,y).size(iw,ih).then(selOverlay).then(selBorder).then(alphaMod).clip(RoundedCornerShape(4.dp)).background(ControllerColors.surface()), contentAlignment = Alignment.CenterStart) {
                             Box(Modifier.fillMaxWidth(0.5f).height(ih).background(ControllerColors.primary()))
                             Box(Modifier.offset(x = iw * 0.5f - 4.dp).width(8.dp).height(ih * 1.3f).clip(RoundedCornerShape(4.dp)).background(ControllerColors.onSurface())) }
                         Text(widget.id, fontSize=8.sp, color=ControllerColors.onSurface(), textAlign=TextAlign.Center)
                     }
-                    is DiyWidget.Knob -> Box(Modifier.offset(x-iw/2f,y-ih/2f).size(iw).then(selOverlay).then(alphaMod).clip(CircleShape).background(ControllerColors.surface()), contentAlignment=Alignment.Center) {
+                    is DiyWidget.Knob -> Box(Modifier.offset(x-iw/2f,y-ih/2f).size(iw).then(selOverlay).then(selBorder).then(alphaMod).clip(CircleShape).background(ControllerColors.surface()), contentAlignment=Alignment.Center) {
                         Box(Modifier.size(iw*0.7f).clip(CircleShape).background(ControllerColors.background())); Text(widget.id, fontSize=8.sp, color=ControllerColors.onSurface(), textAlign=TextAlign.Center) }
                     is DiyWidget.Label -> Box(Modifier.offset(x-(diag-iw)/2f, y-(diag-ih)/2f).size(diag).graphicsLayer { rotationZ = rot }.then(alphaMod), contentAlignment = Alignment.Center) {
                         Text(widget.text, color=if(sel) ControllerColors.primary() else ControllerColors.onSurface(), fontSize=widget.fontSize.sp) }
@@ -229,7 +237,7 @@ fun DiyEditor(
                     is DiyWidget.Grid -> for (row in 0 until widget.rows) for (col in 0 until widget.cols) {
                         val gx = w*widget.x + w*(widget.cellW+widget.gap)*col; val gy = h*widget.y + h*(widget.cellH+widget.gap)*row
                         val cell = widget.cells.find { it.row==row && it.col==col }; val isBound = cell?.bind?.isNotEmpty()==true
-                        Box(Modifier.offset(gx,gy).size(w*widget.cellW, h*widget.cellH).then(selOverlay).then(alphaMod).clip(RoundedCornerShape(widget.cornerRadius.dp)).background(if(isBound) ControllerColors.buttonPressed().copy(alpha=0.3f) else ControllerColors.buttonIdle()), contentAlignment=Alignment.Center) {
+                        Box(Modifier.offset(gx,gy).size(w*widget.cellW, h*widget.cellH).then(selOverlay).then(selBorder).then(alphaMod).clip(RoundedCornerShape(widget.cornerRadius.dp)).background(if(isBound) ControllerColors.buttonPressed().copy(alpha=0.3f) else ControllerColors.buttonIdle()), contentAlignment=Alignment.Center) {
                             Text(if(isBound) cell!!.bind.takeLast(4) else "$row,$col", fontSize=7.sp, color=ControllerColors.onSurface(), textAlign=TextAlign.Center) }
                     }
                     is DiyWidget.GuideLineWidget -> {} // rendered above

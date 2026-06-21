@@ -1,5 +1,7 @@
 package org.cf0x.spicecompose.ui.screen.controllers.diy
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +31,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.GridOn
 import androidx.compose.material.icons.rounded.Link
@@ -39,6 +45,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.Widgets
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -169,7 +176,7 @@ fun DiySidebar(
 
             // ── Tab body ────────────────────────────────────────────────
             when (tabIndex) {
-                0 -> WidgetListTab(layout, selectedId, onSelect, onDeleteWidget, onReorder, onUpdateWidget, onToggleEnabled, onToggleGridToolbar)
+                0 -> WidgetListTab(layout, selectedId, onSelect, onDeleteWidget, onReorder, onUpdateWidget, onToggleEnabled, onToggleGridToolbar, onAddWidget)
                 1 -> LibraryTab(onAddWidget)
                 2 -> BackendTab(gameModel, onDragBindStart, onUnbind, layout)
             }
@@ -177,7 +184,7 @@ fun DiySidebar(
     }
 }
 
-// ── Tab 0: Widget list (layers) + inline properties ─────────────────────
+// ── Tab 0: Widget list (layers) ─────────────────────────────────────────
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -190,76 +197,83 @@ private fun WidgetListTab(
     onUpdateWidget: (DiyWidget) -> Unit,
     onToggleEnabled: (String) -> Unit,
     onToggleGridToolbar: () -> Unit,
+    onAddWidget: (DiyWidget) -> Unit,
 ) {
     val widgets = layout.widgets
-    val reorderable = widgets  // all widgets now, Grid is a regular library item
+    val listState = rememberLazyListState()
+    var showDetail by remember { mutableStateOf(false) }
+
+    // Detail view for selected widget
+    if (showDetail && selectedId.isNotEmpty()) {
+        val w = widgets.find { it.id == selectedId }
+        if (w != null) {
+            Column(Modifier.fillMaxSize()) {
+                Row(Modifier.fillMaxWidth().padding(4.dp)) {
+                    IconButton(onClick = { showDetail = false; onSelect("") }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                    }
+                    Text("Edit ${w.name}", Modifier.align(Alignment.CenterVertically), fontSize = 13.sp)
+                }
+                InlinePropertyEditor(w, widgets.map { it.name }, onUpdateWidget, onDismiss = { showDetail = false; onSelect("") })
+            }
+            return
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
-        // Quick-access Grid toolbar button
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp), horizontalArrangement = Arrangement.End) {
             IconButton(onClick = onToggleGridToolbar, modifier = Modifier.size(28.dp)) {
                 Icon(Icons.Rounded.GridOn, null, Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        val listState = rememberLazyListState()
-        val hasSelection = selectedId.isNotEmpty()
-        var draggedIdx by remember { mutableStateOf<Int?>(null) }
-        var dragAccum by remember { mutableFloatStateOf(0f) }
-        val itemH = 44.dp
-        val density = LocalDensity.current
-        val thresholdPx = with(density) { itemH.toPx() }
 
-        LazyColumn(state = listState, modifier = Modifier.weight(1f), userScrollEnabled = !hasSelection && draggedIdx == null) {
-            itemsIndexed(reorderable) { idx, w ->
-                val isDragging = draggedIdx == idx
+        LazyColumn(state = listState, modifier = Modifier.weight(1f)) {
+            itemsIndexed(widgets) { idx, w ->
                 WidgetRow(
-                    widget = w, isSelected = w.id == selectedId, isLocked = false,
-                    onClick = {
-                        if (selectedId == w.id) onSelect("") else onSelect(w.id)
-                    },
+                    widget = w, isSelected = w.id == selectedId,
+                    onClick = { onSelect(w.id); showDetail = true },
                     onDelete = { onDeleteWidget(w.id) },
                     onToggleEnabled = { onToggleEnabled(w.id) },
-                    onDragStart = { draggedIdx = idx; dragAccum = 0f },
-                    onDragMove = { dy ->
-                        dragAccum += dy
-                        val cur = draggedIdx ?: return@WidgetRow
-                        while (dragAccum > thresholdPx && cur > 0) {
-                            onReorder(cur, cur - 1)
-                            dragAccum -= thresholdPx
-                            draggedIdx = cur - 1
+                    onCopy = {
+                        val newId = uniqueId("cp")
+                        val baseName = w.name.replace(Regex(" \\d+$"), "").ifEmpty { "Copy" }
+                        val newName = nextName(baseName, widgets.map { it.name })
+                        val dup = when (w) {
+                            is DiyWidget.Button -> w.copy(id = newId, name = newName, enabled = false)
+                            is DiyWidget.Fader -> w.copy(id = newId, name = newName, enabled = false)
+                            is DiyWidget.Knob -> w.copy(id = newId, name = newName, enabled = false)
+                            is DiyWidget.Label -> w.copy(id = newId, name = newName, enabled = false)
+                            is DiyWidget.Icon -> w.copy(id = newId, name = newName, enabled = false)
+                            is DiyWidget.Grid -> w.copy(id = newId, name = newName, enabled = true)
+                            is DiyWidget.GuideLineWidget -> w.copy(id = newId, name = newName, enabled = true)
+                            is DiyWidget.GuidePointWidget -> w.copy(id = newId, name = newName, enabled = true)
+                            is DiyWidget.GuideGridIndicator -> w.copy(id = newId, name = newName, enabled = true)
                         }
-                        while (dragAccum < -thresholdPx && cur < reorderable.size - 1) {
-                            onReorder(cur, cur + 1)
-                            dragAccum += thresholdPx
-                            draggedIdx = cur + 1
-                        }
+                        onAddWidget(dup)
                     },
-                    onDragEnd = { draggedIdx = null; dragAccum = 0f },
+                    onMoveUp = { if (idx > 0) onReorder(idx, idx - 1) },
+                    onMoveDown = { if (idx < widgets.size - 1) onReorder(idx, idx + 1) },
                 )
             }
         }
-
-        // Inline property editor for selected widget — larger area
-        val sel = widgets.find { it.id == selectedId }
-        if (sel != null) {
-            InlinePropertyEditor(sel, widgets.map { it.name }, onUpdateWidget, onDismiss = { onSelect("") })
-        }
     }
 }
+
+// ── Widget row with swipe actions + long-press drag ────────────────────
 
 @Composable
 private fun WidgetRow(
     widget: DiyWidget,
     isSelected: Boolean,
-    isLocked: Boolean,
     onClick: () -> Unit,
-    onDelete: (() -> Unit)?,
-    onToggleEnabled: (() -> Unit)? = null,
-    onDragStart: (() -> Unit)? = null,
-    onDragMove: ((Float) -> Unit)? = null,
-    onDragEnd: (() -> Unit)? = null,
+    onDelete: () -> Unit,
+    onToggleEnabled: () -> Unit,
+    onCopy: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
     val icon = when (widget) {
         is DiyWidget.Button -> "⬜"
         is DiyWidget.Fader -> "▬"
@@ -278,49 +292,48 @@ private fun WidgetRow(
     val bg = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
     else Color.Transparent
 
+    // Context menu dialog
+    if (showMenu) {
+        AlertDialog(
+            onDismissRequest = { showMenu = false },
+            title = { Text(widget.name, fontSize = 14.sp) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        IconButton(onClick = { onToggleEnabled(); showMenu = false }) {
+                            Icon(if (widget.enabled) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, null, Modifier.size(20.dp),
+                                tint = if (widget.enabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = { onCopy(); showMenu = false }) {
+                            Icon(Icons.Rounded.ContentCopy, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = { onDelete(); showMenu = false }) {
+                            Icon(Icons.Rounded.Delete, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        TextButton(onClick = { onMoveUp(); showMenu = false }) { Text("↑ Move Up", fontSize = 12.sp) }
+                        TextButton(onClick = { onMoveDown(); showMenu = false }) { Text("↓ Move Down", fontSize = 12.sp) }
+                    }
+                }
+            },
+            confirmButton = {},
+        )
+    }
+
     Row(
-        Modifier.fillMaxWidth().background(bg).clickable { onClick() }.padding(horizontal = 8.dp, vertical = 6.dp),
+        Modifier.fillMaxWidth().background(bg).combinedClickable(
+            onClick = onClick,
+            onLongClick = { showMenu = true },
+        ).padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Drag handle (only for reorderable items)
-        if (!isLocked && onDragStart != null) {
-            Icon(
-                Icons.Rounded.DragHandle, null, Modifier.size(18.dp)
-                    .pointerInput(widget.id) {
-                        detectDragGesturesAfterLongPress(
-                            onDragStart = { onDragStart() },
-                            onDrag = { _, dragAmount -> onDragMove?.invoke(dragAmount.y) },
-                            onDragEnd = { onDragEnd?.invoke() },
-                            onDragCancel = { onDragEnd?.invoke() },
-                        )
-                    },
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Icon(Icons.Rounded.Lock, null, Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary)
-        }
-        Spacer(Modifier.width(6.dp))
         Text(icon, fontSize = 14.sp)
         Spacer(Modifier.width(6.dp))
-        Text(label, Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        // Enable/disable toggle
-        if (onToggleEnabled != null) {
-            IconButton(onClick = onToggleEnabled, modifier = Modifier.size(28.dp)) {
-                Icon(
-                    if (widget.enabled) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
-                    null, Modifier.size(18.dp),
-                    tint = if (widget.enabled) MaterialTheme.colorScheme.onSurfaceVariant
-                           else MaterialTheme.colorScheme.error
-                )
-            }
-        }
-        // Delete button
-        if (onDelete != null) {
-            IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                Icon(Icons.Rounded.Close, null, Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.error)
-            }
-        }
+        Text(label, Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            color = if (!widget.enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else Color.Unspecified)
+        if (!widget.enabled) Text("OFF", fontSize = 9.sp, color = MaterialTheme.colorScheme.error)
+        if (widget is DiyWidget.GuideGridIndicator) Text("Grid", fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
     }
 }
 

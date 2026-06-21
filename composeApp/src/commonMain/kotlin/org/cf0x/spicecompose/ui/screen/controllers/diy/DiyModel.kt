@@ -25,6 +25,20 @@ sealed class DiyWidget {
     @Transient open val enabled: Boolean = true
     @Transient open val uni: String? = null
     @Transient open val name: String = id
+    @Transient open val priority: Int = 0
+
+    /** Get a copy of this widget with the given priority set. */
+    fun withPriority(p: Int): DiyWidget = when (this) {
+        is Button -> copy(priority = p)
+        is Fader -> copy(priority = p)
+        is Knob -> copy(priority = p)
+        is Label -> copy(priority = p)
+        is Icon -> copy(priority = p)
+        is Grid -> copy(priority = p)
+        is GuideLineWidget -> copy(priority = p)
+        is GuidePointWidget -> copy(priority = p)
+        is GuideGridIndicator -> copy(priority = p)
+    }
 
     @Serializable
     data class Button(
@@ -36,6 +50,7 @@ sealed class DiyWidget {
         val rotation: Float = 0f,
         val sides: Int = 4,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = false,
     ) : DiyWidget()
 
@@ -49,6 +64,7 @@ sealed class DiyWidget {
         val style: String = "thin",
         val colorize: Boolean = false,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = false,
     ) : DiyWidget()
 
@@ -61,6 +77,7 @@ sealed class DiyWidget {
         val autoReturn: Boolean = true,
         val showTick: Boolean = true,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = false,
     ) : DiyWidget()
 
@@ -72,6 +89,7 @@ sealed class DiyWidget {
         val rotation: Float = 0f,
         val fontSize: Float = 12f,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = false,
     ) : DiyWidget()
 
@@ -83,6 +101,7 @@ sealed class DiyWidget {
         val size: Float,
         val rotation: Float = 0f,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = false,
     ) : DiyWidget()
 
@@ -96,6 +115,7 @@ sealed class DiyWidget {
         val cells: List<GridCell> = emptyList(),
         val cornerRadius: Float = 4f,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = true,
     ) : DiyWidget()
 
@@ -111,6 +131,7 @@ sealed class DiyWidget {
         val orient: String,
         val pos: Float,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = true,
     ) : DiyWidget()
 
@@ -119,6 +140,7 @@ sealed class DiyWidget {
         override val id: String,
         val x: Float, val y: Float,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = true,
     ) : DiyWidget()
 
@@ -126,6 +148,7 @@ sealed class DiyWidget {
     data class GuideGridIndicator(
         override val id: String,
         override val name: String = id,
+        override val priority: Int = 0,
         override val enabled: Boolean = true,
         override val uni: String? = "guide_grid",
     ) : DiyWidget()

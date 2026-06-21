@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.GridOn
+import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -101,7 +102,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 is DiyWidget.GuideGridIndicator -> w.copy(name = n)
             })
         } else w
-        layout = l.copy(widgets = l.widgets + named); repo.save(layout!!)
+        layout = l.copy(widgets = l.widgets + named)
     }
 
     fun moveWidget(id: String, x: Float, y: Float) {
@@ -117,7 +118,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
             is DiyWidget.GuidePointWidget -> if (it.id == id) it.copy(x = x, y = y) else it
             is DiyWidget.GuideGridIndicator -> it // no position
             else -> it
-        } }); repo.save(layout!!)
+        } })
     }
 
     fun bindWidget(id: String, bind: String) {
@@ -132,12 +133,12 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
             it.id == id && it is DiyWidget.Fader  -> it.copy(bind = bind)
             it.id == id && it is DiyWidget.Knob   -> it.copy(bind = bind)
             else -> it } })
-        layout = updated; repo.save(updated)
+        layout = updated
     }
 
     fun deleteWidget(id: String) {
         val l = layout ?: return
-        layout = l.copy(widgets = l.widgets.filter { it.id != id }); repo.save(layout!!)
+        layout = l.copy(widgets = l.widgets.filter { it.id != id })
         if (selectedId == id) selectedId = ""
     }
 
@@ -155,7 +156,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 is DiyWidget.GuidePointWidget -> if (it.id == id) it.copy(enabled = !it.enabled) else it
                 is DiyWidget.GuideGridIndicator -> if (it.id == id) it.copy(enabled = !it.enabled) else it
             }
-        }); repo.save(layout!!)
+        })
     }
 
     fun updateWidget(w: DiyWidget) {
@@ -164,21 +165,18 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
         if (w is DiyWidget.GuideGridIndicator) {
             layout = l.copy(widgets = l.widgets.map { if (it.id == w.id) w else it },
                             grid = l.grid.copy(enabled = w.enabled))
-            repo.save(layout!!)
         } else {
-            layout = l.copy(widgets = l.widgets.map { if (it.id == w.id) w else it }).also { repo.save(it) }
+            layout = l.copy(widgets = l.widgets.map { if (it.id == w.id) w else it })
         }
     }
 
     fun reorderWidgets(from: Int, to: Int) {
         val l = layout ?: return
         val mutable = l.widgets.toMutableList()
-        // Skip Grid (always at index 0 / bottom of reorderable)
-        val gridIdx = mutable.indexOfFirst { it is DiyWidget.Grid }
-        val adjFrom = from + (if (gridIdx >= 0 && from >= gridIdx) 0 else 0) // simplified
-        if (adjFrom < 0 || adjFrom >= mutable.size || to < 0 || to >= mutable.size) return
-        val item = mutable.removeAt(adjFrom); mutable.add(to, item)
-        layout = l.copy(widgets = mutable); repo.save(layout!!)
+        if (from < 0 || from >= mutable.size || to < 0 || to >= mutable.size) return
+        val item = mutable.removeAt(from)
+        mutable.add(to, item)
+        layout = l.copy(widgets = mutable)
     }
 
     fun addGuideLine(orient: String, pos: Float) {
@@ -192,12 +190,12 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
     }
 
     fun updateGrid(gs: GridSettings) {
-        layout = layout?.let { l -> l.copy(grid = gs).also { repo.save(it) } }
+        layout = layout?.let { l -> l.copy(grid = gs) }
     }
 
     fun enableGuideGrid() {
         val l = layout ?: return
-        layout = l.copy(grid = l.grid.copy(enabled = true)); repo.save(layout!!)
+        layout = l.copy(grid = l.grid.copy(enabled = true))
     }
 
     fun unbindWidget(bindName: String) {
@@ -210,9 +208,18 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 is DiyWidget.Grid -> w.copy(cells = w.cells.map { if (it.bind == bindName) it.copy(bind = "") else it })
                 else -> w
             }
-        }); repo.save(layout!!)
+        })
     }
 
+    fun saveLayout() {
+        val l = layout ?: return
+        // Auto-renumber priorities 1,2,3... and persist
+        val reordered = l.copy(widgets = l.widgets.mapIndexed { i, w -> w.withPriority(i + 1) })
+        layout = reordered
+        repo.save(reordered)
+    }
+    // Auto-save when switching sidebar tabs
+    LaunchedEffect(sidebarTab) { if (sidebarTab >= 0) saveLayout() }
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
     // ── Top bar ────────────────────────────────────────────────────────
@@ -227,6 +234,11 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 },
                 actions = {
                     if (layout != null) {
+                        if (editMode) {
+                            top.yukonga.miuix.kmp.basic.IconButton(onClick = { saveLayout() }) {
+                                top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Save, null)
+                            }
+                        }
                         top.yukonga.miuix.kmp.basic.IconButton(onClick = { editMode = !editMode; selectedId = "" }) {
                             top.yukonga.miuix.kmp.basic.Icon(if (editMode) Icons.Filled.PlayArrow else Icons.Filled.Edit, null)
                         }
@@ -249,7 +261,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 { showGridToolbar = it }, { selectedId = it },
                 { dragWireBind = it }, { dragWidgetType = it },
                 { sidebarOffset = it },
-                { l -> layout = l; repo.save(l) },
+                { l -> layout = l },
                 { l -> layout = l; editMode = false; selectedId = "" },
             )
         }
@@ -264,6 +276,11 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 },
                 actions = {
                     if (layout != null) {
+                        if (editMode) {
+                            IconButton(onClick = { saveLayout() }) {
+                                Icon(Icons.Rounded.Save, null)
+                            }
+                        }
                         IconButton(onClick = { editMode = !editMode; selectedId = "" }) {
                             Icon(if (editMode) Icons.Filled.PlayArrow else Icons.Filled.Edit, null)
                         }
@@ -286,7 +303,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
                 { showGridToolbar = it }, { selectedId = it },
                 { dragWireBind = it }, { dragWidgetType = it },
                 { sidebarOffset = it },
-                { l -> layout = l; repo.save(l) },
+                { l -> layout = l },
                 { l -> layout = l; editMode = false; selectedId = "" },
             )
         }
@@ -371,7 +388,7 @@ private fun DiyBody(
                 editMode -> {
                     val canvasPanZoom = sidebarTab == 0 && selectedId.isEmpty()
                     val canvasWidgetMove = sidebarTab == 0 && selectedId.isNotEmpty()
-                    key(layout, sidebarTab, selectedId) {
+                    key(sidebarTab, selectedId) {
                     DiyEditor(
                         layout = layout,
                         onWidgetMoved = onMoveWidget,
