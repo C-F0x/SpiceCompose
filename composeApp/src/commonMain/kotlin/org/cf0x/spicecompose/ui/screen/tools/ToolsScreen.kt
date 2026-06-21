@@ -27,6 +27,7 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.screen.controllers.ControllerScreen
+import org.cf0x.spicecompose.ui.screen.controllers.diy.DiyScreen
 import org.cf0x.spicecompose.ui.screen.feature.*
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
 
@@ -41,6 +42,7 @@ private const val ROUTE_PATCHES    = "patches"
 private const val ROUTE_CONTROLLER = "controller"
 private const val ROUTE_LCD       = "lcd_info"
 private const val ROUTE_RESIZE    = "resize"
+private const val ROUTE_DIY       = "diy"
 
 data class ToolsScreenActions(
     val onOpenButtons: () -> Unit,
@@ -53,6 +55,7 @@ data class ToolsScreenActions(
     val onOpenController: () -> Unit,
     val onOpenLcd:   () -> Unit = {},
     val onOpenResize: () -> Unit = {},
+    val onOpenDiy:   () -> Unit = {},
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,6 +95,10 @@ fun ToolsScreen() {
             )
             ROUTE_LCD    -> LcdInfoScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_RESIZE -> ResizeScreen(onBack = { route = ROUTE_MAIN })
+            ROUTE_DIY    -> DiyScreen(
+                connectionManager = connectionManager,
+                onBack = { route = ROUTE_MAIN },
+            )
             else -> {
                 val actions = ToolsScreenActions(
                     onOpenButtons    = { route = ROUTE_BUTTONS },
@@ -104,6 +111,7 @@ fun ToolsScreen() {
                     onOpenController = { route = ROUTE_CONTROLLER },
                     onOpenLcd       = { route = ROUTE_LCD },
                     onOpenResize    = { route = ROUTE_RESIZE },
+                    onOpenDiy       = { route = ROUTE_DIY },
                 )
                 when (LocalUiMode.current) {
                     UiMode.Miuix    -> ToolsPagerMiuix(actions)
@@ -134,6 +142,7 @@ fun ToolsScreen() {
                                     Triple("Game Controller",  "Virtual arcade controller",  { maybeVibrate(15); actions.onOpenController() }),
                                     Triple("LCD Info",        "LCD touch panel diagnostics",  { maybeVibrate(15); actions.onOpenLcd() }),
                                     Triple("Screen Resize",   "Window layout presets",        { maybeVibrate(15); actions.onOpenResize() }),
+                                    Triple("Game Controller 2.0", "DIY layout editor & player", { maybeVibrate(15); actions.onOpenDiy() }),
                                 )
                                 items(items) { (title, summary, onClick) ->
                                     Box(Modifier.padding(horizontal = 16.dp)) {

@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.DashboardCustomize
 import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.LinearScale
@@ -156,6 +157,14 @@ fun ToolsPagerMiuix(
                             Icon(Icons.Rounded.AspectRatio, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
                         onClick = { maybeVibrate(15); actions.onOpenResize() },
+                    )
+                    ArrowPreference(
+                        title = "Game Controller 2.0",
+                        summary = "DIY layout editor & player",
+                        startAction = {
+                            Icon(Icons.Rounded.DashboardCustomize, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
+                        },
+                        onClick = { maybeVibrate(15); actions.onOpenDiy() },
                     )
                 }
             }
