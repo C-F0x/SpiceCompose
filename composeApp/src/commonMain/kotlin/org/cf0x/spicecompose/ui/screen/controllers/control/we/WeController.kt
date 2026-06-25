@@ -25,12 +25,11 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun WeController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = listOf("Start","Up","Down","Left","Right","Button A","Button B","Button C","Button D","Button E","Button F")
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { weButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih).clip(CircleShape))

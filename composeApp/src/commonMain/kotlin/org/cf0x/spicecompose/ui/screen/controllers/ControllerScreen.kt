@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
+import org.cf0x.spicecompose.platform.GameOptimizationEffect
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
@@ -114,6 +115,9 @@ fun ControllerScreen(
     var debugExpanded by remember { mutableStateOf(false) }
 
     val effectiveController = debugOverride ?: gameModel?.let { gameModelToController[it] }
+
+    // Enable high refresh rate + sustained performance while controller is active
+    GameOptimizationEffect()
 
     // ── Poll game info every second (skipped when debug override is active) ─
     LaunchedEffect(connectionManager, debugOverride) {

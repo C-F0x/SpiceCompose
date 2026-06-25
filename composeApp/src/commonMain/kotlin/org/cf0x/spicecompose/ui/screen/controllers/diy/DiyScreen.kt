@@ -132,6 +132,11 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
             it.id == id && it is DiyWidget.Button -> it.copy(bind = bind)
             it.id == id && it is DiyWidget.Fader  -> it.copy(bind = bind)
             it.id == id && it is DiyWidget.Knob   -> it.copy(bind = bind)
+            it.id == id && it is DiyWidget.Grid -> {
+                val nc = it.cells.toMutableList()
+                nc.add(DiyWidget.GridCell(0, 0, bind))
+                it.copy(cells = nc)
+            }
             else -> it } })
         layout = updated
     }
@@ -218,8 +223,9 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
         layout = reordered
         repo.save(reordered)
     }
-    // Auto-save when switching sidebar tabs
-    LaunchedEffect(sidebarTab) { if (sidebarTab >= 0) saveLayout() }
+    // Auto-save when switching sidebar tabs (skip initial load).
+    var prevSidebarTab by remember { mutableIntStateOf(-1) }
+    LaunchedEffect(sidebarTab) { if (prevSidebarTab >= 0 && sidebarTab >= 0) saveLayout(); prevSidebarTab = sidebarTab }
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
     // ── Top bar ────────────────────────────────────────────────────────

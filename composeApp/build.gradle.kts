@@ -19,6 +19,7 @@ kotlin {
         compileSdk = androidCompileSdkVersion
         minSdk = androidMinSdkVersion
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
+        androidResources.enable = true
     }
 
     jvm("desktop")
@@ -36,7 +37,7 @@ kotlin {
             implementation(libs.material3)
             implementation(libs.ui)
             implementation(libs.components.ui.tooling.preview)
-            implementation(libs.components.resources)
+            implementation(compose.components.resources)
             implementation(libs.material.icons.extended)
             implementation(libs.materialkolor)
             implementation(libs.multiplatform.settings)
@@ -82,4 +83,9 @@ tasks.register<Copy>("deployWasmToRustBackend") {
     dependsOn("composeCompatibilityBrowserDistribution")
     from(layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
     into(rootProject.layout.projectDirectory.dir("rust-backend/static"))
+}
+
+compose.resources {
+    publicResClass = true
+    generateResClass = always
 }

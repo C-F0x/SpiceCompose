@@ -52,8 +52,7 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun XifController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = (1..12).map { "Button $it" }
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { xifButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
 
     var faderL by remember { mutableFloatStateOf(0.5f) }
@@ -68,7 +67,7 @@ fun XifController(connectionManager: ConnectionManager, subViewIndex: Int) {
             FaderBar("FADER-R", faderR, Modifier.weight(1f).fillMaxSize()) { faderR = it }
         }
         Box(buttonControl.pointerInputModifier().fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
-            BoxWithConstraints(Modifier.fillMaxWidth().aspectRatio(19f / 9f), contentAlignment = Alignment.TopStart) {
+            BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopStart) {
                 val w = maxWidth; val h = maxHeight
                 @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                     ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih).clip(RoundedCornerShape(4.dp)))

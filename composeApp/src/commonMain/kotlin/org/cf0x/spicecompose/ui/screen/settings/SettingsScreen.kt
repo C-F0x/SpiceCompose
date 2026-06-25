@@ -23,6 +23,7 @@ import org.cf0x.spicecompose.ui.screen.theme.CustomizeScreen
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.i18n.isSystemLocaleOverridden
 
 private const val ROUTE_MAIN  = "main"
 private const val ROUTE_THEME = "theme"
@@ -89,7 +90,8 @@ fun SettingsScreen(
         ROUTE_ABOUT -> AboutScreen(onBack = { route = ROUTE_MAIN }, onOpenFaq = { route = ROUTE_FAQ })
         ROUTE_FAQ   -> ControllerFaqScreen(onBack = { route = ROUTE_MAIN })
         else -> {
-            val uiState = SettingsUiState(language = appLanguage, uiMode = uiMode)
+            val systemLocaleOverridden = isSystemLocaleOverridden()
+            val uiState = SettingsUiState(language = appLanguage, uiMode = uiMode, systemLocaleOverridden = systemLocaleOverridden)
             val actions = SettingsScreenActions(
                 onSetLanguage    = onLanguageChange,
                 onSetUiModeIndex = { onUiModeChange(if (it == 0) UiMode.Miuix else UiMode.Material) },

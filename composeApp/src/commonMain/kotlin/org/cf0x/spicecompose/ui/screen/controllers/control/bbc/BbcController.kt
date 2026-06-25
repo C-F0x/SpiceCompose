@@ -25,13 +25,12 @@ private val bbcColors = listOf(Color(0xFFF05050), Color(0xFF50F050), Color(0xFF5
 @Composable
 fun BbcController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = (1..4).flatMap { p -> listOf("P$p R","P$p G","P$p B","P$p Disk-","P$p Disk+","P$p Disk -/+ Slowdown","P$p Disk -/+ Slowdown") }
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { bbcButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
     val si = subViewIndex % 4 * 7
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp, idle: Color = ControllerColors.buttonIdle()) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih), idleColor = idle)

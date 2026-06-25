@@ -38,8 +38,7 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun Rf3dController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = listOf("View","2D/3D","Wheel Left","Wheel Right","Accelerate","Brake","Auto Lever Down","Auto Lever Up")
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { rf3dButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
     val icons = mapOf("View" to Icons.Rounded.Refresh, "2D/3D" to Icons.Rounded.Search,
         "Wheel Left" to Icons.Rounded.KeyboardArrowLeft, "Wheel Right" to Icons.Rounded.KeyboardArrowRight,
@@ -47,7 +46,7 @@ fun Rf3dController(connectionManager: ConnectionManager, subViewIndex: Int) {
         "Auto Lever Down" to Icons.Rounded.ArrowDropDown, "Auto Lever Up" to Icons.Rounded.ArrowDropUp)
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 @Suppress("UNUSED_VARIABLE") val t = buttonControl.notifier.intValue

@@ -26,14 +26,13 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun HpmController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = listOf("P1 Start","P1 1","P1 2","P1 3","P1 4","P2 Start","P2 1","P2 2","P2 3","P2 4")
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { hpmButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
     val si = if (subViewIndex % 2 == 1) 5 else 0
     val colors = listOf(Color(0xFFD05050), Color(0xFF5050E0), Color(0xFFF0F050), Color(0xFF50B050))
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp, idle: Color) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih).clip(CircleShape), idleColor = idle)

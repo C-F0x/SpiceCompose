@@ -30,12 +30,11 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun JbController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = (1..16).map { "Button $it" }
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { jbButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(Color(0xFF102050)), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(1f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 @Suppress("UNUSED_VARIABLE") val t = buttonControl.notifier.intValue

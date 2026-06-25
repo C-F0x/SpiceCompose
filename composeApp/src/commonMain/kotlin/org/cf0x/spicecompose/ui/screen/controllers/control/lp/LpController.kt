@@ -27,7 +27,7 @@ fun LpController(connectionManager: ConnectionManager, subViewIndex: Int) {
     LaunchedEffect(Unit) { buttonControl.init() }
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih))

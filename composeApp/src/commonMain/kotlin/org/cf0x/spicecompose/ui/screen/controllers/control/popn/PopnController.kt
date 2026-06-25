@@ -29,13 +29,12 @@ private val popnColors = listOf(Color(0xFFE0E0E0), Color(0xFFF0F050), Color(0xFF
 @Composable
 fun PopnController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = (1..9).map { "Button $it" }
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { popnButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
     val viewNo = subViewIndex % 2; val round = viewNo == 0
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 val ci = if (wi == 8) 4 else wi % 5

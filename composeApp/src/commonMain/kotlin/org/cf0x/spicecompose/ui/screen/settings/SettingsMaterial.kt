@@ -82,9 +82,10 @@ fun SettingsPagerMaterial(
 
             // ── Language ─────────────────────────────────────────────────────
             item {
+                val langEnabled = !uiState.systemLocaleOverridden
                 ExposedDropdownMenuBox(
-                    expanded = langExpanded,
-                    onExpandedChange = { langExpanded = it }
+                    expanded = langExpanded && langEnabled,
+                    onExpandedChange = { if (langEnabled) langExpanded = it }
                 ) {
                     TonalCard(
                         modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -92,10 +93,23 @@ fun SettingsPagerMaterial(
                     ) {
                         ListItem(
                             headlineContent = { Text(strings.language) },
-                            supportingContent = { Text(uiState.language.displayName) },
-                            leadingContent = { Icon(Icons.Rounded.Translate, null) },
-                            trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(langExpanded) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            supportingContent = {
+                                Text(
+                                    if (langEnabled) uiState.language.displayName
+                                    else "${uiState.language.displayName} · Set via system settings",
+                                    color = if (langEnabled) Color.Unspecified
+                                            else Color.Gray.copy(alpha = 0.6f)
+                                )
+                            },
+                            leadingContent = {
+                                Icon(Icons.Rounded.Translate, null,
+                                    tint = if (langEnabled) Color.Unspecified
+                                           else Color.Gray.copy(alpha = 0.4f))
+                            },
+                            trailingContent = {
+                                if (langEnabled) ExposedDropdownMenuDefaults.TrailingIcon(expanded = langExpanded)
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
                     DropdownMenu(

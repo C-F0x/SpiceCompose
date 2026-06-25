@@ -24,7 +24,7 @@ class ConnectionManager {
     val currentServer: StateFlow<ServerConfig?> = _currentServer.asStateFlow()
 
     private var client: SpiceClient? = null
-    private var refreshJob: Job? = null
+    private var heartbeatJob: Job? = null
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -37,41 +37,48 @@ class ConnectionManager {
                 _error.value = null
 
                 client?.close()
-
                 val newClient = SpiceClient()
                 withTimeout(5000) {
                     val result = newClient.connect(server.host, server.port, server.password)
-                    if (!result.connected) throw Exception("Connection refused or timed out")
+                    if (!result.connected) throw Exception("Connection refused")
                 }
 
                 client = newClient
                 _status.value = ConnectionStatus.Connected
-                startSessionRefresh()
+                startHeartbeat()
             } catch (e: Exception) {
                 _status.value = ConnectionStatus.Disconnected
                 _error.value = if (e is TimeoutCancellationException) "Connection timed out"
                     else (e.message ?: "Unknown error")
                 _currentServer.value = null
-                client?.close()
-                client = null
+                client?.close(); client = null
             }
         }
     }
 
-    private fun startSessionRefresh() {
-        refreshJob?.cancel()
-        refreshJob = scope.launch {
+    private fun startHeartbeat() {
+        heartbeatJob?.cancel()
+        heartbeatJob = scope.launch {
             while (isActive && _status.value == ConnectionStatus.Connected) {
-                delay(60_000)
+                delay(5_000)
                 try {
-                    client?.let { it.request("control", "session_refresh") }
-                } catch (_: Exception) { /* best-effort */ }
+                    val info = client?.request("info", "avs")
+                    if (info == null) {
+                        // null response → device unreachable
+                        disconnect()
+                        return@launch
+                    }
+                } catch (_: Exception) {
+                    // request failed → lost connection
+                    disconnect()
+                    return@launch
+                }
             }
         }
     }
 
     fun disconnect() {
-        refreshJob?.cancel()
+        heartbeatJob?.cancel()
         scope.launch {
             client?.close()
             client = null

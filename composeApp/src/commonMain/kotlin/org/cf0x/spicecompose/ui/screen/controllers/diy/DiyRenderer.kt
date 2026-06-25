@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -63,7 +62,7 @@ fun DiyRenderer(
         val allBinds = mutableSetOf<String>()
         layout.widgets.filterIsInstance<DiyWidget.Button>().forEach { allBinds.add(it.bind) }
         layout.widgets.filterIsInstance<DiyWidget.Grid>().forEach { g -> g.cells.forEach { allBinds.add(it.bind) } }
-        allBinds.filter { it.isNotEmpty() }.map { buttonControl.registerWidget(it) }
+        allBinds.filter { it.isNotEmpty() }.associateWith { buttonControl.registerWidget(it) }
     }
     LaunchedEffect(layout) { buttonControl.init() }
 
@@ -72,8 +71,8 @@ fun DiyRenderer(
             val w = maxWidth; val h = maxHeight
 
             // ── Buttons ─────────────────────────────────────────────────
-            layout.widgets.filterIsInstance<DiyWidget.Button>().filter { it.enabled }.forEachIndexed { idx, btn ->
-                val bw = buttonWidgets.getOrNull(idx) ?: return@forEachIndexed
+            layout.widgets.filterIsInstance<DiyWidget.Button>().filter { it.enabled }.forEach { btn ->
+                val bw = buttonWidgets[btn.bind] ?: return@forEach
                 val crPx = (btn.cornerRadius * minOf(w * btn.w, h * btn.h).value / 2f).dp
                 val shape = RoundedCornerShape(crPx)
                 val btnMod = Modifier.offset(w * btn.x - w * btn.w / 2f, h * btn.y - h * btn.h / 2f)
@@ -107,7 +106,7 @@ fun DiyRenderer(
                     val cell = grid.cells.find { it.row == row && it.col == col }
                     val bind = cell?.bind ?: ""
                     if (bind.isEmpty()) continue
-                    val bw = buttonWidgets.find { it.name == bind } ?: continue
+                    val bw = buttonWidgets[bind] ?: continue
                     val gx = w * grid.x + w * (grid.cellW + grid.gap) * col
                     val gy = h * grid.y + h * (grid.cellH + grid.gap) * row
                     ControllerButton(bw, buttonControl,

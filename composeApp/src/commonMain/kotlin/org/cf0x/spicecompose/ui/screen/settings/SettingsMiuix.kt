@@ -67,22 +67,27 @@ fun SettingsPagerMiuix(
 
             // ── Language ─────────────────────────────────────────────────────
             item {
+                val langEnabled = !uiState.systemLocaleOverridden
                 Card(modifier = Modifier.fillMaxWidth()) {
                     OverlayDropdownPreference(
                         title = strings.language,
-                        summary = uiState.language.displayName,
+                        summary = if (langEnabled) uiState.language.displayName
+                                  else "${uiState.language.displayName} · Set via system settings",
                         items = AppLanguage.entries.map { it.displayName },
                         selectedIndex = uiState.language.ordinal,
                         onSelectedIndexChange = {
-                            maybeVibrate(15)
-                            actions.onSetLanguage(AppLanguage.entries[it])
+                            if (langEnabled) {
+                                maybeVibrate(15)
+                                actions.onSetLanguage(AppLanguage.entries[it])
+                            }
                         },
                         startAction = {
                             Icon(
                                 imageVector = Icons.Rounded.Translate,
                                 contentDescription = strings.language,
                                 modifier = Modifier.padding(end = 6.dp),
-                                tint = colorScheme.onBackground,
+                                tint = if (langEnabled) colorScheme.onBackground
+                                       else androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.4f),
                             )
                         },
                     )

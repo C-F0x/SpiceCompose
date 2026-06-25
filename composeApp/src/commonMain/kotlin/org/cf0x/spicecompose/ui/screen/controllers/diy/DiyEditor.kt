@@ -109,13 +109,6 @@ fun DiyEditor(
                                     onDropWidget(dragWidgetType, fracX, fracY)
                                     return@awaitPointerEventScope
                                 }
-                                // Wire drop on press
-                                if (dragWireBind != null) {
-                                    val hit = hitTest(layout.widgets, fracX, fracY)
-                                    if (hit != null) onDropBind(dragWireBind, hit.id)
-                                    else onCancelDrag()
-                                    return@awaitPointerEventScope
-                                }
                                 // Widget center snaps to finger immediately (first pointer only)
                                 val hit = hitTest(layout.widgets, fracX, fracY)
                                 if (canvasWidgetMove && hit != null && hit.id == selectedId) {

@@ -23,12 +23,11 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun DrsController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = listOf("P1 Start","P1 Up","P1 Down","P1 Left","P1 Right","P2 Start","P2 Up","P2 Down","P2 Left","P2 Right")
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { drsButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih))

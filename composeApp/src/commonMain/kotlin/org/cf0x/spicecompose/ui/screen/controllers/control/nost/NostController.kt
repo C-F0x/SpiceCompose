@@ -27,12 +27,11 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 @Composable
 fun NostController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
-    val names = (1..28).map { "Key $it" }
-    val widgets = remember { names.map { buttonControl.registerWidget(it) } }
+    val widgets = remember { nostButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih).border(BorderStroke(1.dp, ControllerColors.surface())))

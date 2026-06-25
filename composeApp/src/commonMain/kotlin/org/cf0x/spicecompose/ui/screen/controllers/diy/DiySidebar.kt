@@ -603,7 +603,6 @@ private fun BackendTab(
                 Surface(
                     onClick = {
                         expandedName = if (isExpanded) null else name
-                        if (isExpanded) expandedName = null  // toggle off
                     },
                     modifier = Modifier.fillMaxWidth(),
                     color = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
@@ -662,7 +661,7 @@ private fun BackendTab(
 }
 
 @Composable private fun PctSlider(label: String, value: Float, onChange: (Float) -> Unit) {
-    var v by remember { mutableIntStateOf((value * 100f).toInt()) }
+    var v by remember(value) { mutableIntStateOf((value * 100f).toInt()) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text("$label: ${v}%", Modifier.width(50.dp), style = MaterialTheme.typography.labelSmall, fontSize = 9.sp)
         Slider(value = v.toFloat(), onValueChange = { v = it.toInt(); onChange(v / 100f) }, valueRange = 0f..100f, modifier = Modifier.weight(1f))
@@ -670,7 +669,7 @@ private fun BackendTab(
 }
 
 @Composable private fun SizeSlider(label: String, value: Float, onChange: (Float) -> Unit) {
-    var v by remember { mutableIntStateOf((value * 100f).toInt()) }
+    var v by remember(value) { mutableIntStateOf((value * 100f).toInt()) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text("$label: ${v}%", Modifier.width(50.dp), style = MaterialTheme.typography.labelSmall, fontSize = 9.sp)
         Slider(value = v.toFloat(), onValueChange = { v = it.toInt(); onChange(v / 100f) }, valueRange = 1f..200f, modifier = Modifier.weight(1f))
@@ -678,7 +677,7 @@ private fun BackendTab(
 }
 
 @Composable private fun RotSlider(rot: Float, onChange: (Float) -> Unit) {
-    var d by remember { mutableIntStateOf(rot.toInt()) }
+    var d by remember(rot) { mutableIntStateOf(rot.toInt()) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text("Rot: ${d}°", Modifier.width(50.dp), style = MaterialTheme.typography.labelSmall, fontSize = 9.sp)
         Slider(value = d.toFloat(), onValueChange = { d = it.toInt(); onChange(it) }, valueRange = 0f..360f, steps = 35, modifier = Modifier.weight(1f))

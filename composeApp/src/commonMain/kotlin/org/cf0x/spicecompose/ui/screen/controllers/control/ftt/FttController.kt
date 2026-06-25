@@ -31,7 +31,7 @@ fun FttController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val colors = listOf(Color(0xFFB0F0FF), Color(0xFFB0F0FF), Color(0xFFF050C0), Color(0xFFF050C0))
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
-        BoxWithConstraints(Modifier.fillMaxSize().aspectRatio(19f/9f), contentAlignment = Alignment.TopStart) {
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
             val w = maxWidth; val h = maxHeight
             @Composable fun btn(wi: Int, x: Dp, y: Dp, iw: Dp, ih: Dp, idle: Color) {
                 ControllerButton(widgets[wi], buttonControl, Modifier.offset(x, y).size(iw, ih).clip(CircleShape), idleColor = idle)
