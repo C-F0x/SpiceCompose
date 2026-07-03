@@ -19,3 +19,4 @@ captures
 node_modules/
 /androidApp/release
 /rust-backend/target
+/rust-backend/.cargo
