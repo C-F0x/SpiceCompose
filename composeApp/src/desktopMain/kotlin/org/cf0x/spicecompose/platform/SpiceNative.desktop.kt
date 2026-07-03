@@ -14,10 +14,16 @@ import kotlinx.serialization.json.JsonElement
 actual object SpiceNative {
     private const val BASE_URL = "http://127.0.0.1:9800"
 
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
+    private var _httpClient: HttpClient? = null
+    private fun client(): HttpClient {
+        if (_httpClient == null) {
+            _httpClient = HttpClient {
+                install(ContentNegotiation) {
+                    json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
+                }
+            }
         }
+        return _httpClient!!
     }
 
     @Serializable
@@ -31,7 +37,7 @@ actual object SpiceNative {
 
     actual suspend fun connect(host: String, port: Int, password: String): Boolean {
         return try {
-            val response: StatusResponse = client.post("$BASE_URL/connect") {
+            val response: StatusResponse = client().post("$BASE_URL/connect") {
                 contentType(ContentType.Application.Json)
                 setBody(ConnectBody(host, port, password))
             }.body()
@@ -44,7 +50,7 @@ actual object SpiceNative {
     actual suspend fun request(module: String, function: String, paramsJson: String): String {
         val params = Json.parseToJsonElement(paramsJson) as JsonArray
         return try {
-            val response: JsonElement = client.post("$BASE_URL/request") {
+            val response: JsonElement = client().post("$BASE_URL/request") {
                 contentType(ContentType.Application.Json)
                 setBody(RequestBody(module, function, params))
             }.body()
@@ -55,6 +61,8 @@ actual object SpiceNative {
     }
 
     actual suspend fun disconnect() {
-        try { client.post("$BASE_URL/disconnect") } catch (_: Exception) {}
+        try { client().post("$BASE_URL/disconnect") } catch (_: Exception) {}
+        _httpClient?.close()
+        _httpClient = null
     }
 }

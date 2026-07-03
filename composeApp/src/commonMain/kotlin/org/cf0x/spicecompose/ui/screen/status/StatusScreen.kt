@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.data.ServerRepository
@@ -62,17 +61,14 @@ fun StatusScreen() {
         if (status == ConnectionStatus.Connected) {
             val connection = connectionManager.getClient()
             if (connection != null) {
-                var failCount = 0
-                while (failCount < 3) {
-                    try {
-                        avsInfo = connection.infoAVS()
-                        launcherInfo = connection.infoLauncher().mapValues { it.value.toString().replace("\"", "") }
-                        memoryInfo = connection.infoMemory()
-                        failCount = 0
-                    } catch (_: Exception) { failCount++ }
-                    delay(2000)
+                try {
+                    avsInfo = connection.infoAVS()
+                    launcherInfo = connection.infoLauncher().mapValues { it.value.toString().replace("\"", "") }
+                    memoryInfo = connection.infoMemory()
+                } catch (_: Exception) {
+                    // Initial fetch failed — info stays empty, no auto-disconnect.
+                    // The heartbeat in ConnectionManager will detect real failures.
                 }
-                connectionManager.disconnect()
             }
         } else {
             avsInfo = emptyMap()

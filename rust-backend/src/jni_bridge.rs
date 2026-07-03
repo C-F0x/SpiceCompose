@@ -3,10 +3,13 @@ use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jstring};
 use serde_json::Value;
-use std::sync::{LazyLock, Mutex};
+use std::sync::LazyLock;
 use std::time::Duration;
+use tokio::sync::Mutex as AsyncMutex;
 
-static CONNECTION: Mutex<Option<SpiceConnection>> = Mutex::new(None);
+static CONNECTION: LazyLock<AsyncMutex<Option<SpiceConnection>>> = LazyLock::new(|| {
+    AsyncMutex::new(None)
+});
 
 /// Single persistent Tokio runtime — must outlive all connections.
 static RT: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
@@ -38,7 +41,7 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeCon
 
     match RT.block_on(SpiceConnection::connect(&host, port as u16, &password, Duration::from_secs(3))) {
         Ok(conn) => {
-            let mut guard = CONNECTION.lock().unwrap();
+            let mut guard = RT.block_on(CONNECTION.lock());
             if let Some(old) = guard.take() {
                 RT.block_on(old.disconnect());
             }
@@ -71,7 +74,7 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeReq
         }
     };
 
-    let mut guard = CONNECTION.lock().unwrap();
+    let mut guard = RT.block_on(CONNECTION.lock());
     let conn = match guard.as_mut() {
         Some(c) => c,
         None => {
@@ -99,7 +102,7 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeDis
     _env: JNIEnv,
     _class: JClass,
 ) {
-    let mut guard = CONNECTION.lock().unwrap();
+    let mut guard = RT.block_on(CONNECTION.lock());
     if let Some(conn) = guard.take() {
         RT.block_on(conn.disconnect());
     }

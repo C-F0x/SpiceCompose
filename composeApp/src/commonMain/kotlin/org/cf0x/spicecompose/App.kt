@@ -1,7 +1,13 @@
 package org.cf0x.spicecompose
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
@@ -27,6 +33,16 @@ fun App() {
     val fullscreenMode = remember { mutableStateOf(false) }
     val isMaterial = p.uiMode == org.cf0x.spicecompose.ui.UiMode.Material
     val effectiveKeyColor = if (isMaterial) p.materialKeyColor else p.keyColor
+
+    // Snackbar for connect/disconnect notifications
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        connectionManager.toastMessage.collect { msg ->
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
 
     LaunchedEffect(fullscreenMode.value) {
         SystemBarsManager.setFullscreen(fullscreenMode.value)
@@ -65,44 +81,50 @@ fun App() {
                 pageScale    = p.pageScale,
                 isM3E        = p.enableSmoothCorner,
             ) {
-                MainScreen(
-                    navLayoutMode         = p.navLayoutMode,
-                    onNavLayoutModeChange = { p.updateNavLayoutMode(it) },
-                    settingsContent = {
-                        SettingsScreen(
-                            uiMode                        = p.uiMode,
-                            onUiModeChange                = { p.updateUiMode(it); if (it == org.cf0x.spicecompose.ui.UiMode.Material) p.updateFloatingBottomBar(false) },
-                            appLanguage                   = p.appLanguage,
-                            onLanguageChange              = { p.updateAppLanguage(it) },
-                            colorMode                     = p.colorMode,
-                            onColorModeChange             = { p.updateColorMode(it) },
-                            useMonet                      = p.useMonet,
-                            onUseMonetChange              = { p.updateUseMonet(it) },
-                            amoledDark                    = p.amoledDark,
-                            onAmoledDarkChange            = { p.updateAmoledDark(it) },
-                            keyColor                      = p.keyColor,
-                            onKeyColorChange              = { p.updateKeyColor(it) },
-                            materialKeyColor              = p.materialKeyColor,
-                            onMaterialKeyColorChange      = { p.updateMaterialKeyColor(it) },
-                            paletteStyle                  = p.paletteStyle,
-                            onPaletteStyleChange          = { p.updatePaletteStyle(it) },
-                            colorSpecVersion              = p.colorSpecVersion,
-                            onColorSpecVersionChange      = { p.updateColorSpecVersion(it) },
-                            pageScale                     = p.pageScale,
-                            onPageScaleChange             = { p.updatePageScale(it) },
-                            navLayoutMode                 = p.navLayoutMode,
-                            onNavLayoutModeChange         = { p.updateNavLayoutMode(it) },
-                            floatingBottomBar             = p.floatingBottomBar,
-                            onFloatingBottomBarChange     = { p.updateFloatingBottomBar(it) },
-                            floatingBottomBarBlur         = p.floatingBottomBarBlur,
-                            onFloatingBottomBarBlurChange = { p.updateFloatingBottomBarBlur(it) },
-                            enableBlur                    = p.enableBlur,
-                            onEnableBlurChange            = { p.updateEnableBlur(it) },
-                            enableSmoothCorner            = p.enableSmoothCorner,
-                            onEnableSmoothCornerChange    = { p.updateEnableSmoothCorner(it) },
-                        )
-                    },
-                )
+                Box(Modifier.fillMaxSize()) {
+                    MainScreen(
+                        navLayoutMode         = p.navLayoutMode,
+                        onNavLayoutModeChange = { p.updateNavLayoutMode(it) },
+                        settingsContent = {
+                            SettingsScreen(
+                                uiMode                        = p.uiMode,
+                                onUiModeChange                = { p.updateUiMode(it); if (it == org.cf0x.spicecompose.ui.UiMode.Material) p.updateFloatingBottomBar(false) },
+                                appLanguage                   = p.appLanguage,
+                                onLanguageChange              = { p.updateAppLanguage(it) },
+                                colorMode                     = p.colorMode,
+                                onColorModeChange             = { p.updateColorMode(it) },
+                                useMonet                      = p.useMonet,
+                                onUseMonetChange              = { p.updateUseMonet(it) },
+                                amoledDark                    = p.amoledDark,
+                                onAmoledDarkChange            = { p.updateAmoledDark(it) },
+                                keyColor                      = p.keyColor,
+                                onKeyColorChange              = { p.updateKeyColor(it) },
+                                materialKeyColor              = p.materialKeyColor,
+                                onMaterialKeyColorChange      = { p.updateMaterialKeyColor(it) },
+                                paletteStyle                  = p.paletteStyle,
+                                onPaletteStyleChange          = { p.updatePaletteStyle(it) },
+                                colorSpecVersion              = p.colorSpecVersion,
+                                onColorSpecVersionChange      = { p.updateColorSpecVersion(it) },
+                                pageScale                     = p.pageScale,
+                                onPageScaleChange             = { p.updatePageScale(it) },
+                                navLayoutMode                 = p.navLayoutMode,
+                                onNavLayoutModeChange         = { p.updateNavLayoutMode(it) },
+                                floatingBottomBar             = p.floatingBottomBar,
+                                onFloatingBottomBarChange     = { p.updateFloatingBottomBar(it) },
+                                floatingBottomBarBlur         = p.floatingBottomBarBlur,
+                                onFloatingBottomBarBlurChange = { p.updateFloatingBottomBarBlur(it) },
+                                enableBlur                    = p.enableBlur,
+                                onEnableBlurChange            = { p.updateEnableBlur(it) },
+                                enableSmoothCorner            = p.enableSmoothCorner,
+                                onEnableSmoothCornerChange    = { p.updateEnableSmoothCorner(it) },
+                            )
+                        },
+                    )
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                    )
+                }
             }
         }
     }

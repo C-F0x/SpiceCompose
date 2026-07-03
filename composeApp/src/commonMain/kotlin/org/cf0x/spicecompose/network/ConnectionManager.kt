@@ -2,8 +2,11 @@ package org.cf0x.spicecompose.network
 
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.cf0x.spicecompose.data.ServerConfig
 
@@ -29,6 +32,10 @@ class ConnectionManager {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    /** One-shot toast messages for connect/disconnect events. */
+    private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
+
     fun connect(server: ServerConfig) {
         scope.launch {
             try {
@@ -45,11 +52,17 @@ class ConnectionManager {
 
                 client = newClient
                 _status.value = ConnectionStatus.Connected
+                _toastMessage.tryEmit("已连接")
                 startHeartbeat()
             } catch (e: Exception) {
                 _status.value = ConnectionStatus.Disconnected
-                _error.value = if (e is TimeoutCancellationException) "Connection timed out"
-                    else (e.message ?: "Unknown error")
+                val reason = when {
+                    e is TimeoutCancellationException -> "连接超时"
+                    e.message == "Connection refused" -> "连接被拒绝"
+                    else -> e.message ?: "未知错误"
+                }
+                _error.value = reason
+                _toastMessage.tryEmit("已断开，${reason}")
                 _currentServer.value = null
                 client?.close(); client = null
             }
@@ -64,16 +77,25 @@ class ConnectionManager {
                 try {
                     val info = client?.request("info", "avs")
                     if (info == null) {
-                        // null response → device unreachable
-                        disconnect()
+                        heartbeatFailed("服务端死亡")
                         return@launch
                     }
                 } catch (_: Exception) {
-                    // request failed → lost connection
-                    disconnect()
+                    heartbeatFailed("服务端死亡")
                     return@launch
                 }
             }
+        }
+    }
+
+    private fun heartbeatFailed(reason: String) {
+        heartbeatJob?.cancel()
+        scope.launch {
+            client?.close()
+            client = null
+            _status.value = ConnectionStatus.Disconnected
+            _currentServer.value = null
+            _toastMessage.tryEmit("已断开，${reason}")
         }
     }
 
@@ -84,6 +106,7 @@ class ConnectionManager {
             client = null
             _status.value = ConnectionStatus.Disconnected
             _currentServer.value = null
+            _toastMessage.tryEmit("已断开")
         }
     }
 

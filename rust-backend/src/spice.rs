@@ -66,12 +66,20 @@ impl SpiceConnection {
 
         tokio::spawn(reader_loop(read, cipher.clone(), tx.clone()));
 
-        Ok(Self {
+        let mut conn = Self {
             write,
             cipher,
             rx,
             _tx: tx,
-        })
+        };
+
+        // Send control/refresh_session to initialize the SPICE session.
+        // Without this handshake the device may reject subsequent requests.
+        conn.request("control", "refresh_session", vec![])
+            .await
+            .map_err(|e| format!("Session refresh failed: {e}"))?;
+
+        Ok(conn)
     }
 
     /// Send a request and wait for the matching response.
