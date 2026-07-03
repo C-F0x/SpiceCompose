@@ -64,7 +64,7 @@ class ButtonControl(private val connectionManager: ConnectionManager) {
     val notifier = mutableIntStateOf(0)
 
     // ── flush control ──────────────────────────────────────────────────────
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var buttonsFlushed = true
     private var writeCounter = 0
 

@@ -121,8 +121,10 @@ data class SignaturePatchConfig(
 ) : PatchConfig() {
     // Logic for signature patches involves tracking rawOffset and original data
     // For simplicity in first pass, we might need a cache or more complex state management
-    // Flutter version stores rawOffset in memory. 
+    // Flutter version stores rawOffset in memory.
+    @kotlinx.serialization.Transient
     private var rawOffset: Int = 0
+    @kotlinx.serialization.Transient
     private var dataDisabled: String = ""
 
     override suspend fun getStatus(connection: SpiceClient): PatchStatus {

@@ -46,7 +46,7 @@ class TouchControl(private val connectionManager: ConnectionManager) {
                     if (!flushed) flushState()
                 }
             } catch (e: Exception) {
-                // ignore
+                println("TouchControl flush error: ${e.message}")
             } finally {
                 writeCounter--
             }

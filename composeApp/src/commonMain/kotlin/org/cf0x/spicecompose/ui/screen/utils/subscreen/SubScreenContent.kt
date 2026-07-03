@@ -22,7 +22,14 @@ import org.cf0x.spicecompose.network.TouchControl
 import org.cf0x.spicecompose.network.spiceapi.wrappers.captureGetJPG
 
 @Composable
-fun SubScreenContent(refreshTrigger: Int = 0, onShareReady: ((ByteArray) -> Unit)? = null) {
+fun SubScreenContent(
+    refreshTrigger: Int = 0,
+    captureScreen: Int = 1,
+    captureQuality: Int = 60,
+    captureDivide: Int = 1,
+    pollIntervalMs: Long = 100,
+    onShareReady: ((ByteArray) -> Unit)? = null
+) {
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
@@ -38,18 +45,18 @@ fun SubScreenContent(refreshTrigger: Int = 0, onShareReady: ((ByteArray) -> Unit
     // Recompose anchor: keeps pointerInput alive across 30fps Image cycle.
     var touchActive by remember { mutableStateOf(false) }
 
-    LaunchedEffect(connection, refreshTrigger) {
+    LaunchedEffect(connection, refreshTrigger, captureScreen, captureQuality, captureDivide, pollIntervalMs) {
         if (connection == null) return@LaunchedEffect
         while (isActive) {
             try {
-                val cap = connection.captureGetJPG(screen = 1, quality = 60, divide = 1)
+                val cap = connection.captureGetJPG(screen = captureScreen, quality = captureQuality, divide = captureDivide)
                 if (cap.data.isNotEmpty()) {
                     imageBitmap = decodeToImageBitmap(cap.data)
                     nativeSize = IntSize(cap.width, cap.height)
                     lastCaptureData = cap.data
                 }
             } catch (_: Exception) { }
-            delay(33)
+            delay(pollIntervalMs)
         }
     }
 

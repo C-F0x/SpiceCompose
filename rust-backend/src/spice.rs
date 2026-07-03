@@ -8,6 +8,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
 use tokio::time::timeout;
+use tracing::debug;
 
 /// SPICE request message.
 #[derive(Debug, Clone, Serialize)]
@@ -111,7 +112,7 @@ impl SpiceConnection {
         };
 
         let mut json = serde_json::to_string(&req).map_err(|e| format!("Serialize: {e}"))?;
-        eprintln!("SPICE send: {json}");
+        debug!("SPICE send: {json}");
         json.push('\0');
         let mut data = json.into_bytes();
 
@@ -175,7 +176,7 @@ async fn reader_loop(
             let result = String::from_utf8(frame)
                 .map_err(|e| format!("UTF-8: {e}"))
                 .and_then(|json_str| {
-                    eprintln!("SPICE recv: {json_str}");
+                    debug!("SPICE recv: {json_str}");
                     serde_json::from_str::<SpiceResponse>(&json_str)
                         .map_err(|e| format!("Parse: {e}"))
                 });
@@ -200,7 +201,7 @@ async fn reader_loop(
         };
 
         let mut chunk = read_buf[..n].to_vec();
-        eprintln!("SPICE raw recv ({} bytes): {}", n, hex_fmt(&chunk));
+        debug!("SPICE raw recv ({} bytes): {}", n, hex_fmt(&chunk));
 
         // Decrypt with shared cipher.
         {

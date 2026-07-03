@@ -15,5 +15,4 @@ serde_json = "1"
 tower-http = { version = "0.6", features = ["fs", "cors"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
-uuid = { version = "1", features = ["v4"] }
 jni = "0.21"

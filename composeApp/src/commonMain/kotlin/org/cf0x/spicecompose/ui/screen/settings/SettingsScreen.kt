@@ -94,7 +94,7 @@ fun SettingsScreen(
             val uiState = SettingsUiState(language = appLanguage, uiMode = uiMode, systemLocaleOverridden = systemLocaleOverridden)
             val actions = SettingsScreenActions(
                 onSetLanguage    = onLanguageChange,
-                onSetUiModeIndex = { onUiModeChange(if (it == 0) UiMode.Miuix else UiMode.Material) },
+                onSetUiModeIndex = { onUiModeChange(UiMode.entries[it]) },
                 onOpenTheme      = { route = ROUTE_THEME },
                 onOpenAbout      = { route = ROUTE_ABOUT },
             )

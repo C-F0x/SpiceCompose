@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -39,7 +40,12 @@ class SpiceClient {
     suspend fun request(module: String, function: String, params: List<JsonElement> = emptyList()): JsonElement {
         val paramsJson = Json.encodeToString(JsonArray(params))
         val raw = SpiceNative.request(module, function, paramsJson)
-        val response = Json.parseToJsonElement(raw)
+        val response = try {
+            Json.parseToJsonElement(raw)
+        } catch (e: Exception) {
+            throw Exception("Invalid JSON response: ${e.message}")
+        }
+        if (response !is JsonObject) return response
         val obj = response.jsonObject
 
         // Backend-level error (transport failure, timeout, etc.)

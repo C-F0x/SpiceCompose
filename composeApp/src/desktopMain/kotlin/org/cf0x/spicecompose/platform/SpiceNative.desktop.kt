@@ -2,6 +2,7 @@ package org.cf0x.spicecompose.platform
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -20,6 +21,11 @@ actual object SpiceNative {
             _httpClient = HttpClient {
                 install(ContentNegotiation) {
                     json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
+                }
+                install(HttpTimeout) {
+                    requestTimeoutMillis = 30_000
+                    connectTimeoutMillis  = 10_000
+                    socketTimeoutMillis   = 10_000
                 }
             }
         }

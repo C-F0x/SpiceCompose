@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.materialkolor.PaletteStyle
@@ -61,28 +62,30 @@ fun SpiceComposeTheme(
             specVersion = specVersion,
         )
     } else {
-        if (isDark) {
-            androidx.compose.material3.darkColorScheme(
-                primary          = keyColor,
-                primaryContainer = keyColor.copy(alpha = 0.3f),
-                onPrimary        = Color.White,
-                onPrimaryContainer = Color.White,
-                surface          = Color(0xFF1C1B1F),
-                surfaceVariant   = Color(0xFF2D2D2D),
-                background       = Color(0xFF1C1B1F),
-                outlineVariant   = Color(0xFF3D3D3D),
-            )
-        } else {
-            androidx.compose.material3.lightColorScheme(
-                primary          = keyColor,
-                primaryContainer = keyColor.copy(alpha = 0.12f),
-                onPrimary        = Color.White,
-                onPrimaryContainer = Color.Black,
-                surface          = Color.White,
-                surfaceVariant   = Color(0xFFF2F2F2),
-                background       = Color.White,
-                outlineVariant   = Color(0xFFE0E0E0),
-            )
+        remember(isDark, keyColor) {
+            if (isDark) {
+                androidx.compose.material3.darkColorScheme(
+                    primary          = keyColor,
+                    primaryContainer = keyColor.copy(alpha = 0.3f),
+                    onPrimary        = Color.White,
+                    onPrimaryContainer = Color.White,
+                    surface          = Color(0xFF1C1B1F),
+                    surfaceVariant   = Color(0xFF2D2D2D),
+                    background       = Color(0xFF1C1B1F),
+                    outlineVariant   = Color(0xFF3D3D3D),
+                )
+            } else {
+                androidx.compose.material3.lightColorScheme(
+                    primary          = keyColor,
+                    primaryContainer = keyColor.copy(alpha = 0.12f),
+                    onPrimary        = Color.White,
+                    onPrimaryContainer = Color.Black,
+                    surface          = Color.White,
+                    surfaceVariant   = Color(0xFFF2F2F2),
+                    background       = Color.White,
+                    outlineVariant   = Color(0xFFE0E0E0),
+                )
+            }
         }
     }
 
@@ -102,10 +105,17 @@ fun SpiceComposeTheme(
 
     // Miuix compatibility
     val miuixStyle = if (useMonet) paletteStyle else PaletteStyle.TonalSpot
-    val miuixPaletteStyle = try {
-        ThemePaletteStyle.valueOf(miuixStyle.name)
-    } catch (_: Exception) {
-        ThemePaletteStyle.TonalSpot
+    val miuixPaletteStyle = when (miuixStyle) {
+        PaletteStyle.TonalSpot -> ThemePaletteStyle.TonalSpot
+        PaletteStyle.Neutral -> ThemePaletteStyle.Neutral
+        PaletteStyle.Vibrant -> ThemePaletteStyle.Vibrant
+        PaletteStyle.Expressive -> ThemePaletteStyle.Expressive
+        PaletteStyle.Rainbow -> ThemePaletteStyle.Rainbow
+        PaletteStyle.FruitSalad -> ThemePaletteStyle.FruitSalad
+        PaletteStyle.Monochrome -> ThemePaletteStyle.Monochrome
+        PaletteStyle.Fidelity -> ThemePaletteStyle.Fidelity
+        PaletteStyle.Content -> ThemePaletteStyle.Content
+        else -> ThemePaletteStyle.TonalSpot
     }
 
     val miuixColorSpec = if (specVersion == ColorSpec.SpecVersion.SPEC_2025) {

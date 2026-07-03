@@ -27,6 +27,8 @@ import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 
+private val BOTTOM_BAR_HEIGHT = 56.dp
+
 @Composable
 fun MainScreen(
     navLayoutMode:         NavLayoutMode,
@@ -66,7 +68,7 @@ fun MainScreen(
                 fullscreen.value || inSubPage -> 0.dp
                 useRail -> 0.dp
                 isFloating -> navBarHeight // pill floats over content — no extra padding needed
-                else -> navBarHeight + 56.dp // Standard bottom bar height
+                else -> navBarHeight + BOTTOM_BAR_HEIGHT
             }
 
             CompositionLocalProvider(

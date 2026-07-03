@@ -63,7 +63,7 @@ fun StatusScreen() {
             if (connection != null) {
                 try {
                     avsInfo = connection.infoAVS()
-                    launcherInfo = connection.infoLauncher().mapValues { it.value.toString().replace("\"", "") }
+                    launcherInfo = connection.infoLauncher()
                     memoryInfo = connection.infoMemory()
                 } catch (_: Exception) {
                     // Initial fetch failed — info stays empty, no auto-disconnect.

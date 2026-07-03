@@ -83,7 +83,9 @@ fun ToolsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenLights() },
                     )
                 }
+            }
 
+            item {
                 Card(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
@@ -104,7 +106,9 @@ fun ToolsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenKeypad() },
                     )
                 }
+            }
 
+            item {
                 Card(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
@@ -125,7 +129,9 @@ fun ToolsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenPatches() },
                     )
                 }
+            }
 
+            item {
                 Card(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
@@ -138,7 +144,9 @@ fun ToolsPagerMiuix(
                         onClick = { maybeVibrate(15); actions.onOpenController() },
                     )
                 }
+            }
 
+            item {
                 Card(
                     modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
                 ) {
