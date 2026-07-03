@@ -8,7 +8,7 @@ const val APP_VERSION = "0.1.0"
 @Immutable
 data class AboutUiState(
     val appName:     String = "SpiceCompose",
-    val versionName: String = "0.1.0",
+    val versionName: String = APP_VERSION,
 )
 
 @Immutable

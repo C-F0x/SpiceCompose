@@ -123,7 +123,7 @@ private fun StepRowMiuix(value: Int, range: IntProgression, onChange: (Int) -> U
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = "$v", onClick = { onChange(v) },
                 colors = if (v == value) top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
-                         else top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
+                         else top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColors()
             )
         }
     }

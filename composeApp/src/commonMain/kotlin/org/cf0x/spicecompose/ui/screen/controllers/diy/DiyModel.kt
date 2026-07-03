@@ -51,7 +51,7 @@ sealed class DiyWidget {
         val sides: Int = 4,
         override val name: String = id,
         override val priority: Int = 0,
-        override val enabled: Boolean = false,
+        override val enabled: Boolean = true,
     ) : DiyWidget()
 
     @Serializable
@@ -65,7 +65,7 @@ sealed class DiyWidget {
         val colorize: Boolean = false,
         override val name: String = id,
         override val priority: Int = 0,
-        override val enabled: Boolean = false,
+        override val enabled: Boolean = true,
     ) : DiyWidget()
 
     @Serializable
@@ -78,7 +78,7 @@ sealed class DiyWidget {
         val showTick: Boolean = true,
         override val name: String = id,
         override val priority: Int = 0,
-        override val enabled: Boolean = false,
+        override val enabled: Boolean = true,
     ) : DiyWidget()
 
     @Serializable
@@ -90,7 +90,7 @@ sealed class DiyWidget {
         val fontSize: Float = 12f,
         override val name: String = id,
         override val priority: Int = 0,
-        override val enabled: Boolean = false,
+        override val enabled: Boolean = true,
     ) : DiyWidget()
 
     @Serializable
@@ -102,7 +102,7 @@ sealed class DiyWidget {
         val rotation: Float = 0f,
         override val name: String = id,
         override val priority: Int = 0,
-        override val enabled: Boolean = false,
+        override val enabled: Boolean = true,
     ) : DiyWidget()
 
     @Serializable
