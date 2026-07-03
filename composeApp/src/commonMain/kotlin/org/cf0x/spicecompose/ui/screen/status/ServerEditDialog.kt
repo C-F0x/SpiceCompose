@@ -63,9 +63,8 @@ fun ServerEditDialog(
                                 text = strings.save,
                                 onClick = {
                                     val p = port.toIntOrNull() ?: 673
-                                    val randomHex = (1..16).map { "0123456789ABCDEF".random() }.joinToString("")
                                     val newServer = ServerConfig(
-                                        id = server?.id ?: randomHex,
+                                        id = server?.id ?: kotlin.uuid.Uuid.random().toString(),
                                         name = name, host = host, port = p, password = password
                                     )
                                     onSave(newServer)
@@ -96,8 +95,7 @@ fun ServerEditDialog(
                 confirmButton = {
                     androidx.compose.material3.Button(onClick = {
                         val p = port.toIntOrNull() ?: 673
-                        val randomHex = (1..16).map { "0123456789ABCDEF".random() }.joinToString("")
-                        val newServer = ServerConfig(id = server?.id ?: randomHex, name = name, host = host, port = p, password = password)
+                        val newServer = ServerConfig(id = server?.id ?: kotlin.uuid.Uuid.random().toString(), name = name, host = host, port = p, password = password)
                         onSave(newServer)
                     }) { Text(strings.save) }
                 },

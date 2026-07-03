@@ -102,7 +102,6 @@ fun ServerCardMaterial(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        onClick = onSelect
     ) {
         Column(
             Modifier

@@ -61,12 +61,20 @@ fun ButtonsScreen(onBack: () -> Unit) {
         }
     }
 
+    val pressMutex = remember { kotlinx.coroutines.sync.Mutex() }
+
     val onPress: (ButtonState) -> Unit = { button ->
         maybeVibrate(50)
         scope.launch {
-            connection?.buttonsWrite(listOf(button.copy(state = 1.0, active = true)))
-            delay(100)
-            connection?.buttonsWrite(listOf(button.copy(state = 0.0, active = true)))
+            if (pressMutex.tryLock()) {
+                try {
+                    connection?.buttonsWrite(listOf(button.copy(state = 1.0, active = true)))
+                    delay(100)
+                    connection?.buttonsWrite(listOf(button.copy(state = 0.0, active = true)))
+                } finally {
+                    pressMutex.unlock()
+                }
+            }
         }
     }
 

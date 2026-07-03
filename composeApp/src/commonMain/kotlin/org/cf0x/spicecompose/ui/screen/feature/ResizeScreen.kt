@@ -57,7 +57,7 @@ fun ResizeScreen(onBack: () -> Unit) {
                     Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
                 }
                 top.yukonga.miuix.kmp.basic.Text("Scene: $scene")
-                Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt(); scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
+                Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt() }, onValueChangeFinished = { scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
             }
         }
     } else {
@@ -77,7 +77,7 @@ fun ResizeScreen(onBack: () -> Unit) {
                     Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
                 }
                 Text("Scene: $scene")
-                Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt(); scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
+                Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt() }, onValueChangeFinished = { scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
             }
         }
     }

@@ -101,7 +101,6 @@ fun ServerCardMiuix(
             .padding(vertical = 6.dp),
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
-        onClick = onSelect
     ) {
         Column(
             Modifier

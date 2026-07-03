@@ -5,7 +5,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-val LocalUiMode             = staticCompositionLocalOf { UiMode.Miuix }
 val LocalColorMode          = staticCompositionLocalOf { ColorMode.SYSTEM }
 val LocalKeyColor           = staticCompositionLocalOf { defaultKeyColor }
 val LocalPaletteStyle       = staticCompositionLocalOf { com.materialkolor.PaletteStyle.TonalSpot }

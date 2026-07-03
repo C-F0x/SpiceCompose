@@ -56,7 +56,7 @@ pub fn router(state: Arc<AppState>) -> Router {
 // ── Handlers ──
 
 async fn status(State(state): State<Arc<AppState>>) -> Json<StatusResponse> {
-    let conn = state.connection.lock().await;
+    let conn = state.connection.read().await;
     Json(StatusResponse {
         connected: conn.is_some(),
         host: None,
@@ -68,17 +68,16 @@ async fn connect(
     State(state): State<Arc<AppState>>,
     Json(req): Json<ConnectRequest>,
 ) -> Result<Json<StatusResponse>, (StatusCode, String)> {
-    let mut conn_lock = state.connection.lock().await;
-
-    if let Some(existing) = conn_lock.take() {
-        existing.disconnect().await;
+    {
+        let mut conn_lock = state.connection.write().await;
+        if let Some(existing) = conn_lock.take() {
+            existing.disconnect().await;
+        }
+        let new_conn = SpiceConnection::connect(&req.host, req.port, &req.password, Duration::from_secs(5))
+            .await
+            .map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
+        *conn_lock = Some(new_conn);
     }
-
-    let connection = SpiceConnection::connect(&req.host, req.port, &req.password, Duration::from_secs(5))
-        .await
-        .map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
-
-    *conn_lock = Some(connection);
 
     Ok(Json(StatusResponse {
         connected: true,
@@ -91,21 +90,20 @@ async fn spice_request(
     State(state): State<Arc<AppState>>,
     Json(req): Json<SpiceApiRequest>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
-    let mut conn_lock = state.connection.lock().await;
-    let conn = conn_lock
-        .as_mut()
-        .ok_or_else(|| (StatusCode::BAD_REQUEST, "Not connected".to_string()))?;
-
-    let response = conn
-        .request(&req.module, &req.function, req.params)
-        .await
-        .map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
-
-    Ok(Json(serde_json::to_value(response).unwrap()))
+    let response = {
+        let mut conn_lock = state.connection.write().await;
+        let conn = conn_lock
+            .as_mut()
+            .ok_or_else(|| (StatusCode::BAD_REQUEST, "Not connected".to_string()))?;
+        conn.request(&req.module, &req.function, req.params)
+            .await
+            .map_err(|e| (StatusCode::BAD_GATEWAY, e))?
+    };
+    Ok(Json(serde_json::to_value(response).expect("Response serialization should not fail")))
 }
 
 async fn disconnect(State(state): State<Arc<AppState>>) -> Json<StatusResponse> {
-    let mut conn_lock = state.connection.lock().await;
+    let mut conn_lock = state.connection.write().await;
     if let Some(existing) = conn_lock.take() {
         existing.disconnect().await;
     }
@@ -142,7 +140,7 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
 
         // Forward to the SPICE device through the shared connection.
         let result = {
-            let mut conn_lock = state.connection.lock().await;
+            let mut conn_lock = state.connection.write().await;
             match conn_lock.as_mut() {
                 Some(conn) => {
                     conn.request(&spice_req.module, &spice_req.function, spice_req.params).await
@@ -152,7 +150,7 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
         };
 
         let response = match result {
-            Ok(resp) => serde_json::to_value(resp).unwrap(),
+            Ok(resp) => serde_json::to_value(resp).expect("Response serialization should not fail"),
             Err(e) => serde_json::json!({ "error": e }),
         };
 

@@ -73,11 +73,24 @@ impl SpiceConnection {
             _tx: tx,
         };
 
-        // Send control/refresh_session to initialize the SPICE session.
-        // Without this handshake the device may reject subsequent requests.
-        conn.request("control", "refresh_session", vec![])
-            .await
-            .map_err(|e| format!("Session refresh failed: {e}"))?;
+        // If no password is configured, request a session_refresh.
+        // The server will generate a random password and encrypt future traffic.
+        // (With an existing password, session_refresh would change it, breaking reconnect.)
+        if password.is_empty() {
+            let resp = conn.request("control", "session_refresh", vec![])
+                .await
+                .map_err(|e| format!("Session refresh failed: {e}"))?;
+
+            // Update cipher with the new password returned by the server
+            if let Some(new_password) = resp.data.first().and_then(|v| v.as_str()) {
+                let new_rc4 = if new_password.is_empty() {
+                    None
+                } else {
+                    Some(RC4::new(new_password.as_bytes()))
+                };
+                *conn.cipher.lock().await = new_rc4;
+            }
+        }
 
         Ok(conn)
     }
@@ -175,9 +188,15 @@ async fn reader_loop(
 
         // Read more data.
         let n = match read.read(&mut read_buf).await {
-            Ok(0) => return, // EOF
+            Ok(0) => {
+                let _ = tx.send(Err("Connection closed by server".to_string())).await;
+                return; // EOF
+            }
             Ok(n) => n,
-            Err(_) => return,
+            Err(_) => {
+                let _ = tx.send(Err("Connection read error".to_string())).await;
+                return;
+            }
         };
 
         let mut chunk = read_buf[..n].to_vec();

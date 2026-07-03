@@ -13,7 +13,9 @@ actual object SystemBarsManager {
     }
 
     actual fun setFullscreen(enabled: Boolean) {
-        val window = activity?.window ?: return
+        val act = activity ?: return
+        if (act.isFinishing || act.isDestroyed) return
+        val window = act.window ?: return
         val controller = WindowCompat.getInsetsController(window, window.decorView)
         
         if (enabled) {

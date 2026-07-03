@@ -13,10 +13,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -33,7 +31,7 @@ class MainPagerState(
     private val _resetEvents = MutableSharedFlow<Int>(extraBufferCapacity = 1)
     val resetEvents = _resetEvents.asSharedFlow()
 
-    private var navJob: Job? = null
+    private var navSeq = 0
     var lastPage = pagerState.currentPage
 
     fun emitReset(index: Int) {
@@ -42,16 +40,13 @@ class MainPagerState(
 
     fun animateToPage(target: Int) {
         if (target == selectedPage) {
-            // Req 1: Re-tap current tab -> Reset it
             emitReset(target)
             return
         }
 
-        navJob?.cancel()
+        val currentSeq = ++navSeq
         selectedPage  = target
         isNavigating  = true
-        // ... rest
-        // ... (rest same)
 
         val distance   = abs(target - pagerState.currentPage).coerceAtLeast(2)
         val duration   = 100 * distance + 100
@@ -60,15 +55,14 @@ class MainPagerState(
         val distPages  = target - pagerState.currentPage - pagerState.currentPageOffsetFraction
         val scrollPx   = distPages * pageSize
 
-        navJob = scope.launch {
-            val myJob = coroutineContext.job
+        scope.launch {
             try {
                 pagerState.animateScrollBy(
                     value         = scrollPx,
                     animationSpec = tween(easing = EaseInOut, durationMillis = duration),
                 )
             } finally {
-                if (navJob == myJob) {
+                if (navSeq == currentSeq) {
                     isNavigating = false
                     if (pagerState.currentPage != target) selectedPage = pagerState.currentPage
                 }
