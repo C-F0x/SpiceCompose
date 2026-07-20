@@ -76,7 +76,7 @@ fun SubScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .onGloballyPositioned { displaySize = it.size }
-                    .pointerInput(Unit) {
+                    .pointerInput(nativeSize) {
                         awaitPointerEventScope {
                             while (true) {
                                 val event = awaitPointerEvent()

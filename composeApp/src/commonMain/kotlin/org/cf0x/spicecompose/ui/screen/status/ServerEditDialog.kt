@@ -24,7 +24,7 @@ fun ServerEditDialog(
 ) {
     var name by remember(show) { mutableStateOf(server?.name ?: "") }
     var host by remember(show) { mutableStateOf(server?.host ?: "") }
-    var port by remember(show) { mutableStateOf(server?.port?.toString() ?: "673") }
+    var port by remember(show) { mutableStateOf(server?.port?.toString() ?: "573") }
     var password by remember(show) { mutableStateOf(server?.password ?: "") }
 
     val strings = LocalAppStrings.current
@@ -62,7 +62,7 @@ fun ServerEditDialog(
                             TextButton(
                                 text = strings.save,
                                 onClick = {
-                                    val p = port.toIntOrNull() ?: 673
+                                    val p = port.toIntOrNull() ?: 573
                                     val newServer = ServerConfig(
                                         id = server?.id ?: kotlin.uuid.Uuid.random().toString(),
                                         name = name, host = host, port = p, password = password
@@ -94,7 +94,7 @@ fun ServerEditDialog(
                 },
                 confirmButton = {
                     androidx.compose.material3.Button(onClick = {
-                        val p = port.toIntOrNull() ?: 673
+                        val p = port.toIntOrNull() ?: 573
                         val newServer = ServerConfig(id = server?.id ?: kotlin.uuid.Uuid.random().toString(), name = name, host = host, port = p, password = password)
                         onSave(newServer)
                     }) { Text(strings.save) }

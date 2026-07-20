@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "signal"] }
 axum = { version = "0.8", features = ["ws"] }
 axum-extra = "0.10"
 serde = { version = "1", features = ["derive"] }

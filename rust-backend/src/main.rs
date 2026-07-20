@@ -15,7 +15,7 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let app = api::router(state)
+    let app = api::router(state.clone())
         .layer(cors)
         .fallback_service(ServeDir::new("static"));
 
@@ -24,5 +24,16 @@ async fn main() {
     tracing::info!("WebSocket endpoint: ws://{addr}/ws");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async move {
+            tokio::signal::ctrl_c().await.ok();
+            tracing::info!("Shutting down gracefully...");
+            // disconnect active SPICE connection
+            let mut conn = state.connection.write().await;
+            if let Some(c) = conn.take() {
+                c.disconnect().await;
+            }
+        })
+        .await
+        .unwrap();
 }

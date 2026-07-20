@@ -96,7 +96,6 @@ fun AboutScreenMiuix(
                 )
             }
         },
-        popupHost = {},
     ) { innerPadding ->
         val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         LazyColumn(
