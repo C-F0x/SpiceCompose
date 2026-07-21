@@ -9,8 +9,12 @@ data class LightState(
     val active: Boolean = false
 )
 
-suspend fun SpiceClient.lightsRead(): List<LightState> {
-    val res = request("lights", "read")
+suspend fun SpiceClient.lightsRead(vararg names: String): List<LightState> {
+    val res = if (names.isEmpty()) {
+        request("lights", "read")
+    } else {
+        request("lights", "read", names.map { JsonPrimitive(it) })
+    }
     val data = res.jsonObject["data"]?.jsonArray ?: return emptyList()
     return data.map {
         val arr = it.jsonArray

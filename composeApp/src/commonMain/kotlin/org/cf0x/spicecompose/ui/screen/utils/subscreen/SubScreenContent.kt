@@ -25,7 +25,7 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.captureGetJPG
 fun SubScreenContent(
     refreshTrigger: Int = 0,
     captureScreen: Int = 1,
-    captureQuality: Int = 60,
+    captureQuality: Int = 70,
     captureDivide: Int = 1,
     pollIntervalMs: Long = 100,
     onShareReady: ((ByteArray) -> Unit)? = null

@@ -37,7 +37,7 @@ fun ServerEditDialog(
         UiMode.Miuix -> {
             OverlayDialog(
                 show = show,
-                title = if (!isEditing) strings.addServer else "Edit Server",
+                title = if (!isEditing) strings.addServer else strings.editServer,
                 onDismissRequest = onCancel,
                 content = {
                     Column(Modifier.fillMaxWidth()) {
@@ -80,7 +80,7 @@ fun ServerEditDialog(
         UiMode.Material -> {
             androidx.compose.material3.AlertDialog(
                 onDismissRequest = onCancel,
-                title = { Text(if (!isEditing) strings.addServer else "Edit Server") },
+                title = { Text(if (!isEditing) strings.addServer else strings.editServer) },
                 text = {
                     Column(Modifier.fillMaxWidth()) {
                         OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text(strings.serverName) }, modifier = Modifier.fillMaxWidth())

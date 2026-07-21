@@ -19,6 +19,7 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -37,8 +38,9 @@ fun ResizeScreen(onBack: () -> Unit) {
 
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
+    val strings = LocalAppStrings.current
     val uiMode = LocalUiMode.current
-    val title = "Screen Resize"
+    val title = strings.screenResize
 
     if (uiMode == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Scaffold(
@@ -51,13 +53,13 @@ fun ResizeScreen(onBack: () -> Unit) {
             },
         ) { innerPadding ->
             val pad = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    top.yukonga.miuix.kmp.basic.Text("Enable Resize", Modifier.weight(1f))
-                    Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
+                    top.yukonga.miuix.kmp.basic.Text(strings.enableResize, Modifier.weight(1f))
+                    top.yukonga.miuix.kmp.basic.Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
                 }
-                top.yukonga.miuix.kmp.basic.Text("Scene: $scene")
-                Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt() }, onValueChangeFinished = { scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
+                top.yukonga.miuix.kmp.basic.Text(strings.sceneLabel.replace("%d", scene.toString()))
+                top.yukonga.miuix.kmp.basic.Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt() }, onValueChangeFinished = { scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
             }
         }
     } else {
@@ -71,12 +73,12 @@ fun ResizeScreen(onBack: () -> Unit) {
             },
         ) { innerPadding ->
             val pad = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Enable Resize", Modifier.weight(1f))
+                    Text(strings.enableResize, Modifier.weight(1f))
                     Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
                 }
-                Text("Scene: $scene")
+                Text(strings.sceneLabel.replace("%d", scene.toString()))
                 Slider(value = scene.toFloat(), onValueChange = { scene = it.toInt() }, onValueChangeFinished = { scope.launch { conn?.imageResizeSetScene(scene) } }, valueRange = 0f..10f, steps = 9)
             }
         }

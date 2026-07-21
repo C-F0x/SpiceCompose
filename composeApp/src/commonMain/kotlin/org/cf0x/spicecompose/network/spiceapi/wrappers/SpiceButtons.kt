@@ -33,6 +33,6 @@ suspend fun SpiceClient.buttonsWrite(states: List<ButtonState>) {
 }
 
 suspend fun SpiceClient.buttonsWriteReset(names: List<String>) {
-    val params = names.map { JsonPrimitive(it) }
+    val params = names.map { buildJsonArray { add(it) } }
     request("buttons", "write_reset", params)
 }

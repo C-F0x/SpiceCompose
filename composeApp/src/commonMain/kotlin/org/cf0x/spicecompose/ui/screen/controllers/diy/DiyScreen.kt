@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.serialization.json.Json
 import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
@@ -51,6 +52,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 @Composable
 fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
     val fullscreen = LocalFullscreenMode.current; val uiMode = LocalUiMode.current; val p = ThemePreferences
+    val strings = LocalAppStrings.current
     val repo = remember { DiyRepository() }
 
     // Core state
@@ -232,7 +234,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
     if (uiMode == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Scaffold(topBar = {
             if (!fullscreen.value && !p.toolbarHidden) SmallTopAppBar(
-                title = layout?.name ?: "DIY Controller",
+                title = layout?.name ?: strings.diyController,
                 navigationIcon = if (layout != null) {
                     { top.yukonga.miuix.kmp.basic.IconButton(onClick = { back() }) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } }
                 } else {
@@ -274,7 +276,7 @@ fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
     } else {
         Scaffold(topBar = {
             if (!fullscreen.value && !p.toolbarHidden) TopAppBar(
-                title = { Text(layout?.name ?: "DIY Controller") },
+                title = { Text(layout?.name ?: strings.diyController) },
                 navigationIcon = if (layout != null) {
                     { IconButton(onClick = { back() }) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } }
                 } else {

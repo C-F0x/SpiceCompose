@@ -38,6 +38,7 @@ import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.infoAVS
 import org.cf0x.spicecompose.platform.GameOptimizationEffect
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
@@ -106,6 +107,7 @@ fun ControllerScreen(
     val fullscreen  = LocalFullscreenMode.current
     val uiMode      = LocalUiMode.current
     val p           = ThemePreferences
+    val strings     = LocalAppStrings.current
 
     // ── State ────────────────────────────────────────────────────────────
     var gameModel    by remember { mutableStateOf<String?>(null) }
@@ -146,7 +148,7 @@ fun ControllerScreen(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
                     SmallTopAppBar(
-                        title = "Game Controller",
+                        title = strings.gameController,
                         navigationIcon = {
                             top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) {
                                 top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
@@ -169,7 +171,7 @@ fun ControllerScreen(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
                     TopAppBar(
-                        title = { Text("Game Controller") },
+                        title = { Text(strings.gameController) },
                         navigationIcon = {
                             IconButton(onClick = onBack) {
                                 Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
@@ -266,6 +268,7 @@ private fun ControllerBody(
     subViewIndex: Int,
     padding: PaddingValues,
 ) {
+    val strings = LocalAppStrings.current
     Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
         when {
             controller == "bbc"  -> BbcController(connectionManager, subViewIndex)
@@ -287,18 +290,18 @@ private fun ControllerBody(
                 Spacer(Modifier.height(16.dp))
                 Text(controller.uppercase(), style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(8.dp))
-                Text("Controller layout coming soon", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(strings.controllerComingSoon, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (subViewIndex > 0) {
                     Spacer(Modifier.height(4.dp))
-                    Text("Sub-view #$subViewIndex", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(strings.subViewLabel.replace("%d", subViewIndex.toString()), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             gameModel != null -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                 Text("Game: $gameModel", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
-                Text("This game does not yet have a controller view :(", textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(strings.noControllerView, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            else -> Text("Please connect to a server first.", textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
+            else -> Text(strings.connectFirst, textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
         }
     }
 }

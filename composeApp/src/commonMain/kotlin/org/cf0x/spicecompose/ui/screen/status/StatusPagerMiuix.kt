@@ -1,6 +1,8 @@
 package org.cf0x.spicecompose.ui.screen.status
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.combinedClickable
@@ -64,13 +66,14 @@ fun StatusPagerMiuix(
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxHeight()
+                    .fillMaxSize()
                     .scrollEndHaptic()
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(horizontal = 12.dp),
-                contentPadding = innerPadding,
+                contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             ) {
+                item { Spacer(Modifier.height(12.dp)) }
                 items(servers, key = { it.id }) { server ->
                     ServerCardMiuix(
                         server = server, 
@@ -80,6 +83,7 @@ fun StatusPagerMiuix(
                         onDelete = onDelete
                     )
                 }
+                item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
             }
         }
     }
@@ -98,7 +102,7 @@ fun ServerCardMiuix(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(bottom = 12.dp),
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
     ) {

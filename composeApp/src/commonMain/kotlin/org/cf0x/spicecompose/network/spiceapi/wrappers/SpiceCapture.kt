@@ -17,7 +17,7 @@ suspend fun SpiceClient.captureGetScreens(): List<Int> {
 
 suspend fun SpiceClient.captureGetJPG(
     screen: Int = 0,
-    quality: Int = 60,
+    quality: Int = 70,
     divide: Int = 1
 ): CaptureData {
     val res = request(

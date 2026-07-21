@@ -19,6 +19,7 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -41,8 +42,9 @@ fun LcdInfoScreen(onBack: () -> Unit) {
     }
 
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
+    val strings = LocalAppStrings.current
     val uiMode = LocalUiMode.current
-    val title = "LCD Info"
+    val title = strings.lcdInfo
 
     if (uiMode == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Scaffold(
@@ -73,8 +75,8 @@ fun LcdInfoScreen(onBack: () -> Unit) {
 
 @Composable
 private fun LcdInfoContent(info: LcdInfo?, padding: PaddingValues) {
-    Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (info == null) { Text("No LCD data available"); return@Column }
+    Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        if (info == null) { Text(LocalAppStrings.current.noLcdData); return@Column }
         Text("Enabled: ${info.enabled}", style = MaterialTheme.typography.bodyLarge)
         Text("CSM: ${info.csm}")
         Text("Brightness: ${info.brightness}")
@@ -86,8 +88,8 @@ private fun LcdInfoContent(info: LcdInfo?, padding: PaddingValues) {
 
 @Composable
 private fun LcdInfoContentMiuix(info: LcdInfo?, padding: PaddingValues) {
-    Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (info == null) { top.yukonga.miuix.kmp.basic.Text("No LCD data available"); return@Column }
+    Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        if (info == null) { top.yukonga.miuix.kmp.basic.Text(LocalAppStrings.current.noLcdData); return@Column }
         top.yukonga.miuix.kmp.basic.Text("Enabled: ${info.enabled}")
         top.yukonga.miuix.kmp.basic.Text("CSM: ${info.csm}")
         top.yukonga.miuix.kmp.basic.Text("Brightness: ${info.brightness}")

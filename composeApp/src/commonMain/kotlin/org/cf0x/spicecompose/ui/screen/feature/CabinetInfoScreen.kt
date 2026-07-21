@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -28,6 +29,8 @@ import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun CabinetInfoScreen(onBack: () -> Unit) {
@@ -62,6 +65,7 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
+            val scrollBehavior = MiuixScrollBehavior()
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
@@ -74,18 +78,34 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
                             },
                             actions = {
                                 FullscreenAction()
-                            }
+                            },
+                            scrollBehavior = scrollBehavior,
                         )
                     }
                 }
             ) { innerPadding ->
-                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-                LazyColumn(Modifier.fillMaxSize().padding(padding)) {
+                val topPadding = if (fullscreen.value) 0.dp else innerPadding.calculateTopPadding()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .scrollEndHaptic()
+                        .overScrollVertical()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .padding(horizontal = 12.dp),
+                    contentPadding = PaddingValues(top = topPadding),
+                ) {
                     item {
-                        InfoSectionMiuix("AVS Info", avsInfo)
-                        InfoSectionMiuix("Launcher Info", launcherInfo)
+                        InfoSectionMiuix(strings.avsInfo, avsInfo)
+                    }
+                    item {
+                        InfoSectionMiuix(strings.launcherInfo, launcherInfo)
+                    }
+                    item {
                         MemorySectionMiuix(memoryInfo)
                     }
+
+                    // ── Bottom spacing ───────────────────────────────────────────────
+                    item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                 }
             }
         }
@@ -111,8 +131,8 @@ fun CabinetInfoScreen(onBack: () -> Unit) {
                 val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
-                        InfoSectionMaterial("AVS Info", avsInfo)
-                        InfoSectionMaterial("Launcher Info", launcherInfo)
+                        InfoSectionMaterial(strings.avsInfo, avsInfo)
+                        InfoSectionMaterial(strings.launcherInfo, launcherInfo)
                         MemorySectionMaterial(memoryInfo)
                     }
                 }
@@ -162,7 +182,7 @@ fun InfoSectionMaterial(title: String, data: Map<String, String>) {
 @Composable
 fun MemorySectionMiuix(data: Map<String, Long>) {
     if (data.isEmpty()) return
-    InfoSectionMiuix("Memory Usage", data.mapValues { 
+    InfoSectionMiuix(LocalAppStrings.current.memoryUsage, data.mapValues { 
         if (it.key.contains("total") || it.key.contains("used")) "${it.value / 1024 / 1024} MB"
         else it.value.toString()
     })
@@ -171,7 +191,7 @@ fun MemorySectionMiuix(data: Map<String, Long>) {
 @Composable
 fun MemorySectionMaterial(data: Map<String, Long>) {
     if (data.isEmpty()) return
-    InfoSectionMaterial("Memory Usage", data.mapValues { 
+    InfoSectionMaterial(LocalAppStrings.current.memoryUsage, data.mapValues { 
         if (it.key.contains("total") || it.key.contains("used")) "${it.value / 1024 / 1024} MB"
         else it.value.toString()
     })

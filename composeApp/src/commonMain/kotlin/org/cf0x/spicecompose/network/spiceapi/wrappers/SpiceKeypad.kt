@@ -29,5 +29,5 @@ suspend fun SpiceClient.keypadsGet(unit: Int): String {
         "get",
         params = listOf(JsonPrimitive(unit))
     )
-    return res.jsonObject["data"]?.jsonArray?.joinToString("") { it.toString().replace("\"", "") } ?: ""
+    return res.jsonObject["data"]?.jsonArray?.joinToString("") { it.jsonPrimitive.content } ?: ""
 }

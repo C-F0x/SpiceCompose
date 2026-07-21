@@ -41,14 +41,13 @@ class TouchControl(private val connectionManager: ConnectionManager) {
             try {
                 if (updatedTouches.isNotEmpty()) connection.touchWrite(updatedTouches)
                 if (inactiveTouches.isNotEmpty()) connection.touchWriteReset(inactiveTouches.map { it.id })
-                
-                mutex.withLock {
-                    if (!flushed) flushState()
-                }
             } catch (e: Exception) {
                 println("TouchControl flush error: ${e.message}")
             } finally {
                 writeCounter--
+            }
+            mutex.withLock {
+                if (!flushed) flushState()
             }
         }
     }

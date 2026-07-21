@@ -27,6 +27,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -55,7 +56,7 @@ fun PatchesScreen(onBack: () -> Unit) {
     
     val patchStates = remember { mutableStateMapOf<String, PatchStatus>() }
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Preset", "Custom")
+    val tabs = listOf(strings.preset, strings.custom)
 
     LaunchedEffect(connection) {
         if (connection == null) return@LaunchedEffect
@@ -117,7 +118,7 @@ fun PatchesScreen(onBack: () -> Unit) {
                     val list = if (selectedTab == 0) presetPatches else customPatches
                     if (list.isEmpty()) {
                         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            top.yukonga.miuix.kmp.basic.Text("No patches found")
+                            top.yukonga.miuix.kmp.basic.Text(strings.noPatchesFound)
                         }
                     } else {
                         LazyVerticalGrid(
@@ -163,7 +164,7 @@ fun PatchesScreen(onBack: () -> Unit) {
                     val list = if (selectedTab == 0) presetPatches else customPatches
                     if (list.isEmpty()) {
                         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            androidx.compose.material3.Text("No patches found")
+                            androidx.compose.material3.Text(strings.noPatchesFound)
                         }
                     } else {
                         LazyVerticalGrid(
@@ -183,14 +184,16 @@ fun PatchesScreen(onBack: () -> Unit) {
 
 @Composable
 fun PatchItemMiuix(patch: PatchConfig, status: PatchStatus, onToggle: (PatchConfig) -> Unit) {
+    val statusColors = LocalStatusColors.current
+    val strings = LocalAppStrings.current
     val statusColor = when (status) {
-        PatchStatus.Enabled -> Color.Green
-        PatchStatus.Disabled -> Color.Red
-        PatchStatus.Unknown -> Color.Gray
+        PatchStatus.Enabled -> statusColors.healthy
+        PatchStatus.Disabled -> statusColors.danger
+        PatchStatus.Unknown -> statusColors.neutral
     }
     val statusText = when (status) {
-        PatchStatus.Enabled -> "(Enabled)"
-        PatchStatus.Disabled -> "(Disabled)"
+        PatchStatus.Enabled -> strings.patchEnabled
+        PatchStatus.Disabled -> strings.patchDisabled
         PatchStatus.Unknown -> ""
     }
 
@@ -217,14 +220,16 @@ fun PatchItemMiuix(patch: PatchConfig, status: PatchStatus, onToggle: (PatchConf
 
 @Composable
 fun PatchItemMaterial(patch: PatchConfig, status: PatchStatus, onToggle: (PatchConfig) -> Unit) {
+    val statusColors = LocalStatusColors.current
+    val strings = LocalAppStrings.current
     val statusColor = when (status) {
-        PatchStatus.Enabled -> Color.Green
-        PatchStatus.Disabled -> Color.Red
-        PatchStatus.Unknown -> Color.Gray
+        PatchStatus.Enabled -> statusColors.healthy
+        PatchStatus.Disabled -> statusColors.danger
+        PatchStatus.Unknown -> statusColors.neutral
     }
     val statusText = when (status) {
-        PatchStatus.Enabled -> "(Enabled)"
-        PatchStatus.Disabled -> "(Disabled)"
+        PatchStatus.Enabled -> strings.patchEnabled
+        PatchStatus.Disabled -> strings.patchDisabled
         PatchStatus.Unknown -> ""
     }
 

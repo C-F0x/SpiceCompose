@@ -37,6 +37,7 @@ class ConnectionManager {
     val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
 
     fun connect(server: ServerConfig) {
+        println("[SpiceCompose] connect → ${server.host}:${server.port}")
         scope.launch {
             try {
                 _status.value = ConnectionStatus.Connecting
@@ -52,6 +53,7 @@ class ConnectionManager {
 
                 client = newClient
                 _status.value = ConnectionStatus.Connected
+                println("[SpiceCompose] connect OK ← ${server.host}:${server.port}")
                 _toastMessage.tryEmit("已连接")
                 startHeartbeat()
             } catch (e: Exception) {
@@ -61,6 +63,7 @@ class ConnectionManager {
                     e.message == "Connection refused" -> "连接被拒绝"
                     else -> e.message ?: "未知错误"
                 }
+                println("[SpiceCompose] connect FAILED: $reason")
                 _error.value = reason
                 _toastMessage.tryEmit("已断开，${reason}")
                 _currentServer.value = null
@@ -75,11 +78,7 @@ class ConnectionManager {
             while (isActive && _status.value == ConnectionStatus.Connected) {
                 delay(5_000)
                 try {
-                    val info = client?.request("info", "avs")
-                    if (info == null) {
-                        heartbeatFailed("服务端死亡")
-                        return@launch
-                    }
+                    client?.request("info", "avs")
                 } catch (_: Exception) {
                     heartbeatFailed("服务端死亡")
                     return@launch
@@ -89,6 +88,7 @@ class ConnectionManager {
     }
 
     private fun heartbeatFailed(reason: String) {
+        println("[SpiceCompose] heartbeat DEAD: $reason")
         heartbeatJob?.cancel()
         scope.launch {
             client?.close()
@@ -100,6 +100,7 @@ class ConnectionManager {
     }
 
     fun disconnect() {
+        println("[SpiceCompose] disconnect")
         heartbeatJob?.cancel()
         scope.launch {
             client?.close()
@@ -110,8 +111,7 @@ class ConnectionManager {
         }
     }
 
-    fun getClient(): SpiceClient? =
-        if (status.value == ConnectionStatus.Connected) client else null
+    fun getClient(): SpiceClient? = client
 }
 
 val LocalConnectionManager = compositionLocalOf<ConnectionManager> {

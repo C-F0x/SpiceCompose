@@ -95,15 +95,13 @@ fun ButtonsScreen(onBack: () -> Unit) {
             val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
             if (buttonStates.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    top.yukonga.miuix.kmp.basic.Text("No buttons available :(")
+                    top.yukonga.miuix.kmp.basic.Text(strings.noButtonsAvailable)
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(8.dp)
                 ) {
                     items(buttonStates) { button ->
                         ButtonMiuix(button, onPress)
@@ -131,15 +129,13 @@ fun ButtonsScreen(onBack: () -> Unit) {
             val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
             if (buttonStates.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    androidx.compose.material3.Text("No buttons available :(")
+                    androidx.compose.material3.Text(strings.noButtonsAvailable)
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(8.dp)
                 ) {
                     items(buttonStates) { button ->
                         ButtonMaterial(button, onPress)

@@ -5,10 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,9 +19,13 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 
 @Composable
 fun SubScreenMiuix(
@@ -42,19 +42,27 @@ fun SubScreenMiuix(
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
     if (showSettings) {
-        AlertDialog(
+        OverlayDialog(
+            show = showSettings,
+            title = strings.screenshotSettings,
             onDismissRequest = { showSettings = false },
-            title = { Text("Screenshot Settings") },
-            text = {
-                Column {
-                    Text("Quality: ${p.ssQuality}%"); Spacer(Modifier.height(4.dp))
+            content = {
+                Column(Modifier.fillMaxWidth()) {
+                    Text("${strings.quality}: ${p.ssQuality}%"); Spacer(Modifier.height(4.dp))
                     Slider(value = p.ssQuality.toFloat(), onValueChange = { p.updateSsQuality(it.toInt()) }, valueRange = 10f..100f)
                     Spacer(Modifier.height(12.dp))
-                    Text("Divide: ${p.ssDivide}"); Spacer(Modifier.height(4.dp))
+                    Text("${strings.divide}: ${p.ssDivide}"); Spacer(Modifier.height(4.dp))
                     Slider(value = p.ssDivide.toFloat(), onValueChange = { p.updateSsDivide(it.toInt()) }, valueRange = 1f..16f)
+                    Spacer(Modifier.height(16.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        TextButton(
+                            text = strings.ok,
+                            onClick = { showSettings = false },
+                            colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
+                        )
+                    }
                 }
-            },
-            confirmButton = { TextButton(onClick = { showSettings = false }) { Text("OK") } }
+            }
         )
     }
 
@@ -70,13 +78,13 @@ fun SubScreenMiuix(
                     },
                     actions = {
                         IconButton(onClick = { showSettings = true }) {
-                            Icon(Icons.Rounded.MoreVert, contentDescription = "Settings")
+                            Icon(Icons.Rounded.MoreVert, contentDescription = strings.screenshotSettings)
                         }
                         IconButton(onClick = { latestCapture?.let { saveImage(it, "screenshot.jpg") } }) {
-                            Icon(Icons.Rounded.Share, contentDescription = "Share")
+                            Icon(Icons.Rounded.Share, contentDescription = strings.share)
                         }
                         IconButton(onClick = { refreshTick++ }) {
-                            Icon(Icons.Rounded.Refresh, contentDescription = "Refresh")
+                            Icon(Icons.Rounded.Refresh, contentDescription = strings.refresh)
                         }
                         FullscreenAction()
                     },
@@ -90,7 +98,7 @@ fun SubScreenMiuix(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentAlignment = Alignment.Center,
         ) {
-            SubScreenContent(refreshTrigger = refreshTick, onShareReady = { latestCapture = it })
+            SubScreenContent(refreshTrigger = refreshTick, captureQuality = p.ssQuality, captureDivide = p.ssDivide, onShareReady = { latestCapture = it })
         }
     }
 }

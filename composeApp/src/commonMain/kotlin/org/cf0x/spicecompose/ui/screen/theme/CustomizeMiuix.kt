@@ -1,5 +1,6 @@
 package org.cf0x.spicecompose.ui.screen.theme
 
+import top.yukonga.miuix.kmp.squircle.squircleBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,11 +13,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.AspectRatio
@@ -121,7 +122,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
         },
         popupHost = {},
     ) { innerPadding ->
-        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+        val topPadding = if (fullscreen.value) 0.dp else innerPadding.calculateTopPadding()
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -129,7 +130,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = padding,
+            contentPadding = PaddingValues(top = topPadding),
             verticalArrangement = Arrangement.spacedBy(BlockSpacing),
             overscrollEffect = null,
         ) {
@@ -304,7 +305,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
             }
 
             // ── Bottom spacing ───────────────────────────────────────────────
-            item { Spacer(Modifier.height(BlockSpacing)) }
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }
@@ -316,8 +317,7 @@ private fun ColorModeChip(
     icon: ImageVector, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit,
 ) = Box(
     modifier = modifier.height(48.dp)
-        .clip(RoundedCornerShape(24.dp))
-        .background(if (selected) colorScheme.primary else colorScheme.secondaryContainer)
+        .squircleBackground(color = if (selected) colorScheme.primary else colorScheme.secondaryContainer, cornerRadius = 24.dp)
         .clickable(onClick = onClick),
     contentAlignment = Alignment.Center,
 ) {

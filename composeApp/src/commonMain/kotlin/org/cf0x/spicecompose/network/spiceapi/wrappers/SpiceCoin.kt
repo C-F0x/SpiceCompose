@@ -5,7 +5,7 @@ import org.cf0x.spicecompose.network.SpiceClient
 
 suspend fun SpiceClient.coinGet(): Int {
     val res = request("coin", "get")
-    return res.jsonObject["data"]?.jsonArray?.getOrNull(0).toString().toInt()
+    return res.jsonObject["data"]?.jsonArray?.getOrNull(0)?.jsonPrimitive?.int ?: 0
 }
 
 suspend fun SpiceClient.coinSet(amount: Int) {

@@ -38,6 +38,7 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -61,7 +62,8 @@ fun KeypadScreen(onBack: () -> Unit) {
     val p = ThemePreferences
     
     var currentMode by remember { mutableIntStateOf(0) }
-    val modeColor = if (currentMode == 0) Color(0xFF008080) else Color(0xFF800080)
+    val statusColors = LocalStatusColors.current
+    val modeColor = if (currentMode == 0) statusColors.primaryMode else statusColors.secondaryMode
     val modeLabel = if (currentMode == 0) "P1" else "P2"
 
     SpiceBackHandler(enabled = fullscreen.value) {
@@ -169,20 +171,20 @@ fun KeypadScreen(onBack: () -> Unit) {
         if (uiMode == UiMode.Miuix) {
             top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
                 Column(Modifier.padding(12.dp)) {
-                    top.yukonga.miuix.kmp.basic.Text("Process", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    top.yukonga.miuix.kmp.basic.Text(strings.process, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         top.yukonga.miuix.kmp.basic.TextButton(
-                            text = "Restart", onClick = { scope.launch { connection?.controlRestart() } },
+                            text = strings.restart, onClick = { scope.launch { connection?.controlRestart() } },
                             modifier = Modifier.weight(1f), enabled = connection != null
                         )
                         top.yukonga.miuix.kmp.basic.TextButton(
-                            text = "Shutdown", onClick = { scope.launch { connection?.controlShutdown() } },
+                            text = strings.shutdown, onClick = { scope.launch { connection?.controlShutdown() } },
                             modifier = Modifier.weight(1f), enabled = connection != null,
                             colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
                         )
                         top.yukonga.miuix.kmp.basic.TextButton(
-                            text = "Reboot", onClick = { scope.launch { connection?.controlReboot() } },
+                            text = strings.reboot, onClick = { scope.launch { connection?.controlReboot() } },
                             modifier = Modifier.weight(1f), enabled = connection != null
                         )
                     }
@@ -194,13 +196,13 @@ fun KeypadScreen(onBack: () -> Unit) {
                 colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    androidx.compose.material3.Text("Process", style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
+                    androidx.compose.material3.Text(strings.process, style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        androidx.compose.material3.Button(onClick = { scope.launch { connection?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text("Restart") }
+                        androidx.compose.material3.Button(onClick = { scope.launch { connection?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text(strings.restart) }
                         androidx.compose.material3.Button(onClick = { scope.launch { connection?.controlShutdown() } }, modifier = Modifier.weight(1f), enabled = connection != null,
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.error)) { androidx.compose.material3.Text("Shutdown") }
-                        androidx.compose.material3.OutlinedButton(onClick = { scope.launch { connection?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text("Reboot") }
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = androidx.compose.material3.MaterialTheme.colorScheme.error)) { androidx.compose.material3.Text(strings.shutdown) }
+                        androidx.compose.material3.OutlinedButton(onClick = { scope.launch { connection?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text(strings.reboot) }
                     }
                 }
             }
@@ -213,13 +215,13 @@ fun KeypadScreen(onBack: () -> Unit) {
         Column(Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (uiMode == UiMode.Miuix) {
-                    top.yukonga.miuix.kmp.basic.Text("Card Management", fontWeight = FontWeight.Bold)
+                    top.yukonga.miuix.kmp.basic.Text(strings.cardManagement, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.weight(1f))
                     top.yukonga.miuix.kmp.basic.IconButton(onClick = { showAddDialog = true }) {
                         top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Add, null)
                     }
                 } else {
-                    androidx.compose.material3.Text("Card Management", style = MaterialTheme.typography.titleSmall)
+                    androidx.compose.material3.Text(strings.cardManagement, style = MaterialTheme.typography.titleSmall)
                     Spacer(Modifier.weight(1f))
                     androidx.compose.material3.IconButton(onClick = { showAddDialog = true }) {
                         androidx.compose.material3.Icon(Icons.Rounded.Add, null)
@@ -373,7 +375,7 @@ fun PillMiuix(
     }
     val txtColor = when {
         !enabled -> MiuixTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-        selected -> Color.White
+        selected -> MiuixTheme.colorScheme.onPrimary
         else -> MiuixTheme.colorScheme.onSurface
     }
     top.yukonga.miuix.kmp.basic.Card(

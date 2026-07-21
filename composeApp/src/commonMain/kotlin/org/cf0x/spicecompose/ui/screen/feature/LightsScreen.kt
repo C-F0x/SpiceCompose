@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -58,24 +59,28 @@ fun LightsScreen(onBack: () -> Unit) {
             lightStates = emptyList()
             return@LaunchedEffect
         }
-        while (isActive) {
+        while (isActive && connectionManager.getClient() != null) {
             try {
                 val newState = connection.lightsRead()
-                lightStates = newState.map { fresh ->
-                    if (draggingNames.contains(fresh.name)) {
-                        lightStates.find { it.name == fresh.name } ?: fresh
-                    } else {
-                        fresh
+                val dragSet = draggingNames.toSet()
+                lightStates = if (dragSet.isEmpty()) {
+                    newState
+                } else {
+                    newState.map { fresh ->
+                        if (fresh.name in dragSet) lightStates.find { it.name == fresh.name } ?: fresh
+                        else fresh
                     }
                 }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                if (connectionManager.getClient() == null) break
+            }
             delay(200)
         }
     }
 
     DisposableEffect(connection) {
         onDispose {
-            scope.launch {
+            scope.launch(NonCancellable) {
                 connection?.lightsWriteReset(emptyList())
             }
         }
@@ -117,7 +122,7 @@ fun LightsScreen(onBack: () -> Unit) {
             val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
             if (lightStates.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    top.yukonga.miuix.kmp.basic.Text("No lights available :(")
+                    top.yukonga.miuix.kmp.basic.Text(strings.noLightsAvailable)
                 }
             } else {
                 LazyVerticalGrid(
@@ -159,7 +164,7 @@ fun LightsScreen(onBack: () -> Unit) {
             val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
             if (lightStates.isEmpty()) {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    androidx.compose.material3.Text("No lights available :(")
+                    androidx.compose.material3.Text(strings.noLightsAvailable)
                 }
             } else {
                 LazyVerticalGrid(

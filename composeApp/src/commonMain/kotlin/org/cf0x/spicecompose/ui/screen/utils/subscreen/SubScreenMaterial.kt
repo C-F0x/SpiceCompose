@@ -80,7 +80,7 @@ fun SubScreenMaterial(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentAlignment = Alignment.Center,
         ) {
-            SubScreenContent(refreshTrigger = refreshTick, onShareReady = { latestCapture = it })
+            SubScreenContent(refreshTrigger = refreshTick, captureQuality = p.ssQuality, captureDivide = p.ssDivide, onShareReady = { latestCapture = it })
         }
     }
 }

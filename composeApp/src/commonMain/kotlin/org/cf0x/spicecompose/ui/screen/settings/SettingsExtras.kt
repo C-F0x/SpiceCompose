@@ -40,20 +40,20 @@ fun GameControlSection() {
     if (LocalUiMode.current == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
             Column(Modifier.padding(12.dp)) {
-                top.yukonga.miuix.kmp.basic.Text("Game Control", fontWeight = FontWeight.Bold)
+                top.yukonga.miuix.kmp.basic.Text(strings.gameControl, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     top.yukonga.miuix.kmp.basic.TextButton(
-                        text = "Restart", onClick = { scope.launch { client?.controlRestart() } },
+                        text = strings.restart, onClick = { scope.launch { client?.controlRestart() } },
                         modifier = Modifier.weight(1f), enabled = client != null
                     )
                     top.yukonga.miuix.kmp.basic.TextButton(
-                        text = "Shutdown", onClick = { scope.launch { client?.controlShutdown() } },
+                        text = strings.shutdown, onClick = { scope.launch { client?.controlShutdown() } },
                         modifier = Modifier.weight(1f), enabled = client != null,
                         colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary()
                     )
                     top.yukonga.miuix.kmp.basic.TextButton(
-                        text = "Reboot", onClick = { scope.launch { client?.controlReboot() } },
+                        text = strings.reboot, onClick = { scope.launch { client?.controlReboot() } },
                         modifier = Modifier.weight(1f), enabled = client != null
                     )
                 }
@@ -65,13 +65,13 @@ fun GameControlSection() {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text("Game Control", style = MaterialTheme.typography.titleSmall)
+                Text(strings.gameControl, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { scope.launch { client?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = client != null) { Text("Restart") }
+                    Button(onClick = { scope.launch { client?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = client != null) { Text(strings.restart) }
                     Button(onClick = { scope.launch { client?.controlShutdown() } }, modifier = Modifier.weight(1f), enabled = client != null,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text("Shutdown") }
-                    OutlinedButton(onClick = { scope.launch { client?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = client != null) { Text("Reboot") }
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(strings.shutdown) }
+                    OutlinedButton(onClick = { scope.launch { client?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = client != null) { Text(strings.reboot) }
                 }
             }
         }
@@ -85,15 +85,16 @@ fun ScreenshotParamsSection(
     quality: Int, onQualityChange: (Int) -> Unit,
     divide: Int, onDivideChange: (Int) -> Unit
 ) {
+    val strings = LocalAppStrings.current
     if (LocalUiMode.current == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
             Column(Modifier.padding(12.dp)) {
-                top.yukonga.miuix.kmp.basic.Text("Screenshot", fontWeight = FontWeight.Bold)
+                top.yukonga.miuix.kmp.basic.Text(strings.screenshot, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                ArrowPreference(title = "Quality", summary = "${quality}%",
+                ArrowPreference(title = strings.quality, summary = "${quality}%",
                     startAction = { top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Image, null) })
                 StepRowMiuix(quality, 10..100 step 10, onQualityChange)
-                ArrowPreference(title = "Divide", summary = "$divide",
+                ArrowPreference(title = strings.divide, summary = "$divide",
                     startAction = { top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.GridOn, null) })
                 StepRowMiuix(divide, 1..16, onDivideChange)
             }
@@ -104,12 +105,12 @@ fun ScreenshotParamsSection(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text("Screenshot", style = MaterialTheme.typography.titleSmall)
+                Text(strings.screenshot, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(8.dp))
-                Text("Quality: ${quality}%")
+                Text("${strings.quality}: ${quality}%")
                 Slider(value = quality.toFloat(), onValueChange = { onQualityChange(it.toInt()) }, valueRange = 10f..100f)
                 Spacer(Modifier.height(8.dp))
-                Text("Divide: $divide")
+                Text("${strings.divide}: $divide")
                 Slider(value = divide.toFloat(), onValueChange = { onDivideChange(it.toInt()) }, valueRange = 1f..16f)
             }
         }
@@ -133,17 +134,18 @@ private fun StepRowMiuix(value: Int, range: IntProgression, onChange: (Int) -> U
 
 @Composable
 fun VibrationSection(durationMs: Int, onDurationChange: (Int) -> Unit) {
+    val strings = LocalAppStrings.current
     val scope = rememberCoroutineScope()
     if (LocalUiMode.current == UiMode.Miuix) {
         top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
             Column(Modifier.padding(12.dp)) {
-                top.yukonga.miuix.kmp.basic.Text("Vibration", fontWeight = FontWeight.Bold)
+                top.yukonga.miuix.kmp.basic.Text(strings.vibration, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                ArrowPreference(title = "Duration", summary = "${durationMs}ms",
+                ArrowPreference(title = strings.duration, summary = "${durationMs}ms",
                     startAction = { top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Vibration, null) })
                 StepRowMiuix(durationMs, 0..200 step 10, onDurationChange)
                 top.yukonga.miuix.kmp.basic.TextButton(
-                    text = "Test", onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } },
+                    text = strings.test, onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -154,11 +156,11 @@ fun VibrationSection(durationMs: Int, onDurationChange: (Int) -> Unit) {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text("Vibration", style = MaterialTheme.typography.titleSmall)
+                Text(strings.vibration, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(8.dp))
-                Text("Duration: ${durationMs}ms")
+                Text("${strings.duration}: ${durationMs}ms")
                 Slider(value = durationMs.toFloat(), onValueChange = { onDurationChange(it.toInt()) }, valueRange = 0f..200f, steps = 19)
-                TextButton(onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } }) { Text("Test") }
+                TextButton(onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } }) { Text(strings.test) }
             }
         }
     }

@@ -159,10 +159,15 @@ fun SpiceComposeTheme(
     else
         baseDensity
 
+    val statusColors = remember(useMonet, isDark) {
+        if (useMonet) MonetStatusColors else StaticStatusColors
+    }
+
     CompositionLocalProvider(LocalDensity provides scaledDensity) {
         MiuixTheme(controller = miuixController) {
             CompositionLocalProvider(
                 top.yukonga.miuix.kmp.theme.LocalContentColor provides MiuixTheme.colorScheme.onBackground,
+                LocalStatusColors provides statusColors,
             ) {
                 MaterialTheme(
                     colorScheme = m3Scheme,

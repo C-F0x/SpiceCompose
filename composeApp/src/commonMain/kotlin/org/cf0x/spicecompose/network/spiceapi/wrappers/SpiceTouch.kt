@@ -7,6 +7,7 @@ data class TouchState(
     val id: Int,
     var x: Int,
     var y: Int,
+    val mouse: Boolean = false,
     var active: Boolean = true,
     var updated: Boolean = true
 )
@@ -19,7 +20,8 @@ suspend fun SpiceClient.touchRead(): List<TouchState> {
         TouchState(
             id = arr[0].jsonPrimitive.int,
             x = arr[1].jsonPrimitive.int,
-            y = arr[2].jsonPrimitive.int
+            y = arr[2].jsonPrimitive.int,
+            mouse = if (arr.size >= 4) arr[3].jsonPrimitive.boolean else false
         )
     }
 }

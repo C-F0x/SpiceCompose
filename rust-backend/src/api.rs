@@ -95,9 +95,14 @@ async fn spice_request(
         let conn = conn_lock
             .as_mut()
             .ok_or_else(|| (StatusCode::BAD_REQUEST, "Not connected".to_string()))?;
-        conn.request(&req.module, &req.function, req.params)
-            .await
-            .map_err(|e| (StatusCode::BAD_GATEWAY, e))?
+        match conn.request(&req.module, &req.function, req.params).await {
+            Ok(resp) => resp,
+            Err(e) => {
+                // Transport error — connection is dead, clear it
+                *conn_lock = None;
+                return Err((StatusCode::BAD_GATEWAY, e));
+            }
+        }
     };
     Ok(Json(serde_json::to_value(response).expect("Response serialization should not fail")))
 }
@@ -143,7 +148,13 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
             let mut conn_lock = state.connection.write().await;
             match conn_lock.as_mut() {
                 Some(conn) => {
-                    conn.request(&spice_req.module, &spice_req.function, spice_req.params).await
+                    match conn.request(&spice_req.module, &spice_req.function, spice_req.params).await {
+                        Ok(resp) => Ok(resp),
+                        Err(e) => {
+                            *conn_lock = None;
+                            Err(e)
+                        }
+                    }
                 }
                 None => Err("Not connected to a device".to_string()),
             }

@@ -122,4 +122,75 @@
     <string name="section_color">颜色</string>
     <string name="section_layout">布局</string>
     <string name="section_effects">效果</string>
+
+    <!-- 控制页 -->
+    <string name="game_controller">虚拟控制器</string>
+    <string name="game_controller_summary">虚拟框体控制器</string>
+    <string name="lcd_info">LCD 信息</string>
+    <string name="lcd_info_summary">LCD 触摸面板诊断</string>
+    <string name="screen_resize">画面缩放</string>
+    <string name="screen_resize_summary">窗口布局预设</string>
+    <string name="game_controller_2">虚拟控制器 2.0</string>
+    <string name="game_controller_2_summary">DIY 布局编辑器与播放器</string>
+    <string name="enable_resize">启用缩放</string>
+    <string name="scene_label">场景: %d</string>
+
+    <!-- 投币页 -->
+    <string name="insert_coin">插入 %d 枚币</string>
+    <string name="coin_blocked">已封锁</string>
+    <string name="coin_open">开放</string>
+    <string name="coin_checking">检查中…</string>
+    <string name="coin_blocker_status">投币器状态: %s</string>
+
+    <!-- 机台信息 -->
+    <string name="avs_info">AVS 信息</string>
+    <string name="launcher_info">启动器信息</string>
+    <string name="memory_usage">内存占用</string>
+
+    <!-- 空状态 -->
+    <string name="no_analogs_available">无可用摇杆 :(</string>
+    <string name="no_lights_available">无可用灯光 :(</string>
+    <string name="no_buttons_available">无可用按键 :(</string>
+    <string name="no_lcd_data">无 LCD 数据</string>
+    <string name="no_patches_found">未找到补丁</string>
+
+    <!-- 补丁 -->
+    <string name="preset">预设</string>
+    <string name="patch_enabled">(已启用)</string>
+    <string name="patch_disabled">(已禁用)</string>
+
+    <!-- 控制器 FAQ -->
+    <string name="controller_faq">控制器 FAQ</string>
+    <string name="implemented">已实现</string>
+    <string name="not_yet_implemented">尚未实现</string>
+
+    <!-- 其他 -->
+    <string name="toggle_fullscreen">切换全屏</string>
+    <string name="edit_server">编辑服务器</string>
+
+    <!-- Settings extras -->
+    <string name="game_control">游戏控制</string>
+    <string name="restart">重启</string>
+    <string name="shutdown">关机</string>
+    <string name="reboot">重新启动</string>
+    <string name="screenshot">截图</string>
+    <string name="quality">质量</string>
+    <string name="divide">分割</string>
+    <string name="vibration">振动</string>
+    <string name="duration">持续时间</string>
+    <string name="test">测试</string>
+
+    <!-- Keypad extras -->
+    <string name="process">进程管理</string>
+    <string name="card_management">卡片管理</string>
+
+    <!-- 截图 / 控制器 -->
+    <string name="screenshot_settings">截图设置</string>
+    <string name="share">分享</string>
+    <string name="refresh">刷新</string>
+    <string name="controller_coming_soon">控制器布局即将推出</string>
+    <string name="sub_view_label">子视图 #%d</string>
+    <string name="no_controller_view">此游戏暂无控制器视图 :(</string>
+    <string name="connect_first">请先连接到服务器。</string>
+    <string name="diy_controller">DIY 控制器</string>
 </resources>

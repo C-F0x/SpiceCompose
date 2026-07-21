@@ -1,6 +1,8 @@
 package org.cf0x.spicecompose.ui.screen.tools
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
@@ -52,11 +54,14 @@ fun ToolsPagerMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = innerPadding,
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
         ) {
+            // ── Top spacing ──────────────────────────────────────────────────
+            item { Spacer(Modifier.height(12.dp)) }
+
             item {
                 Card(
-                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
                         title = strings.buttons,
@@ -87,7 +92,7 @@ fun ToolsPagerMiuix(
 
             item {
                 Card(
-                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
                         title = strings.coins,
@@ -110,7 +115,7 @@ fun ToolsPagerMiuix(
 
             item {
                 Card(
-                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
                         title = strings.subScreen,
@@ -133,11 +138,11 @@ fun ToolsPagerMiuix(
 
             item {
                 Card(
-                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = "Game Controller",
-                        summary = "Virtual arcade controller",
+                        title = strings.gameController,
+                        summary = strings.gameControllerSummary,
                         startAction = {
                             Icon(Icons.Rounded.Gamepad, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
@@ -148,27 +153,27 @@ fun ToolsPagerMiuix(
 
             item {
                 Card(
-                    modifier = Modifier.padding(top = 12.dp).fillMaxWidth(),
+                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = "LCD Info",
-                        summary = "LCD touch panel diagnostics",
+                        title = strings.lcdInfo,
+                        summary = strings.lcdInfoSummary,
                         startAction = {
                             Icon(Icons.Rounded.Tv, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
                         onClick = { maybeVibrate(15); actions.onOpenLcd() },
                     )
                     ArrowPreference(
-                        title = "Screen Resize",
-                        summary = "Window layout presets",
+                        title = strings.screenResize,
+                        summary = strings.screenResizeSummary,
                         startAction = {
                             Icon(Icons.Rounded.AspectRatio, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
                         onClick = { maybeVibrate(15); actions.onOpenResize() },
                     )
                     ArrowPreference(
-                        title = "Game Controller 2.0",
-                        summary = "DIY layout editor & player",
+                        title = strings.gameController2,
+                        summary = strings.gameController2Summary,
                         startAction = {
                             Icon(Icons.Rounded.DashboardCustomize, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
@@ -176,6 +181,9 @@ fun ToolsPagerMiuix(
                     )
                 }
             }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }

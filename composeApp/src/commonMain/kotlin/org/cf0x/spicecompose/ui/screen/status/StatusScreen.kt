@@ -59,6 +59,10 @@ fun StatusScreen() {
 
     LaunchedEffect(status) {
         if (status == ConnectionStatus.Connected) {
+            // Always start fresh — reset before fetching
+            avsInfo = emptyMap()
+            launcherInfo = emptyMap()
+            memoryInfo = emptyMap()
             val connection = connectionManager.getClient()
             if (connection != null) {
                 try {
@@ -66,8 +70,7 @@ fun StatusScreen() {
                     launcherInfo = connection.infoLauncher()
                     memoryInfo = connection.infoMemory()
                 } catch (_: Exception) {
-                    // Initial fetch failed — info stays empty, no auto-disconnect.
-                    // The heartbeat in ConnectionManager will detect real failures.
+                    // Fetch failed — keep empty maps, no stale data
                 }
             }
         } else {

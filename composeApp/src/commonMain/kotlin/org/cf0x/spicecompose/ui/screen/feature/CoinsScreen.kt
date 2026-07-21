@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -26,10 +27,13 @@ import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun CoinsScreen(onBack: () -> Unit) {
@@ -60,6 +64,7 @@ fun CoinsScreen(onBack: () -> Unit) {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
+            val scrollBehavior = MiuixScrollBehavior()
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
@@ -72,18 +77,27 @@ fun CoinsScreen(onBack: () -> Unit) {
                             },
                             actions = {
                                 FullscreenAction()
-                            }
+                            },
+                            scrollBehavior = scrollBehavior,
                         )
                     }
                 }
             ) { innerPadding ->
-                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-                LazyColumn(Modifier.fillMaxSize().padding(padding)) {
+                val topPadding = if (fullscreen.value) 0.dp else innerPadding.calculateTopPadding()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .scrollEndHaptic()
+                        .overScrollVertical()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .padding(horizontal = 12.dp),
+                    contentPadding = PaddingValues(top = topPadding),
+                ) {
                     item {
                         CoinBlockerStatusMiuix(coinBlocker)
-                        CoinActionMiuix("Insert 1 Coin", { onInsert(1) })
-                        CoinActionMiuix("Insert 5 Coins", { onInsert(5) })
-                        CoinActionMiuix("Insert 10 Coins", { onInsert(10) })
+                        CoinActionMiuix(strings.insertCoin.replace("%d", "1"), { onInsert(1) })
+                        CoinActionMiuix(strings.insertCoin.replace("%d", "5"), { onInsert(5) })
+                        CoinActionMiuix(strings.insertCoin.replace("%d", "10"), { onInsert(10) })
                     }
                 }
             }
@@ -111,9 +125,9 @@ fun CoinsScreen(onBack: () -> Unit) {
                 LazyColumn(Modifier.fillMaxSize().padding(padding)) {
                     item {
                         CoinBlockerStatusMaterial(coinBlocker)
-                        CoinActionMaterial("Insert 1 Coin", { onInsert(1) })
-                        CoinActionMaterial("Insert 5 Coins", { onInsert(5) })
-                        CoinActionMaterial("Insert 10 Coins", { onInsert(10) })
+                        CoinActionMaterial(strings.insertCoin.replace("%d", "1"), { onInsert(1) })
+                        CoinActionMaterial(strings.insertCoin.replace("%d", "5"), { onInsert(5) })
+                        CoinActionMaterial(strings.insertCoin.replace("%d", "10"), { onInsert(10) })
                     }
                 }
             }
@@ -146,15 +160,17 @@ fun CoinActionMaterial(text: String, onClick: () -> Unit) {
 
 @Composable
 private fun CoinBlockerStatusMiuix(blocked: Boolean?) {
-    val status = when (blocked) {
-        true  -> "BLOCKED"
-        false -> "Open"
-        null  -> "Checking..."
+    val strings = LocalAppStrings.current
+    val statusColors = LocalStatusColors.current
+    val statusText = when (blocked) {
+        true  -> strings.coinBlocked
+        false -> strings.coinOpen
+        null  -> strings.coinChecking
     }
     val color = when (blocked) {
-        true  -> Color(0xFFFFD000)
-        false -> Color(0xFF50B050)
-        null  -> Color(0xFF888888)
+        true  -> statusColors.warning
+        false -> statusColors.healthy
+        null  -> statusColors.neutral
     }
     top.yukonga.miuix.kmp.basic.Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp)
@@ -162,25 +178,27 @@ private fun CoinBlockerStatusMiuix(blocked: Boolean?) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Money, null, tint = color)
             Spacer(Modifier.width(12.dp))
-            top.yukonga.miuix.kmp.basic.Text("Coin Blocker: $status")
+            top.yukonga.miuix.kmp.basic.Text(strings.coinBlockerStatus.replace("%s", statusText))
         }
     }
 }
 
 @Composable
 private fun CoinBlockerStatusMaterial(blocked: Boolean?) {
-    val status = when (blocked) {
-        true  -> "BLOCKED"
-        false -> "Open"
-        null  -> "Checking..."
+    val strings = LocalAppStrings.current
+    val statusColors = LocalStatusColors.current
+    val statusText = when (blocked) {
+        true  -> strings.coinBlocked
+        false -> strings.coinOpen
+        null  -> strings.coinChecking
     }
     val color = when (blocked) {
-        true  -> Color(0xFFFFD000)
-        false -> Color(0xFF50B050)
-        null  -> Color(0xFF888888)
+        true  -> statusColors.warning
+        false -> statusColors.healthy
+        null  -> statusColors.neutral
     }
     ListItem(
-        headlineContent = { androidx.compose.material3.Text("Coin Blocker: $status", color = color) },
+        headlineContent = { androidx.compose.material3.Text(strings.coinBlockerStatus.replace("%s", statusText), color = color) },
         leadingContent = { androidx.compose.material3.Icon(Icons.Rounded.Money, null, tint = color) },
     )
 }

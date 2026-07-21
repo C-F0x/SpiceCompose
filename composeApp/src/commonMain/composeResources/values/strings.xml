@@ -122,4 +122,74 @@
     <string name="section_color">Color</string>
     <string name="section_layout">Layout</string>
     <string name="section_effects">Effects</string>
+
+    <!-- Tools page -->
+    <string name="game_controller">Game Controller</string>
+    <string name="game_controller_summary">Virtual arcade controller</string>
+    <string name="lcd_info">LCD Info</string>
+    <string name="lcd_info_summary">LCD touch panel diagnostics</string>
+    <string name="screen_resize">Screen Resize</string>
+    <string name="screen_resize_summary">Window layout presets</string>
+    <string name="game_controller_2">Game Controller 2.0</string>
+    <string name="game_controller_2_summary">DIY layout editor &amp; player</string>
+    <string name="enable_resize">Enable Resize</string>
+    <string name="scene_label">Scene: %d</string>
+
+    <!-- Coin screen -->
+    <string name="insert_coin">Insert %d Coin(s)</string>
+    <string name="coin_blocked">BLOCKED</string>
+    <string name="coin_open">Open</string>
+    <string name="coin_checking">Checking…</string>
+    <string name="coin_blocker_status">Coin Blocker: %s</string>
+
+    <!-- Cabinet info -->
+    <string name="avs_info">AVS Info</string>
+    <string name="launcher_info">Launcher Info</string>
+    <string name="memory_usage">Memory Usage</string>
+
+    <!-- Empty states -->
+    <string name="no_analogs_available">No analogs available :(</string>
+    <string name="no_lights_available">No lights available :(</string>
+    <string name="no_buttons_available">No buttons available :(</string>
+    <string name="no_lcd_data">No LCD data available</string>
+    <string name="no_patches_found">No patches found</string>
+
+    <!-- Patches -->
+    <string name="preset">Preset</string>
+    <string name="patch_enabled">(Enabled)</string>
+    <string name="patch_disabled">(Disabled)</string>
+
+    <!-- Controller FAQ -->
+    <string name="controller_faq">Controller FAQ</string>
+    <string name="implemented">Implemented</string>
+    <string name="not_yet_implemented">Not yet implemented</string>
+
+    <!-- Misc -->
+    <string name="toggle_fullscreen">Toggle Fullscreen</string>
+    <string name="edit_server">Edit Server</string>
+    <!-- Settings extras -->
+    <string name="game_control">Game Control</string>
+    <string name="restart">Restart</string>
+    <string name="shutdown">Shutdown</string>
+    <string name="reboot">Reboot</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="quality">Quality</string>
+    <string name="divide">Divide</string>
+    <string name="vibration">Vibration</string>
+    <string name="duration">Duration</string>
+    <string name="test">Test</string>
+
+    <!-- Keypad extras -->
+    <string name="process">Process</string>
+    <string name="card_management">Card Management</string>
+
+    <!-- SubScreen / Controller -->
+    <string name="screenshot_settings">Screenshot Settings</string>
+    <string name="share">Share</string>
+    <string name="refresh">Refresh</string>
+    <string name="controller_coming_soon">Controller layout coming soon</string>
+    <string name="sub_view_label">Sub-view #%d</string>
+    <string name="no_controller_view">This game does not yet have a controller view :(</string>
+    <string name="connect_first">Please connect to a server first.</string>
+    <string name="diy_controller">DIY Controller</string>
 </resources>

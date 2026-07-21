@@ -58,6 +58,45 @@ data class AppStrings(
     val predictiveBack: String, val predictiveBackSummary: String,
     val github: String, val version: String,
     val sectionColor: String, val sectionLayout: String, val sectionEffects: String,
+
+    // Tools page
+    val gameController: String, val gameControllerSummary: String,
+    val lcdInfo: String, val lcdInfoSummary: String,
+    val screenResize: String, val screenResizeSummary: String,
+    val gameController2: String, val gameController2Summary: String,
+    val enableResize: String, val sceneLabel: String,
+
+    // Coin screen
+    val insertCoin: String, val coinBlocked: String, val coinOpen: String,
+    val coinChecking: String, val coinBlockerStatus: String,
+
+    // Cabinet info
+    val avsInfo: String, val launcherInfo: String, val memoryUsage: String,
+
+    // Empty states
+    val noAnalogsAvailable: String, val noLightsAvailable: String,
+    val noButtonsAvailable: String, val noLcdData: String, val noPatchesFound: String,
+
+    // Patches
+    val preset: String, val patchEnabled: String, val patchDisabled: String,
+
+    // Controller FAQ
+    val controllerFaq: String, val implemented: String, val notYetImplemented: String,
+
+    // Misc
+    val toggleFullscreen: String, val editServer: String,
+
+    // Settings extras / Keypad
+    val gameControl: String, val restart: String, val shutdown: String,
+    val reboot: String, val screenshot: String, val quality: String,
+    val divide: String, val vibration: String, val duration: String,
+    val test: String, val process: String, val cardManagement: String,
+
+    // SubScreen / Controller / DIY
+    val screenshotSettings: String, val share: String, val refresh: String,
+    val controllerComingSoon: String, val subViewLabel: String,
+    val noControllerView: String, val connectFirst: String,
+    val diyController: String,
 )
 
 @Composable
@@ -183,6 +222,75 @@ fun appStrings() = AppStrings(
     sectionColor = stringResource(Res.string.section_color),
     sectionLayout = stringResource(Res.string.section_layout),
     sectionEffects = stringResource(Res.string.section_effects),
+
+    // Tools page
+    gameController = stringResource(Res.string.game_controller),
+    gameControllerSummary = stringResource(Res.string.game_controller_summary),
+    lcdInfo = stringResource(Res.string.lcd_info),
+    lcdInfoSummary = stringResource(Res.string.lcd_info_summary),
+    screenResize = stringResource(Res.string.screen_resize),
+    screenResizeSummary = stringResource(Res.string.screen_resize_summary),
+    gameController2 = stringResource(Res.string.game_controller_2),
+    gameController2Summary = stringResource(Res.string.game_controller_2_summary),
+    enableResize = stringResource(Res.string.enable_resize),
+    sceneLabel = stringResource(Res.string.scene_label),
+
+    // Coin screen
+    insertCoin = stringResource(Res.string.insert_coin),
+    coinBlocked = stringResource(Res.string.coin_blocked),
+    coinOpen = stringResource(Res.string.coin_open),
+    coinChecking = stringResource(Res.string.coin_checking),
+    coinBlockerStatus = stringResource(Res.string.coin_blocker_status),
+
+    // Cabinet info
+    avsInfo = stringResource(Res.string.avs_info),
+    launcherInfo = stringResource(Res.string.launcher_info),
+    memoryUsage = stringResource(Res.string.memory_usage),
+
+    // Empty states
+    noAnalogsAvailable = stringResource(Res.string.no_analogs_available),
+    noLightsAvailable = stringResource(Res.string.no_lights_available),
+    noButtonsAvailable = stringResource(Res.string.no_buttons_available),
+    noLcdData = stringResource(Res.string.no_lcd_data),
+    noPatchesFound = stringResource(Res.string.no_patches_found),
+
+    // Patches
+    preset = stringResource(Res.string.preset),
+    patchEnabled = stringResource(Res.string.patch_enabled),
+    patchDisabled = stringResource(Res.string.patch_disabled),
+
+    // Controller FAQ
+    controllerFaq = stringResource(Res.string.controller_faq),
+    implemented = stringResource(Res.string.implemented),
+    notYetImplemented = stringResource(Res.string.not_yet_implemented),
+
+    // Misc
+    toggleFullscreen = stringResource(Res.string.toggle_fullscreen),
+    editServer = stringResource(Res.string.edit_server),
+
+    // Settings extras / Keypad
+    gameControl = stringResource(Res.string.game_control),
+    restart = stringResource(Res.string.restart),
+    shutdown = stringResource(Res.string.shutdown),
+    reboot = stringResource(Res.string.reboot),
+    screenshot = stringResource(Res.string.screenshot),
+    quality = stringResource(Res.string.quality),
+    divide = stringResource(Res.string.divide),
+    vibration = stringResource(Res.string.vibration),
+    duration = stringResource(Res.string.duration),
+    test = stringResource(Res.string.test),
+    process = stringResource(Res.string.process),
+    cardManagement = stringResource(Res.string.card_management),
+
+    // SubScreen / Controller / DIY
+    screenshotSettings = stringResource(Res.string.screenshot_settings),
+    share = stringResource(Res.string.share),
+    refresh = stringResource(Res.string.refresh),
+    controllerComingSoon = stringResource(Res.string.controller_coming_soon),
+    subViewLabel = stringResource(Res.string.sub_view_label),
+    noControllerView = stringResource(Res.string.no_controller_view),
+    connectFirst = stringResource(Res.string.connect_first),
+    diyController = stringResource(Res.string.diy_controller),
 )
 
 val LocalAppStrings = staticCompositionLocalOf<AppStrings> { 

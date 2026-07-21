@@ -1,11 +1,9 @@
 package org.cf0x.spicecompose.ui.screen.status
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.ErrorOutline
@@ -13,8 +11,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import top.yukonga.miuix.kmp.squircle.squircleBackground
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +23,7 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
+import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import org.cf0x.spicecompose.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -50,6 +48,7 @@ fun StatusHomeMiuix(
     val isConnected = connectionStatus == ConnectionStatus.Connected
     val isConnecting = connectionStatus == ConnectionStatus.Connecting
     val isMonet = MiuixTheme.isDynamicColor
+    val statusColors = LocalStatusColors.current
     val windowSize = LocalWindowSize.current
 
     Scaffold(
@@ -67,29 +66,29 @@ fun StatusHomeMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = innerPadding
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
         ) {
+            item { Spacer(Modifier.height(12.dp)) }
+
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
-                        .height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .height(IntrinsicSize.Min)
                 ) {
                     // Left Large Card: Connection Status
                     Card(
-                        modifier = Modifier.weight(1.3f).fillMaxHeight(),
+                        modifier = Modifier.weight(1.3f).fillMaxHeight().padding(end = 12.dp),
                         colors = CardDefaults.defaultColors(
                             color = when {
                                 isConnected -> {
                                     if (isMonet) colorScheme.secondaryContainer
-                                    else if (isInDarkTheme()) Color(0xFF1A3825)
-                                    else Color(0xFFDFFAE4)
+                                    else if (isInDarkTheme()) statusColors.connected.copy(alpha = 0.15f)
+                                    else statusColors.connected.copy(alpha = 0.1f)
                                 }
                                 isConnecting -> {
                                     if (isMonet) colorScheme.primaryContainer
-                                    else Color(0xFFFFF4E5)
+                                    else statusColors.connecting.copy(alpha = 0.1f)
                                 }
                                 else -> colorScheme.surfaceVariant
                             }
@@ -106,7 +105,7 @@ fun StatusHomeMiuix(
                                     else -> Icons.Rounded.ErrorOutline
                                 },
                                 tint = when {
-                                    isConnected -> if (isMonet) colorScheme.primary.copy(alpha = 0.8f) else Color(0xFF36D167)
+                                    isConnected -> if (isMonet) colorScheme.primary.copy(alpha = 0.8f) else statusColors.connected
                                     isConnecting -> colorScheme.primary.copy(alpha = 0.8f)
                                     else -> colorScheme.onSurfaceVariantActions.copy(alpha = 0.2f)
                                 },
@@ -139,11 +138,10 @@ fun StatusHomeMiuix(
 
                     // Right column
                     Column(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.weight(1f).fillMaxHeight()
                     ) {
                         Card(
-                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            modifier = Modifier.fillMaxWidth().weight(1f).padding(bottom = 12.dp),
                             insideMargin = PaddingValues(16.dp),
                             onClick = { maybeVibrate(15); onServerAction(true) },
                             onLongPress = { maybeVibrate(15); onEditServer() },
@@ -172,15 +170,15 @@ fun StatusHomeMiuix(
             item {
                 Spacer(Modifier.height(12.dp))
                 val cols = if (windowSize == WindowSize.Compact) 1 else 2
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column {
                     CardItemMiuix(
-                        title = "AVS Info",
+                        title = strings.avsInfo,
                         content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
                                   else "model-dest.spec.rev-ext"
                     )
                     
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Box(Modifier.weight(1f)) {
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                        Box(Modifier.weight(1f).padding(end = 12.dp)) {
                              CardItemMiuix(title = strings.backendUrl, content = avsInfo["services"] ?: "...")
                         }
                         if (cols > 1) {
@@ -190,13 +188,17 @@ fun StatusHomeMiuix(
                         }
                     }
                     if (cols == 1) {
-                        CardItemMiuix(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                        Box(Modifier.padding(top = 12.dp)) {
+                            CardItemMiuix(title = strings.spiceCompile, content = if (isConnected) "${launcherInfo["compile_date"] ?: ""} ${launcherInfo["compile_time"] ?: ""}" else "...")
+                        }
                     }
 
-                    MemoryStackedCardMiuix(strings.memoryStacked, memoryInfo, isConnected)
+                    Box(Modifier.padding(top = 12.dp)) {
+                        MemoryStackedCardMiuix(strings.memoryStacked, memoryInfo, isConnected)
+                    }
                     
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Box(Modifier.weight(1f)) {
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                        Box(Modifier.weight(1f).padding(end = 12.dp)) {
                             CardItemMiuix(strings.spiceVersion, launcherInfo["version"] ?: "...")
                         }
                         Box(Modifier.weight(1f)) {
@@ -204,9 +206,14 @@ fun StatusHomeMiuix(
                         }
                     }
                     
-                    CardItemMiuix(strings.launcherArgs, formatArgs(launcherInfo["args"]))
+                    Box(Modifier.padding(top = 12.dp)) {
+                        CardItemMiuix(strings.launcherArgs, formatArgs(launcherInfo["args"]))
+                    }
                 }
             }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }
@@ -231,7 +238,7 @@ fun MemoryStackedCardMiuix(title: String, memory: Map<String, Long>, isConnected
         Column(Modifier.padding(16.dp)) {
             Text(title, fontSize = 14.sp, color = colorScheme.onSurfaceVariantSummary)
             Spacer(Modifier.height(8.dp))
-            Box(Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)).background(colorScheme.surfaceVariant)) {
+            Box(Modifier.fillMaxWidth().height(12.dp).squircleBackground(color = colorScheme.surfaceVariant, cornerRadius = 6.dp)) {
                 Box(Modifier.fillMaxWidth(if (total > 0) totalUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary.copy(alpha = 0.3f)))
                 Box(Modifier.fillMaxWidth(if (total > 0) gameUsed.toFloat() / total else 0f).fillMaxHeight().background(colorScheme.primary))
             }

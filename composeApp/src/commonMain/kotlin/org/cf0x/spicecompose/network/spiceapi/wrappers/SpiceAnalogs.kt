@@ -34,6 +34,6 @@ suspend fun SpiceClient.analogsWrite(states: List<AnalogState>) {
 }
 
 suspend fun SpiceClient.analogsWriteReset(names: List<String>) {
-    val params = names.map { JsonPrimitive(it) }
+    val params = names.map { buildJsonArray { add(it) } }
     request("analogs", "write_reset", params)
 }

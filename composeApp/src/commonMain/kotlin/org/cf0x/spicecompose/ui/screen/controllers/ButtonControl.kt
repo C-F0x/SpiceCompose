@@ -212,12 +212,12 @@ class ButtonControl(private val connectionManager: ConnectionManager) {
 
             try {
                 client.buttonsWrite(activeButtons)
-                if (!buttonsFlushed) flushState()
             } catch (_: Exception) {
                 // best-effort
             } finally {
                 writeCounter--
             }
+            if (!buttonsFlushed) flushState()
         }
     }
 }

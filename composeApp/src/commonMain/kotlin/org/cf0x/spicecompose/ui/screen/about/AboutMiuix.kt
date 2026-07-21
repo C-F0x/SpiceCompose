@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -97,7 +98,7 @@ fun AboutScreenMiuix(
             }
         },
     ) { innerPadding ->
-        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+        val topPadding = if (fullscreen.value) 0.dp else innerPadding.calculateTopPadding()
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -106,7 +107,7 @@ fun AboutScreenMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp),
-            contentPadding = padding,
+            contentPadding = PaddingValues(top = topPadding),
             overscrollEffect = null,
         ) {
             // ── Logo header ───────────────────────────────────────────────────
@@ -188,6 +189,9 @@ fun AboutScreenMiuix(
                     )
                 }
             }
+
+            // ── Bottom spacing ───────────────────────────────────────────────
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }

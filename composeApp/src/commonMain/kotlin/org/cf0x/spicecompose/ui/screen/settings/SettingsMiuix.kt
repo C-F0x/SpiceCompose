@@ -1,10 +1,11 @@
 package org.cf0x.spicecompose.ui.screen.settings
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -58,8 +59,7 @@ fun SettingsPagerMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = BlockSpacing),
-            contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(BlockSpacing),
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             overscrollEffect = null,
         ) {
             // ── Top spacing ──────────────────────────────────────────────────
@@ -68,7 +68,7 @@ fun SettingsPagerMiuix(
             // ── Language ─────────────────────────────────────────────────────
             item {
                 val langEnabled = !uiState.systemLocaleOverridden
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                     OverlayDropdownPreference(
                         title = strings.language,
                         summary = if (langEnabled) uiState.language.displayName
@@ -87,7 +87,7 @@ fun SettingsPagerMiuix(
                                 contentDescription = strings.language,
                                 modifier = Modifier.padding(end = 6.dp),
                                 tint = if (langEnabled) colorScheme.onBackground
-                                       else androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.4f),
+                                       else colorScheme.onSurface.copy(alpha = 0.3f),
                             )
                         },
                     )
@@ -96,7 +96,7 @@ fun SettingsPagerMiuix(
 
             // ── Appearance ───────────────────────────────────────────────────
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                     OverlayDropdownPreference(
                         title = strings.uiStyle,
                         summary = strings.uiStyleSummary,
@@ -150,7 +150,7 @@ fun SettingsPagerMiuix(
             }
 
             // ── Bottom spacing ───────────────────────────────────────────────
-            item { Spacer(Modifier.height(BlockSpacing)) }
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }
