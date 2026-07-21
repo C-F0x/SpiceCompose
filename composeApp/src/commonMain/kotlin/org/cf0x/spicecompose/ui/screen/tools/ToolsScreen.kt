@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.material3.*
@@ -24,6 +23,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.LocalDevMode
 import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.screen.controllers.ControllerScreen
@@ -35,8 +35,7 @@ private const val ROUTE_MAIN       = "main"
 private const val ROUTE_BUTTONS    = "buttons"
 private const val ROUTE_ANALOGS    = "analogs"
 private const val ROUTE_LIGHTS     = "lights"
-private const val ROUTE_COINS      = "coins"
-private const val ROUTE_KEYPAD     = "keypad"
+private const val ROUTE_CABINET    = "cabinet"
 private const val ROUTE_SUB        = "sub_screen"
 private const val ROUTE_PATCHES    = "patches"
 private const val ROUTE_CONTROLLER = "controller"
@@ -48,8 +47,7 @@ data class ToolsScreenActions(
     val onOpenButtons: () -> Unit,
     val onOpenAnalogs: () -> Unit,
     val onOpenLights:  () -> Unit,
-    val onOpenCoins:   () -> Unit,
-    val onOpenKeypad:  () -> Unit,
+    val onOpenCabinetUtility: () -> Unit,
     val onOpenSubScreen: () -> Unit,
     val onOpenPatches:   () -> Unit,
     val onOpenController: () -> Unit,
@@ -85,8 +83,7 @@ fun ToolsScreen() {
             ROUTE_BUTTONS    -> ButtonsScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_ANALOGS    -> AnalogsScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_LIGHTS     -> LightsScreen(onBack = { route = ROUTE_MAIN })
-            ROUTE_COINS      -> CoinsScreen(onBack = { route = ROUTE_MAIN })
-            ROUTE_KEYPAD     -> KeypadScreen(onBack = { route = ROUTE_MAIN })
+            ROUTE_CABINET    -> CabinetUtilityScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_SUB        -> org.cf0x.spicecompose.ui.screen.utils.subscreen.SubScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_PATCHES    -> PatchesScreen(onBack = { route = ROUTE_MAIN })
             ROUTE_CONTROLLER -> ControllerScreen(
@@ -104,8 +101,7 @@ fun ToolsScreen() {
                     onOpenButtons    = { route = ROUTE_BUTTONS },
                     onOpenAnalogs    = { route = ROUTE_ANALOGS },
                     onOpenLights     = { route = ROUTE_LIGHTS },
-                    onOpenCoins      = { route = ROUTE_COINS },
-                    onOpenKeypad     = { route = ROUTE_KEYPAD },
+                    onOpenCabinetUtility = { route = ROUTE_CABINET },
                     onOpenSubScreen  = { route = ROUTE_SUB },
                     onOpenPatches    = { route = ROUTE_PATCHES },
                     onOpenController = { route = ROUTE_CONTROLLER },
@@ -116,6 +112,7 @@ fun ToolsScreen() {
                 when (LocalUiMode.current) {
                     UiMode.Miuix    -> ToolsPagerMiuix(actions)
                     UiMode.Material -> {
+                        val devMode = LocalDevMode.current
                         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                         Scaffold(
                             topBar = {
@@ -131,30 +128,59 @@ fun ToolsScreen() {
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 item { Spacer(Modifier.height(8.dp)) }
-                                val items = listOf(
-                                    Triple(strings.buttons, strings.buttonsSummary, { maybeVibrate(15); actions.onOpenButtons() }),
-                                    Triple(strings.analogs, strings.analogsSummary, { maybeVibrate(15); actions.onOpenAnalogs() }),
-                                    Triple(strings.lights, strings.lightsSummary, { maybeVibrate(15); actions.onOpenLights() }),
-                                    Triple(strings.coins, strings.coinsSummary, { maybeVibrate(15); actions.onOpenCoins() }),
-                                    Triple(strings.keypadScanner, strings.keypadSummary, { maybeVibrate(15); actions.onOpenKeypad() }),
-                                    Triple(strings.subScreen, strings.subScreenSummary, { maybeVibrate(15); actions.onOpenSubScreen() }),
-                                    Triple(strings.patches, strings.patchesSummary, { maybeVibrate(15); actions.onOpenPatches() }),
-                                    Triple("Game Controller",  "Virtual arcade controller",  { maybeVibrate(15); actions.onOpenController() }),
-                                    Triple("LCD Info",        "LCD touch panel diagnostics",  { maybeVibrate(15); actions.onOpenLcd() }),
-                                    Triple("Screen Resize",   "Window layout presets",        { maybeVibrate(15); actions.onOpenResize() }),
-                                    Triple("Game Controller 2.0", "DIY layout editor & player", { maybeVibrate(15); actions.onOpenDiy() }),
-                                )
-                                items(items) { (title, summary, onClick) ->
-                                    Box(Modifier.padding(horizontal = 16.dp)) {
-                                        TonalCard(shape = SpiceTheme.containerShape(), onClick = onClick) {
-                                            ListItem(
-                                                headlineContent = { Text(title) },
-                                                supportingContent = { Text(summary) },
-                                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
-                                            )
+
+                                // ── Group: Buttons / Analogs / Lights ──
+                                item {
+                                    val group1 = listOf(
+                                        Triple(strings.buttons, strings.buttonsSummary, { maybeVibrate(15); actions.onOpenButtons() }),
+                                        Triple(strings.analogs, strings.analogsSummary, { maybeVibrate(15); actions.onOpenAnalogs() }),
+                                        Triple(strings.lights, strings.lightsSummary, { maybeVibrate(15); actions.onOpenLights() }),
+                                    )
+                                    group1.forEach { (title, summary, onClick) ->
+                                        Box(Modifier.padding(horizontal = 16.dp).padding(bottom = 10.dp)) {
+                                            TonalCard(shape = SpiceTheme.containerShape(), onClick = onClick) {
+                                                ListItem(headlineContent = { Text(title) }, supportingContent = { Text(summary) }, colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent))
+                                            }
                                         }
                                     }
                                 }
+
+                                // ── Group: Cabinet Utility / SubScreen / Controller ──
+                                item {
+                                    val group2 = listOf(
+                                        Triple(strings.cabinetUtility, strings.keypadSummary, { maybeVibrate(15); actions.onOpenCabinetUtility() }),
+                                        Triple(strings.subScreen, strings.subScreenSummary, { maybeVibrate(15); actions.onOpenSubScreen() }),
+                                        Triple(strings.gameController, strings.gameControllerSummary, { maybeVibrate(15); actions.onOpenController() }),
+                                    )
+                                    group2.forEach { (title, summary, onClick) ->
+                                        Box(Modifier.padding(horizontal = 16.dp).padding(bottom = 10.dp)) {
+                                            TonalCard(shape = SpiceTheme.containerShape(), onClick = onClick) {
+                                                ListItem(headlineContent = { Text(title) }, supportingContent = { Text(summary) }, colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent))
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // ── Dev Mode: Patches / LCD / Resize / DIY ──
+                                if (devMode) {
+                                    item {
+                                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                                        val devItems = listOf(
+                                            Triple(strings.patches, strings.patchesSummary, { maybeVibrate(15); actions.onOpenPatches() }),
+                                            Triple(strings.lcdInfo, strings.lcdInfoSummary, { maybeVibrate(15); actions.onOpenLcd() }),
+                                            Triple(strings.screenResize, strings.screenResizeSummary, { maybeVibrate(15); actions.onOpenResize() }),
+                                            Triple(strings.diyController, strings.diyControllerSummary, { maybeVibrate(15); actions.onOpenDiy() }),
+                                        )
+                                        devItems.forEach { (title, summary, onClick) ->
+                                            Box(Modifier.padding(horizontal = 16.dp).padding(bottom = 10.dp)) {
+                                                TonalCard(shape = SpiceTheme.containerShape(), onClick = onClick) {
+                                                    ListItem(headlineContent = { Text(title) }, supportingContent = { Text(summary) }, colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 item { Spacer(Modifier.height(24.dp)) }
                             }
                         }

@@ -54,6 +54,7 @@ data class AppStrings(
     val liquidGlass: String, val liquidGlassSummary: String,
     val enableBlur: String, val enableBlurSummary: String,
     val devMode: String, val devModeSummary: String,
+    val connectHint: String, val disconnectHint: String,
     val smoothCorner: String, val smoothCornerSummary: String,
     val m3e: String, val m3eSummary: String,
     val predictiveBack: String, val predictiveBackSummary: String,
@@ -101,7 +102,7 @@ data class AppStrings(
 
     // Cabinet Utility
     val cabinetUtility: String, val coinAmountHint: String, val coinInsert: String,
-    val nfcLabel: String, val noNfcSupport: String, val keyDelete: String, val cardSwipe: String,
+    val nfcLabel: String, val noNfcSupport: String, val keyDelete: String, val cardSwipe: String, val noCardsExist: String, val killGame: String,
 )
 
 @Composable
@@ -218,6 +219,8 @@ fun appStrings() = AppStrings(
     enableBlurSummary = stringResource(Res.string.enable_blur_summary),
     devMode = stringResource(Res.string.dev_mode),
     devModeSummary = stringResource(Res.string.dev_mode_summary),
+    connectHint = stringResource(Res.string.connect_hint),
+    disconnectHint = stringResource(Res.string.disconnect_hint),
     smoothCorner = stringResource(Res.string.smooth_corner),
     smoothCornerSummary = stringResource(Res.string.smooth_corner_summary),
     m3e = stringResource(Res.string.m3e),
@@ -308,6 +311,8 @@ fun appStrings() = AppStrings(
     noNfcSupport = stringResource(Res.string.no_nfc_support),
     keyDelete = stringResource(Res.string.key_delete),
     cardSwipe = stringResource(Res.string.card_swipe),
+    noCardsExist = stringResource(Res.string.no_cards_exist),
+    killGame = stringResource(Res.string.kill_game),
 )
 
 val LocalAppStrings = staticCompositionLocalOf<AppStrings> { 

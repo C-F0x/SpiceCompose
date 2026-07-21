@@ -21,13 +21,13 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Brightness1
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -265,26 +265,19 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                 }
             }
 
-            // ── Vibration ────────────────────────────────────────────────────
+            // ── Developer Mode ────────────────────────────────────────────
             item {
                 TonalCard(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp),
                     shape = SpiceTheme.cornerShape(24.dp)
                 ) {
-                    Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
-                        ListItem(
-                            headlineContent = { Text("Vibration") },
-                            supportingContent = { Text(if (p.vibrationEnabled) "On" else "Off") },
-                            leadingContent = { Icon(Icons.Rounded.Vibration, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
-                            trailingContent = { Switch(p.vibrationEnabled, p::updateVibrationEnabled) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-                        if (vibrationAvailable && p.vibrationEnabled) {
-                            Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
-                            Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
-                            TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
-                        }
-                    }
+                    ListItem(
+                        headlineContent = { Text(strings.devMode) },
+                        supportingContent = { Text(strings.devModeSummary) },
+                        leadingContent = { Icon(Icons.Rounded.Build, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+                        trailingContent = { Switch(p.devMode, p::updateDevMode) },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
                 }
             }
 
@@ -302,32 +295,6 @@ private fun M3ModeChip(icon: ImageVector, selected: Boolean, modifier: Modifier 
         modifier = modifier.height(56.dp).clip(CircleShape).background(bg).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) { Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp)) }
-}
-
-@Composable
-private fun VibrationCardMaterial() {
-    val scope = rememberCoroutineScope()
-    val p = ThemePreferences
-    val enabled = vibrationAvailable
-    TonalCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = SpiceTheme.cornerShape(24.dp)
-    ) {
-        Column(Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Vibration, null, Modifier.size(20.dp),
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
-                Spacer(Modifier.width(12.dp))
-                Text(if (enabled) "Vibration Test" else "Vibration (Not supported)", style = MaterialTheme.typography.titleMedium)
-            }
-            if (enabled) {
-                Spacer(Modifier.height(8.dp))
-                Text("Duration: ${p.vibDuration}ms", style = MaterialTheme.typography.bodySmall)
-                Slider(value = p.vibDuration.toFloat(), onValueChange = { p.updateVibDuration(it.toInt()) }, valueRange = 0f..200f, steps = 19)
-                TextButton(onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } }) { Text("Test") }
-            }
-        }
-    }
 }
 
 @Composable

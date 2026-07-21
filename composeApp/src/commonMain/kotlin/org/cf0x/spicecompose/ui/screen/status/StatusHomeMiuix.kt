@@ -123,15 +123,16 @@ fun StatusHomeMiuix(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(Modifier.height(2.dp))
-                                if (isConnected) {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = launcherInfo["compile_date"] ?: "",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = colorScheme.onSurfaceVariantSummary
-                                    )
-                                }
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = when {
+                                        isConnected -> strings.disconnectHint
+                                        isConnecting -> ""
+                                        else -> strings.connectHint
+                                    },
+                                    fontSize = 13.sp,
+                                    color = colorScheme.onSurfaceVariantSummary
+                                )
                             }
                         }
                     }

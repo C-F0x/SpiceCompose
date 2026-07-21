@@ -271,40 +271,6 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                 }
             }
 
-            // ── Vibration ────────────────────────────────────────────────────
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(12.dp)) {
-                        ArrowPreference(
-                            title = "Vibration",
-                            summary = if (p.vibrationEnabled) "On" else "Off",
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.Vibration, null,
-                                    Modifier.padding(end = 6.dp), colorScheme.onBackground
-                                )
-                            },
-                            onClick = { p.updateVibrationEnabled(!p.vibrationEnabled) }
-                        )
-                        if (vibrationAvailable && p.vibrationEnabled) {
-                            Text("${p.vibDuration}ms", Modifier.padding(top = 8.dp))
-                            Slider(
-                                value = p.vibDuration.toFloat(),
-                                onValueChange = { p.updateVibDuration(it.toInt()) },
-                                valueRange = 0f..200f,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            TextButton(
-                                text = "Test ${p.vibDuration}ms",
-                                onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
-            }
-
             // ── Developer Mode ────────────────────────────────────────────
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -345,58 +311,6 @@ private fun ColorModeChip(
 @Composable
 private fun PrefIcon(icon: ImageVector) =
     Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground)
-
-@Composable
-private fun VibrationCard() {
-    val scope = rememberCoroutineScope()
-    val p = ThemePreferences
-    val enabled = vibrationAvailable
-
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
-            ArrowPreference(
-                title = "Vibration Test",
-                summary = if (enabled) "${p.vibDuration}ms" else "Not supported",
-                startAction = {
-                    Icon(
-                        Icons.Rounded.Vibration, null, Modifier.padding(end = 6.dp),
-                        tint = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.3f)
-                    )
-                }
-            )
-            if (enabled) {
-                Text("${p.vibDuration}ms", Modifier.padding(bottom = 4.dp))
-                Slider(
-                    value = p.vibDuration.toFloat(),
-                    onValueChange = { p.updateVibDuration(it.toInt()) },
-                    valueRange = 0f..200f,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextButton(
-                    text = "Test ${p.vibDuration}ms",
-                    onClick = { scope.launch { maybeVibrate(p.vibDuration.toLong()) } },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ToggleCard(
-    title: String, checked: Boolean, onToggle: (Boolean) -> Unit,
-    icon: ImageVector = Icons.Rounded.Visibility
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        ArrowPreference(
-            title = title,
-            summary = if (checked) "On" else "Off",
-            startAction = { Icon(icon, null, Modifier.padding(end = 6.dp), colorScheme.onBackground) },
-            onClick = { onToggle(!checked) }
-        )
-    }
-}
-
 private fun paletteStyleLabels(s: AppStrings) = listOf(
     s.paletteTonalSpot, s.paletteNeutral, s.paletteVibrant, s.paletteExpressive,
     s.paletteRainbow, s.paletteFruitSalad, s.paletteMonochrome, s.paletteFidelity, s.paletteContent,

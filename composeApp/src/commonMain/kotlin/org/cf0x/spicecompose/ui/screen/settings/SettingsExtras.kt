@@ -130,38 +130,5 @@ private fun StepRowMiuix(value: Int, range: IntProgression, onChange: (Int) -> U
     }
 }
 
-// ── Vibration Duration Section ──
+// ── Vibration Duration Section ── (removed — dead code)
 
-@Composable
-fun VibrationSection(durationMs: Int, onDurationChange: (Int) -> Unit) {
-    val strings = LocalAppStrings.current
-    val scope = rememberCoroutineScope()
-    if (LocalUiMode.current == UiMode.Miuix) {
-        top.yukonga.miuix.kmp.basic.Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
-            Column(Modifier.padding(12.dp)) {
-                top.yukonga.miuix.kmp.basic.Text(strings.vibration, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                ArrowPreference(title = strings.duration, summary = "${durationMs}ms",
-                    startAction = { top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Vibration, null) })
-                StepRowMiuix(durationMs, 0..200 step 10, onDurationChange)
-                top.yukonga.miuix.kmp.basic.TextButton(
-                    text = strings.test, onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    } else {
-        androidx.compose.material3.Card(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text(strings.vibration, style = MaterialTheme.typography.titleSmall)
-                Spacer(Modifier.height(8.dp))
-                Text("${strings.duration}: ${durationMs}ms")
-                Slider(value = durationMs.toFloat(), onValueChange = { onDurationChange(it.toInt()) }, valueRange = 0f..200f, steps = 19)
-                TextButton(onClick = { scope.launch { maybeVibrate(durationMs.toLong()) } }) { Text(strings.test) }
-            }
-        }
-    }
-}

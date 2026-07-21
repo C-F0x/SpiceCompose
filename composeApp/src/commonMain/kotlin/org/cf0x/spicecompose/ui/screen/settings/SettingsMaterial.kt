@@ -138,7 +138,7 @@ fun SettingsPagerMaterial(
                 ) {
                     ListItem(
                         headlineContent = { Text(strings.uiStyle) },
-                        supportingContent = { Text(if (uiState.uiMode == UiMode.Miuix) "Miuix" else "Material You") },
+                        supportingContent = { Text(strings.uiStyleSummary) },
                         leadingContent = { Icon(Icons.Rounded.Style, null) },
                         trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -170,7 +170,6 @@ fun SettingsPagerMaterial(
                 ) {
                     ListItem(
                         headlineContent = { Text(strings.about) },
-                        supportingContent = { Text("Version info and more") },
                         leadingContent = { Icon(Icons.Rounded.Info, null) },
                         trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)

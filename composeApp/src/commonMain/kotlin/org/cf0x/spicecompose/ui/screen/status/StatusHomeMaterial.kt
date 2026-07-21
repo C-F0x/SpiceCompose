@@ -104,7 +104,12 @@ fun StatusHomeMaterial(
                             )
                             if (isConnected) {
                                 Text(
-                                    text = launcherInfo["compile_date"] ?: "",
+                                    text = strings.disconnectHint,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            } else if (!isConnecting) {
+                                Text(
+                                    text = strings.connectHint,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -156,7 +161,7 @@ fun StatusHomeMaterial(
                 val cols = if (windowSize == WindowSize.Compact) 1 else 2
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     InfoItemMaterial(
-                        title = "AVS Info",
+                        title = strings.avsInfo,
                         content = if (isConnected) "${avsInfo["model"] ?: ""}-${avsInfo["dest"] ?: ""}.${avsInfo["spec"] ?: ""}.${avsInfo["rev"] ?: ""}-${avsInfo["ext"] ?: ""}"
                                   else "model-dest.spec.rev-ext"
                     )

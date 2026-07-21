@@ -154,7 +154,7 @@ fun CardEditDialog(
                     androidx.compose.material3.Button(onClick = {
                         if (name.isEmpty() || cardId.length != 16) return@Button
                         val newCard = CardConfig(
-                            id = card?.id ?: (1..16).map { "0123456789ABCDEF".random() }.joinToString(""),
+                            id = card?.id ?: kotlin.uuid.Uuid.random().toString(),
                             name = name, cardId = cardId, idTrigger = triggerId, active = card?.active ?: false
                         )
                         onSave(newCard)

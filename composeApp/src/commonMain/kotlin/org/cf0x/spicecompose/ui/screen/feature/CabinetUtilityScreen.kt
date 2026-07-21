@@ -75,15 +75,18 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     // ── Coin state ───────────────────────────────────────────────────────
     var coinBlocker by remember { mutableStateOf<Boolean?>(null) }
     var coinAmount by remember { mutableIntStateOf(p.coinDefaultAmount) }
-    val selectedCard = remember(chosenCardId, cards) { if (chosenCardId == "nfc" || chosenCardId == null) null else cards.find { it.id == chosenCardId } }
+    val selectedCard = remember(chosenCardId, cards) { if (chosenCardId == null) null else cards.find { it.id == chosenCardId } }
 
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
-    // ── NFC listener ─────────────────────────────────────────────────────
-    LaunchedEffect(connection, chosenCardId) {
-        if (connection == null || !nfcAvailable) return@LaunchedEffect
+    // ── NFC listener — always active, inserts to selected card slot ───
+    LaunchedEffect(Unit) {
         NfcManager.tagIdFlow.collect { id ->
-            if (chosenCardId == "nfc") { connection.cardInsert(currentMode, id); maybeVibrate(100) }
+            val client = connectionManager.getClient()
+            if (client != null) {
+                val card = cards.find { it.id == chosenCardId }
+                card?.let { client.cardInsert(currentMode, it.cardId); maybeVibrate(100) }
+            }
         }
     }
 
@@ -149,47 +152,20 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     @Composable
     fun KeypadCard(modifier: Modifier = Modifier) {
         val keys = listOf("7","8","9", "4","5","6", "1","2","3", "0","00",".")
-        val selectedCard = cards.find { it.id == chosenCardId }
         Card(modifier = modifier.padding(bottom = 12.dp)) {
             Column(Modifier.padding(16.dp).fillMaxWidth()) {
                 MiuixText("Keypad", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(Modifier.height(8.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // rows 0-3: number keys
                     for (row in 0..3) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             for (col in 0..2) {
                                 val key = keys[row * 3 + col]
                                 KeyButtonMiuix(key, Modifier.weight(1f).aspectRatio(1.5f)) {
-                                    when (key) {
-                                        "00" -> onKeyClick("A")
-                                        "."  -> onKeyClick("D")
-                                        else -> onKeyClick(key)
-                                    }
+                                    when (key) { "00" -> onKeyClick("A"); "." -> onKeyClick("D"); else -> onKeyClick(key) }
                                 }
                             }
                         }
-                    }
-                    // row 4: P1/P2 toggle + card swipe
-                    Spacer(Modifier.height(4.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(
-                            text = modeLabel,
-                            onClick = { currentMode = (currentMode + 1) % 2 },
-                            modifier = Modifier.weight(1f),
-                            colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary(),
-                        )
-                        TextButton(
-                            text = strings.cardSwipe,
-                            onClick = {
-                                when (chosenCardId) {
-                                    "nfc" -> { /* NFC handles itself */ }
-                                    else -> selectedCard?.let { scope.launch { onInsert(it.cardId) } }
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            enabled = chosenCardId != null,
-                        )
                     }
                 }
             }
@@ -203,9 +179,20 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                 MiuixText(strings.process, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(text = strings.restart, onClick = { scope.launch { connection?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = connection != null)
-                    TextButton(text = strings.shutdown, onClick = { scope.launch { connection?.controlShutdown() } }, modifier = Modifier.weight(1f), enabled = connection != null, colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary())
-                    TextButton(text = strings.reboot, onClick = { scope.launch { connection?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = connection != null)
+                    TextButton(text = strings.restart, onClick = {
+                        scope.launch {
+                            connection?.controlRestart()
+                            connectionManager.disconnect()
+                            delay(30_000)
+                            connectionManager.currentServer.value?.let { connectionManager.connect(it) }
+                        }
+                    }, modifier = Modifier.weight(1f), enabled = connection != null)
+                    TextButton(text = strings.killGame, onClick = {
+                        scope.launch {
+                            connection?.controlExit(0)
+                            connectionManager.disconnect()
+                        }
+                    }, modifier = Modifier.weight(1f), enabled = connection != null, colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary())
                 }
             }
         }
@@ -219,19 +206,19 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                 Spacer(Modifier.weight(1f))
                 MiuixIconButton(onClick = { showAddDialog = true }) { MiuixIcon(Icons.Rounded.Add, null) }
             }
-            if (!nfcAvailable) {
-                Spacer(Modifier.height(4.dp))
-                MiuixText(strings.noNfcSupport, fontSize = 12.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
-            }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (nfcAvailable) {
-                    PillMiuix(strings.nfcLabel, chosenCardId == "nfc", true, { chosenCardId = if (chosenCardId == "nfc") null else "nfc" }, {})
-                }
-                cards.forEach { card ->
-                    PillMiuix(card.name, chosenCardId == card.id, true, {
-                        chosenCardId = if (chosenCardId == card.id) null else card.id
-                    }, { editingCard = card })
+                // ── P1/P2 compact toggle ──
+                PillMiuix(modeLabel, true, true, { currentMode = (currentMode + 1) % 2 }, {})
+                if (cards.isEmpty()) {
+                    MiuixText(strings.noCardsExist, fontSize = 14.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                } else {
+                    cards.forEach { card ->
+                        PillMiuix(card.name, chosenCardId == card.id, true, {
+                            chosenCardId = if (chosenCardId == card.id) null else card.id
+                            if (chosenCardId != null) { scope.launch { onInsert(card.cardId) } }
+                        }, { editingCard = card })
+                    }
                 }
             }
         }
@@ -304,9 +291,9 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             CoinRowCardMaterial(coinBlocker, coinAmount, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { connection?.coinInsert(coinAmount) } })
                             Spacer(Modifier.height(12.dp))
-                            ProcessCardMaterial(strings, connection, scope)
+                            ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } })
                             Spacer(Modifier.height(24.dp))
-                            CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it }, { editingCard = it })
+                            CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it; if (chosenCardId != null) { val card = cards.find { c -> c.id == chosenCardId }; card?.let { scope.launch { onInsert(it.cardId) } } } }, { editingCard = it }, modeLabel, { currentMode = (currentMode + 1) % 2 })
                         }
                     }
                 } else {
@@ -315,9 +302,9 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                         Spacer(Modifier.height(12.dp))
                         CoinRowCardMaterial(coinBlocker, coinAmount, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { connection?.coinInsert(coinAmount) } })
                         Spacer(Modifier.height(12.dp))
-                        ProcessCardMaterial(strings, connection, scope)
+                        ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } })
                         Spacer(Modifier.height(24.dp))
-                        CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it }, { editingCard = it })
+                        CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it; if (chosenCardId != null) { val card = cards.find { c -> c.id == chosenCardId }; card?.let { scope.launch { onInsert(it.cardId) } } } }, { editingCard = it }, modeLabel, { currentMode = (currentMode + 1) % 2 })
                         Spacer(Modifier.height(24.dp))
                     }
                 }
@@ -380,32 +367,37 @@ private fun KeypadCardMaterial(currentMode: Int, modeLabel: String, keyDelete: S
 }
 
 @Composable
-private fun ProcessCardMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, connection: org.cf0x.spicecompose.network.SpiceClient?, scope: kotlinx.coroutines.CoroutineScope) {
+private fun ProcessCardMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, connection: org.cf0x.spicecompose.network.SpiceClient?, scope: kotlinx.coroutines.CoroutineScope, onDisconnect: () -> Unit, onReconnect: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(Modifier.padding(16.dp)) {
             androidx.compose.material3.Text(strings.process, style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { scope.launch { connection?.controlRestart() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text(strings.restart) }
-                Button(onClick = { scope.launch { connection?.controlShutdown() } }, modifier = Modifier.weight(1f), enabled = connection != null, colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { androidx.compose.material3.Text(strings.shutdown) }
-                OutlinedButton(onClick = { scope.launch { connection?.controlReboot() } }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text(strings.reboot) }
+                Button(onClick = {
+                    scope.launch { connection?.controlRestart(); onDisconnect(); kotlinx.coroutines.delay(30_000); onReconnect() }
+                }, modifier = Modifier.weight(1f), enabled = connection != null) { androidx.compose.material3.Text(strings.restart) }
+                Button(onClick = {
+                    scope.launch { connection?.controlExit(0); onDisconnect() }
+                }, modifier = Modifier.weight(1f), enabled = connection != null, colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { androidx.compose.material3.Text(strings.killGame) }
             }
         }
     }
 }
 
 @Composable
-private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, nfcAvailable: Boolean, showAddDialog: Boolean, onAddClick: () -> Unit, cards: List<CardConfig>, chosenCardId: String?, onSelect: (String) -> Unit, onEdit: (CardConfig) -> Unit) {
+private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, nfcAvailable: Boolean, showAddDialog: Boolean, onAddClick: () -> Unit, cards: List<CardConfig>, chosenCardId: String?, onSelect: (String) -> Unit, onEdit: (CardConfig) -> Unit, modeLabel: String, onModeToggle: () -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text(strings.cardManagement, style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.weight(1f))
             androidx.compose.material3.IconButton(onClick = onAddClick) { androidx.compose.material3.Icon(Icons.Rounded.Add, null) }
         }
-        if (!nfcAvailable) { androidx.compose.material3.Text(strings.noNfcSupport, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (nfcAvailable) { PillMaterial(strings.nfcLabel, chosenCardId == "nfc", true, { onSelect("nfc") }, {}) }
+            PillMaterial(modeLabel, true, true, { onModeToggle() }, {})
+            if (cards.isEmpty()) {
+                androidx.compose.material3.Text(strings.noCardsExist, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             cards.forEach { card -> PillMaterial(card.name, chosenCardId == card.id, true, { onSelect(card.id) }, { onEdit(card) }) }
         }
     }

@@ -195,6 +195,8 @@
     <string name="diy_controller_summary">Custom layout editor &amp; player</string>
     <string name="dev_mode">Developer Mode</string>
     <string name="dev_mode_summary">Show Patches, LCD Info, Screen Resize, DIY Controller</string>
+    <string name="connect_hint">Click to connect</string>
+    <string name="disconnect_hint">Click to disconnect</string>
 
     <!-- Cabinet Utility -->
     <string name="cabinet_utility">Cabinet Utility</string>
@@ -204,4 +206,6 @@
     <string name="no_nfc_support">Device Doesn't Support NFC</string>
     <string name="key_delete">Del</string>
     <string name="card_swipe">Swipe Card</string>
+    <string name="no_cards_exist">No Card Exist, Press + To Add</string>
+    <string name="kill_game">Kill Game</string>
 </resources>

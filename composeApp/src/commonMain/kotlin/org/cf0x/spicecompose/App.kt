@@ -3,8 +3,7 @@ package org.cf0x.spicecompose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import org.cf0x.spicecompose.ui.component.ModernToast
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,13 +33,12 @@ fun App() {
     val isMaterial = p.uiMode == org.cf0x.spicecompose.ui.UiMode.Material
     val effectiveKeyColor = if (isMaterial) p.materialKeyColor else p.keyColor
 
-    // Snackbar for connect/disconnect notifications
-    val snackbarHostState = remember { SnackbarHostState() }
+    // Custom toast for connect/disconnect notifications
+    var toastText by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         connectionManager.toastMessage.collect { msg ->
-            snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(msg)
+            toastText = msg
         }
     }
 
@@ -121,9 +119,10 @@ fun App() {
                             )
                         },
                     )
-                    SnackbarHost(
-                        hostState = snackbarHostState,
-                        modifier = Modifier.align(Alignment.BottomCenter)
+                    ModernToast(
+                        text = toastText,
+                        isMiuix = p.uiMode == org.cf0x.spicecompose.ui.UiMode.Miuix,
+                        onDismiss = { toastText = null },
                     )
                 }
             }
