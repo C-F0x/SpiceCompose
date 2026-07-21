@@ -45,7 +45,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val windowSize = LocalWindowSize.current
     val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
     val p = ThemePreferences
-    
+
     var analogStates by remember { mutableStateOf<List<AnalogState>>(emptyList()) }
     val draggingNames = remember { mutableStateListOf<String>() }
 
@@ -53,7 +53,6 @@ fun AnalogsScreen(onBack: () -> Unit) {
         fullscreen.value = false
     }
 
-    // Polling logic
     LaunchedEffect(connection) {
         if (connection == null) {
             analogStates = emptyList()
@@ -86,17 +85,23 @@ fun AnalogsScreen(onBack: () -> Unit) {
         }
     }
 
+    // ── Slider write controller ─────────────────────────────────────────
+    val sliderWrite = remember(connection) {
+        SliderWriteController(
+            nameSelector = { a: AnalogState -> a.name },
+            writeBlock = { a -> connection?.analogsWrite(listOf(a)) }
+        )
+    }
+
     val onValueChange: (AnalogState, Float) -> Unit = { analog, value ->
         val updated = analog.copy(state = value.toDouble(), active = true)
         analogStates = analogStates.map { if (it.name == analog.name) updated else it }
+        sliderWrite.write(updated, scope)
     }
 
     val onValueCommit: (AnalogState) -> Unit = { analog ->
-        scope.launch {
-            connection?.analogsWrite(listOf(analog))
-        }
+        sliderWrite.commit(analog, scope)
     }
-
 
     val columns = when (windowSize) {
         WindowSize.Compact -> 1
@@ -112,9 +117,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
                     SmallTopAppBar(
                         title = strings.analogs,
                         navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
-                        actions = {
-                            FullscreenAction()
-                        }
+                        actions = { FullscreenAction() }
                     )
                 }
             }
@@ -154,9 +157,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
                                 androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
                             }
                         },
-                        actions = {
-                            FullscreenAction()
-                        }
+                        actions = { FullscreenAction() }
                     )
                 }
             }

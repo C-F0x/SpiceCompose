@@ -10,7 +10,16 @@ suspend fun SpiceClient.infoAVS(): Map<String, String> {
 
 suspend fun SpiceClient.infoLauncher(): Map<String, String> {
     val res = request("info", "launcher")
-    return res.jsonObject["data"]?.jsonArray?.getOrNull(0)?.jsonObject?.mapValues { it.value.jsonPrimitive.content } ?: emptyMap()
+    val obj = res.jsonObject["data"]?.jsonArray?.getOrNull(0)?.jsonObject ?: return emptyMap()
+    return obj.mapValues { (key, value) ->
+        when {
+            // args is a JSON array of strings → join them
+            key == "args" && value is JsonArray ->
+                value.joinToString(" ") { it.jsonPrimitive.content }
+            else ->
+                value.jsonPrimitive.content
+        }
+    }
 }
 
 suspend fun SpiceClient.infoMemory(): Map<String, Long> {

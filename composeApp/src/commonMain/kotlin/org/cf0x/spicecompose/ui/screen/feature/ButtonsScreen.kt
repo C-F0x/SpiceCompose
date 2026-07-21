@@ -1,5 +1,6 @@
 package org.cf0x.spicecompose.ui.screen.feature
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -61,20 +64,18 @@ fun ButtonsScreen(onBack: () -> Unit) {
         }
     }
 
-    val pressMutex = remember { kotlinx.coroutines.sync.Mutex() }
-
-    val onPress: (ButtonState) -> Unit = { button ->
-        maybeVibrate(50)
+    // ── Press-down → state=1.0 ─────────────────────────────────────────
+    val onPressDown: (ButtonState) -> Unit = { button ->
+        maybeVibrate(30)
         scope.launch {
-            if (pressMutex.tryLock()) {
-                try {
-                    connection?.buttonsWrite(listOf(button.copy(state = 1.0, active = true)))
-                    delay(100)
-                    connection?.buttonsWrite(listOf(button.copy(state = 0.0, active = true)))
-                } finally {
-                    pressMutex.unlock()
-                }
-            }
+            connection?.buttonsWrite(listOf(button.copy(state = 1.0, active = true)))
+        }
+    }
+
+    // ── Press-up → state=0.0 ───────────────────────────────────────────
+    val onPressUp: (ButtonState) -> Unit = { button ->
+        scope.launch {
+            connection?.buttonsWrite(listOf(button.copy(state = 0.0, active = true)))
         }
     }
 
@@ -104,7 +105,7 @@ fun ButtonsScreen(onBack: () -> Unit) {
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(buttonStates) { button ->
-                        ButtonMiuix(button, onPress)
+                        ButtonMiuix(button, onPressDown, onPressUp)
                     }
                 }
             }
@@ -138,7 +139,7 @@ fun ButtonsScreen(onBack: () -> Unit) {
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(buttonStates) { button ->
-                        ButtonMaterial(button, onPress)
+                        ButtonMaterial(button, onPressDown, onPressUp)
                     }
                 }
             }
@@ -146,47 +147,82 @@ fun ButtonsScreen(onBack: () -> Unit) {
     }
 }
 
+// ── Miuix button: press-down + release + long-press ───────────────────
+
 @Composable
-private fun ButtonMiuix(button: ButtonState, onPress: (ButtonState) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { onPress(button) },
-        pressFeedbackType = top.yukonga.miuix.kmp.utils.PressFeedbackType.Sink,
-        showIndication = true
+private fun ButtonMiuix(
+    button: ButtonState,
+    onPressDown: (ButtonState) -> Unit,
+    onPressUp: (ButtonState) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .squircleBackground(color = MiuixTheme.colorScheme.surfaceContainer, cornerRadius = 16.dp)
+            .pointerInput(button.name) {
+                detectTapGestures(
+                    onPress = {
+                        onPressDown(button)
+                        tryAwaitRelease()
+                        onPressUp(button)
+                    },
+                )
+            },
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
+        androidx.compose.foundation.layout.Box(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = button.name,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                maxLines = 2
+                maxLines = 2,
+                color = MiuixTheme.colorScheme.onSurface,
             )
         }
     }
 }
 
+// ── Material button: press-down + release + long-press ────────────────
+
 @Composable
-private fun ButtonMaterial(button: ButtonState, onPress: (ButtonState) -> Unit) {
-    androidx.compose.material3.Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { onPress(button) },
-        shape = androidx.compose.material3.MaterialTheme.shapes.medium
+private fun ButtonMaterial(
+    button: ButtonState,
+    onPressDown: (ButtonState) -> Unit,
+    onPressUp: (ButtonState) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(button.name) {
+                detectTapGestures(
+                    onPress = {
+                        onPressDown(button)
+                        tryAwaitRelease()
+                        onPressUp(button)
+                    },
+                )
+            },
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
-            contentAlignment = Alignment.Center
+        androidx.compose.material3.Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = androidx.compose.material3.MaterialTheme.shapes.medium,
         ) {
-            androidx.compose.material3.Text(
-                text = button.name,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                maxLines = 2
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.Text(
+                    text = button.name,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2
+                )
+            }
         }
     }
 }

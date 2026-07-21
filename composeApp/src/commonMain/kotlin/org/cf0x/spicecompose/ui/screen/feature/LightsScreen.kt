@@ -86,15 +86,22 @@ fun LightsScreen(onBack: () -> Unit) {
         }
     }
 
+    // ── Slider write controller ─────────────────────────────────────────
+    val sliderWrite = remember(connection) {
+        SliderWriteController(
+            nameSelector = { l: LightState -> l.name },
+            writeBlock = { l -> connection?.lightsWrite(listOf(l)) }
+        )
+    }
+
     val onValueChange: (LightState, Float) -> Unit = { light, value ->
         val updated = light.copy(state = value.toDouble(), active = true)
         lightStates = lightStates.map { if (it.name == light.name) updated else it }
+        sliderWrite.write(updated, scope)
     }
 
     val onValueCommit: (LightState) -> Unit = { light ->
-        scope.launch {
-            connection?.lightsWrite(listOf(light))
-        }
+        sliderWrite.commit(light, scope)
     }
 
 
