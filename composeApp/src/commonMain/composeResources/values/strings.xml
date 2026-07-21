@@ -192,6 +192,9 @@
     <string name="no_controller_view">This game does not yet have a controller view :(</string>
     <string name="connect_first">Please connect to a server first.</string>
     <string name="diy_controller">DIY Controller</string>
+    <string name="diy_controller_summary">Custom layout editor &amp; player</string>
+    <string name="dev_mode">Developer Mode</string>
+    <string name="dev_mode_summary">Show Patches, LCD Info, Screen Resize, DIY Controller</string>
 
     <!-- Cabinet Utility -->
     <string name="cabinet_utility">Cabinet Utility</string>

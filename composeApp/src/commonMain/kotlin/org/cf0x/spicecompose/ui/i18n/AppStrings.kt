@@ -53,6 +53,7 @@ data class AppStrings(
     val floatingBottomBar: String, val floatingBottomBarSummary: String,
     val liquidGlass: String, val liquidGlassSummary: String,
     val enableBlur: String, val enableBlurSummary: String,
+    val devMode: String, val devModeSummary: String,
     val smoothCorner: String, val smoothCornerSummary: String,
     val m3e: String, val m3eSummary: String,
     val predictiveBack: String, val predictiveBackSummary: String,
@@ -96,7 +97,7 @@ data class AppStrings(
     val screenshotSettings: String, val share: String, val refresh: String,
     val controllerComingSoon: String, val subViewLabel: String,
     val noControllerView: String, val connectFirst: String,
-    val diyController: String,
+    val diyController: String, val diyControllerSummary: String,
 
     // Cabinet Utility
     val cabinetUtility: String, val coinAmountHint: String, val coinInsert: String,
@@ -215,6 +216,8 @@ fun appStrings() = AppStrings(
     liquidGlassSummary = stringResource(Res.string.liquid_glass_summary),
     enableBlur = stringResource(Res.string.enable_blur),
     enableBlurSummary = stringResource(Res.string.enable_blur_summary),
+    devMode = stringResource(Res.string.dev_mode),
+    devModeSummary = stringResource(Res.string.dev_mode_summary),
     smoothCorner = stringResource(Res.string.smooth_corner),
     smoothCornerSummary = stringResource(Res.string.smooth_corner_summary),
     m3e = stringResource(Res.string.m3e),
@@ -295,6 +298,7 @@ fun appStrings() = AppStrings(
     noControllerView = stringResource(Res.string.no_controller_view),
     connectFirst = stringResource(Res.string.connect_first),
     diyController = stringResource(Res.string.diy_controller),
+    diyControllerSummary = stringResource(Res.string.diy_controller_summary),
 
     // Cabinet Utility
     cabinetUtility = stringResource(Res.string.cabinet_utility),

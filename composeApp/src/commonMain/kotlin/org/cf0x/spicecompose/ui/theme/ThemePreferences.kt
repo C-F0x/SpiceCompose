@@ -103,4 +103,8 @@ object ThemePreferences {
     var coinDefaultAmount by mutableIntStateOf(s.getInt("coinDefaultAmount", 1))
         private set
     fun updateCoinDefaultAmount(v: Int) { coinDefaultAmount = v; s.putInt("coinDefaultAmount", v) }
+
+    var devMode by mutableStateOf(s.getBoolean("devMode", false))
+        private set
+    fun updateDevMode(v: Boolean) { devMode = v; s.putBoolean("devMode", v) }
 }

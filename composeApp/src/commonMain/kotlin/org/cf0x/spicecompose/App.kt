@@ -67,6 +67,7 @@ fun App() {
             LocalPageScale             provides p.pageScale,
             LocalFloatingBottomBar     provides p.floatingBottomBar,
             LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
+            LocalDevMode              provides p.devMode,
             LocalInSubPage             provides inSubPage,
             LocalConnectionManager     provides connectionManager,
             LocalFullscreenMode        provides fullscreenMode,

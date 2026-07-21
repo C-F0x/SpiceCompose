@@ -31,6 +31,7 @@ import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import org.cf0x.spicecompose.ui.theme.LocalDevMode
 
 @Composable
 fun ToolsPagerMiuix(
@@ -38,6 +39,7 @@ fun ToolsPagerMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
+    val devMode = LocalDevMode.current
     Scaffold(
         topBar = {
                 TopAppBar(
@@ -117,14 +119,20 @@ fun ToolsPagerMiuix(
                         },
                         onClick = { maybeVibrate(15); actions.onOpenSubScreen() },
                     )
-                    ArrowPreference(
-                        title = strings.patches,
-                        summary = strings.patchesSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = { maybeVibrate(15); actions.onOpenPatches() },
-                    )
+                }
+            }
+
+            // ── Patches (dev mode) ───────────────────────────────────
+            if (devMode) {
+                item {
+                    Card(modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth()) {
+                        ArrowPreference(
+                            title = strings.patches,
+                            summary = strings.patchesSummary,
+                            startAction = { Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground) },
+                            onClick = { maybeVibrate(15); actions.onOpenPatches() },
+                        )
+                    }
                 }
             }
 
@@ -143,34 +151,34 @@ fun ToolsPagerMiuix(
                 }
             }
 
-            item {
-                Card(
-                    modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
-                ) {
-                    ArrowPreference(
-                        title = strings.lcdInfo,
-                        summary = strings.lcdInfoSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.Tv, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = { maybeVibrate(15); actions.onOpenLcd() },
-                    )
-                    ArrowPreference(
-                        title = strings.screenResize,
-                        summary = strings.screenResizeSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.AspectRatio, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = { maybeVibrate(15); actions.onOpenResize() },
-                    )
-                    ArrowPreference(
-                        title = strings.gameController2,
-                        summary = strings.gameController2Summary,
-                        startAction = {
-                            Icon(Icons.Rounded.DashboardCustomize, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = { maybeVibrate(15); actions.onOpenDiy() },
-                    )
+            // ── LCD + Resize (dev mode) ──────────────────────────────
+            if (devMode) {
+                item {
+                    Card(modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth()) {
+                        ArrowPreference(
+                            title = strings.lcdInfo, summary = strings.lcdInfoSummary,
+                            startAction = { Icon(Icons.Rounded.Tv, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground) },
+                            onClick = { maybeVibrate(15); actions.onOpenLcd() },
+                        )
+                        ArrowPreference(
+                            title = strings.screenResize, summary = strings.screenResizeSummary,
+                            startAction = { Icon(Icons.Rounded.AspectRatio, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground) },
+                            onClick = { maybeVibrate(15); actions.onOpenResize() },
+                        )
+                    }
+                }
+            }
+
+            // ── DIY Controller (dev mode) ────────────────────────────
+            if (devMode) {
+                item {
+                    Card(modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth()) {
+                        ArrowPreference(
+                            title = strings.diyController, summary = strings.diyControllerSummary,
+                            startAction = { Icon(Icons.Rounded.DashboardCustomize, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground) },
+                            onClick = { maybeVibrate(15); actions.onOpenDiy() },
+                        )
+                    }
                 }
             }
 

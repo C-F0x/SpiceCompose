@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.Brightness1
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
@@ -301,6 +302,19 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                             )
                         }
                     }
+                }
+            }
+
+            // ── Developer Mode ────────────────────────────────────────────
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    SwitchPreference(
+                        title = strings.devMode,
+                        summary = strings.devModeSummary,
+                        checked = p.devMode,
+                        onCheckedChange = { p.updateDevMode(it) },
+                        startAction = { Icon(Icons.Rounded.Build, null, Modifier.padding(end = 6.dp), colorScheme.onBackground) },
+                    )
                 }
             }
 

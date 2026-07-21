@@ -193,6 +193,9 @@
     <string name="no_controller_view">此游戏暂无控制器视图 :(</string>
     <string name="connect_first">请先连接到服务器。</string>
     <string name="diy_controller">DIY 控制器</string>
+    <string name="diy_controller_summary">自定义布局编辑器与播放器</string>
+    <string name="dev_mode">开发者模式</string>
+    <string name="dev_mode_summary">显示 补丁管理、LCD 信息、画面缩放、DIY 控制器</string>
 
     <!-- 框体工具 -->
     <string name="cabinet_utility">框体工具</string>
