@@ -39,8 +39,7 @@ fun ToolsPagerMaterial(
                 FeatureItem(strings.analogs, strings.analogsSummary, Icons.Rounded.LinearScale, actions.onOpenAnalogs)
                 FeatureItem(strings.lights, strings.lightsSummary, Icons.Rounded.Lightbulb, actions.onOpenLights)
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                FeatureItem(strings.coins, strings.coinsSummary, Icons.Rounded.MonetizationOn, actions.onOpenCoins)
-                FeatureItem(strings.keypad, strings.keypadSummary, Icons.Rounded.Apps, actions.onOpenKeypad)
+                FeatureItem(strings.cabinetUtility, strings.keypadSummary, Icons.Rounded.Apps, actions.onOpenCabinetUtility)
             }
         }
     }

@@ -99,4 +99,8 @@ object ThemePreferences {
     var vibrationEnabled by mutableStateOf(s.getBoolean("vibrationEnabled", true))
         private set
     fun updateVibrationEnabled(v: Boolean) { vibrationEnabled = v; s.putBoolean("vibrationEnabled", v) }
+
+    var coinDefaultAmount by mutableIntStateOf(s.getInt("coinDefaultAmount", 1))
+        private set
+    fun updateCoinDefaultAmount(v: Int) { coinDefaultAmount = v; s.putInt("coinDefaultAmount", v) }
 }

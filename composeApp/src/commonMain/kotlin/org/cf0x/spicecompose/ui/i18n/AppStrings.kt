@@ -97,6 +97,10 @@ data class AppStrings(
     val controllerComingSoon: String, val subViewLabel: String,
     val noControllerView: String, val connectFirst: String,
     val diyController: String,
+
+    // Cabinet Utility
+    val cabinetUtility: String, val coinAmountHint: String, val coinInsert: String,
+    val nfcLabel: String, val noNfcSupport: String, val keyDelete: String, val cardSwipe: String,
 )
 
 @Composable
@@ -291,6 +295,15 @@ fun appStrings() = AppStrings(
     noControllerView = stringResource(Res.string.no_controller_view),
     connectFirst = stringResource(Res.string.connect_first),
     diyController = stringResource(Res.string.diy_controller),
+
+    // Cabinet Utility
+    cabinetUtility = stringResource(Res.string.cabinet_utility),
+    coinAmountHint = stringResource(Res.string.coin_amount_hint),
+    coinInsert = stringResource(Res.string.coin_insert),
+    nfcLabel = stringResource(Res.string.nfc_label),
+    noNfcSupport = stringResource(Res.string.no_nfc_support),
+    keyDelete = stringResource(Res.string.key_delete),
+    cardSwipe = stringResource(Res.string.card_swipe),
 )
 
 val LocalAppStrings = staticCompositionLocalOf<AppStrings> { 

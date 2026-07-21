@@ -193,4 +193,13 @@
     <string name="no_controller_view">此游戏暂无控制器视图 :(</string>
     <string name="connect_first">请先连接到服务器。</string>
     <string name="diy_controller">DIY 控制器</string>
+
+    <!-- 框体工具 -->
+    <string name="cabinet_utility">框体工具</string>
+    <string name="coin_amount_hint">1–16</string>
+    <string name="coin_insert">投币</string>
+    <string name="nfc_label">NFC</string>
+    <string name="no_nfc_support">设备不支持 NFC</string>
+    <string name="key_delete">删除</string>
+    <string name="card_swipe">刷卡</string>
 </resources>

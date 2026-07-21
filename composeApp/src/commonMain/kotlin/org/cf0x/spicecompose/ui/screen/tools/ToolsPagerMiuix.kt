@@ -95,20 +95,12 @@ fun ToolsPagerMiuix(
                     modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = strings.coins,
-                        summary = strings.coinsSummary,
-                        startAction = {
-                            Icon(Icons.Rounded.MonetizationOn, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
-                        },
-                        onClick = { maybeVibrate(15); actions.onOpenCoins() },
-                    )
-                    ArrowPreference(
-                        title = strings.keypad,
+                        title = strings.cabinetUtility,
                         summary = strings.keypadSummary,
                         startAction = {
                             Icon(Icons.Rounded.Apps, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)
                         },
-                        onClick = { maybeVibrate(15); actions.onOpenKeypad() },
+                        onClick = { maybeVibrate(15); actions.onOpenCabinetUtility() },
                     )
                 }
             }

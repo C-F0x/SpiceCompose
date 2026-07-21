@@ -192,4 +192,13 @@
     <string name="no_controller_view">This game does not yet have a controller view :(</string>
     <string name="connect_first">Please connect to a server first.</string>
     <string name="diy_controller">DIY Controller</string>
+
+    <!-- Cabinet Utility -->
+    <string name="cabinet_utility">Cabinet Utility</string>
+    <string name="coin_amount_hint">1–16</string>
+    <string name="coin_insert">Insert</string>
+    <string name="nfc_label">NFC</string>
+    <string name="no_nfc_support">Device Doesn't Support NFC</string>
+    <string name="key_delete">Del</string>
+    <string name="card_swipe">Swipe Card</string>
 </resources>
