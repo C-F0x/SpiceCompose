@@ -18,7 +18,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import org.cf0x.spicecompose.data.ServerConfig
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -40,15 +44,21 @@ fun StatusPagerMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val strings = LocalAppStrings.current
+    val enableBlur = LocalEnableBlur.current
+    val backdrop = rememberBlurBackdrop(enableBlur)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) androidx.compose.ui.graphics.Color.Transparent else MiuixTheme.colorScheme.surface
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = strings.servers,
+            BlurredBar(backdrop, blurActive) {
+                TopAppBar(
+                    title = strings.servers,
+                    color = barColor,
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, contentDescription = "Back")
+                        top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, contentDescription = strings.backDesc)
                     }
                 },
                 actions = {
@@ -57,6 +67,7 @@ fun StatusPagerMiuix(
                     }
                 }
             )
+            }
         },
     ) { innerPadding ->
         if (servers.isEmpty()) {
@@ -70,7 +81,8 @@ fun StatusPagerMiuix(
                     .scrollEndHaptic()
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp)
+                    .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier),
                 contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             ) {
                 item { Spacer(Modifier.height(12.dp)) }

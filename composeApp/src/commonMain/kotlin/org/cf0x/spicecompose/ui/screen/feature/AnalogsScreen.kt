@@ -6,12 +6,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.NonCancellable
@@ -26,16 +27,23 @@ import org.cf0x.spicecompose.network.spiceapi.wrappers.analogsWriteReset
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalogsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
@@ -111,27 +119,37 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val uiMode = LocalUiMode.current
 
     if (uiMode == UiMode.Miuix) {
+        val scrollBehavior = MiuixScrollBehavior()
+        val enableBlur = LocalEnableBlur.current
+        val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+        val blurActive = backdrop != null
+        val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
         top.yukonga.miuix.kmp.basic.Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
-                    SmallTopAppBar(
-                        title = strings.analogs,
-                        navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
-                        actions = { FullscreenAction() }
-                    )
+                    BlurredBar(backdrop, blurActive) {
+                        SmallTopAppBar(
+                            title = strings.analogs,
+                            navigationIcon = { IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
+                            actions = { FullscreenAction() },
+                            color = barColor,
+                            scrollBehavior = scrollBehavior
+                        )
+                    }
                 }
             }
         ) { innerPadding ->
-            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            val topPadding = innerPadding.calculateTopPadding()
             if (analogStates.isEmpty()) {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().padding(top = topPadding), contentAlignment = Alignment.Center) {
                     top.yukonga.miuix.kmp.basic.Text(strings.noAnalogsAvailable)
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(columns),
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(4.dp)
+                    modifier = Modifier.fillMaxSize().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier),
+                    contentPadding = PaddingValues(top = topPadding + 12.dp)
                 ) {
                     items(analogStates) { analog ->
                         AnalogItemMiuix(
@@ -142,35 +160,39 @@ fun AnalogsScreen(onBack: () -> Unit) {
                             onDragEnd = { draggingNames.remove(analog.name) }
                         )
                     }
+                    item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                 }
             }
         }
     } else {
+        val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior()
         androidx.compose.material3.Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
                     @OptIn(ExperimentalMaterial3Api::class)
-                    androidx.compose.material3.TopAppBar(
+                    AdaptiveTopAppBar(
                         title = { androidx.compose.material3.Text(strings.analogs) },
                         navigationIcon = {
                             androidx.compose.material3.IconButton(onClick = onBack) {
-                                androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                                androidx.compose.material3.Icon(Icons.AutoMirrored.Outlined.ArrowBack, null)
                             }
                         },
-                        actions = { FullscreenAction() }
+                        actions = { FullscreenAction() },
+                        scrollBehavior = scrollBehavior
                     )
                 }
             }
         ) { innerPadding ->
-            val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
+            val topPadding = innerPadding.calculateTopPadding()
             if (analogStates.isEmpty()) {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().padding(top = topPadding), contentAlignment = Alignment.Center) {
                     androidx.compose.material3.Text(strings.noAnalogsAvailable)
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(columns),
-                    modifier = Modifier.fillMaxSize().padding(padding)
+                    modifier = Modifier.fillMaxSize().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection),
+                    contentPadding = PaddingValues(top = topPadding + 12.dp)
                 ) {
                     items(analogStates) { analog ->
                         AnalogItemMaterial(
@@ -181,6 +203,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
                             onDragEnd = { draggingNames.remove(analog.name) }
                         )
                     }
+                    item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                 }
             }
         }

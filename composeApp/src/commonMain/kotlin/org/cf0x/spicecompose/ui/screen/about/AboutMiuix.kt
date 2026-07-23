@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +37,7 @@ import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -48,7 +50,13 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
@@ -57,6 +65,10 @@ fun AboutScreenMiuix(
     actions: AboutScreenActions,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val enableBlur = LocalEnableBlur.current
+    val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
     val strings        = LocalAppStrings.current
     val listState      = rememberLazyListState()
     var logoHeightPx by remember { mutableIntStateOf(0) }
@@ -83,18 +95,21 @@ fun AboutScreenMiuix(
     Scaffold(
         topBar = {
             if (!fullscreen.value && !p.toolbarHidden) {
-                SmallTopAppBar(
-                    title = uiState.appName,
-                    navigationIcon = {
-                        IconButton(onClick = actions.onBack) {
-                            Icon(MiuixIcons.Back, contentDescription = null)
-                        }
-                    },
-                    actions = {
-                        FullscreenAction()
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
+                BlurredBar(backdrop, blurActive) {
+                    SmallTopAppBar(
+                        title = uiState.appName,
+                        navigationIcon = {
+                            IconButton(onClick = actions.onBack) {
+                                Icon(MiuixIcons.Back, contentDescription = null)
+                            }
+                        },
+                        actions = {
+                            FullscreenAction()
+                        },
+                        color = barColor,
+                        scrollBehavior = scrollBehavior,
+                    )
+                }
             }
         },
     ) { innerPadding ->
@@ -103,9 +118,11 @@ fun AboutScreenMiuix(
             state = listState,
             modifier = Modifier
                 .fillMaxHeight()
+                .horizontalCutoutPadding()
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
                 .padding(horizontal = 12.dp),
             contentPadding = PaddingValues(top = topPadding),
             overscrollEffect = null,

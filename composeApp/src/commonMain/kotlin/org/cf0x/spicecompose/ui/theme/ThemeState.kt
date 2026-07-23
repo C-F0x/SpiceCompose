@@ -10,7 +10,6 @@ val LocalKeyColor           = staticCompositionLocalOf { defaultKeyColor }
 val LocalPaletteStyle       = staticCompositionLocalOf { com.materialkolor.PaletteStyle.TonalSpot }
 val LocalColorSpecVersion   = staticCompositionLocalOf { com.materialkolor.dynamiccolor.ColorSpec.SpecVersion.SPEC_2021 }
 val LocalEnableBlur         = staticCompositionLocalOf { true }
-val LocalEnableSmoothCorner = staticCompositionLocalOf { false }
 val LocalPageScale          = staticCompositionLocalOf { 1.0f }
 
 val LocalFloatingBottomBar      = staticCompositionLocalOf { false }

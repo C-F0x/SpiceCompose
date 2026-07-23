@@ -21,7 +21,6 @@ data class CustomizeUiState(
     val floatingBottomBar:     Boolean               = false,
     val floatingBottomBarBlur: Boolean               = true,
     val enableBlur:            Boolean               = true,
-    val enableSmoothCorner:    Boolean               = true,
 )
 
 @Immutable
@@ -38,5 +37,4 @@ data class CustomizeScreenActions(
     val onSetFloatingBottomBar:         (Boolean) -> Unit,
     val onSetFloatingBottomBarBlur:     (Boolean) -> Unit,
     val onSetEnableBlur:                (Boolean) -> Unit,
-    val onSetEnableSmoothCorner:        (Boolean) -> Unit,
 )

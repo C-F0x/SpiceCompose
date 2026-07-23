@@ -51,7 +51,7 @@ fun BottomBarMiuix(
                     Destination.all.forEach { dest ->
                         NavigationBarItem(
                             modifier = Modifier.weight(1f),
-                            icon = dest.icon,
+                            icon = dest.miuixIcon(),
                             label = dest.label,
                             selected = mainState.selectedPage == dest.index,
                             onClick = { maybeVibrate(20); mainState.animateToPage(dest.index) }
@@ -80,7 +80,7 @@ fun BottomBarMiuix(
                     onClick = { maybeVibrate(20); mainState.animateToPage(dest.index) },
                 ) {
                     Icon(
-                        imageVector = dest.icon,
+                        imageVector = dest.miuixIcon(),
                         contentDescription = dest.label,
                         tint = MiuixTheme.colorScheme.onSurface
                     )

@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -18,12 +19,19 @@ import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,17 +51,25 @@ fun ResizeScreen(onBack: () -> Unit) {
     val title = strings.screenResize
 
     if (uiMode == UiMode.Miuix) {
+        val scrollBehavior = MiuixScrollBehavior()
+        val enableBlur = LocalEnableBlur.current
+        val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+        val blurActive = backdrop != null
+        val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
         top.yukonga.miuix.kmp.basic.Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
-                    SmallTopAppBar(title = title,
-                        navigationIcon = { top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
-                        actions = { FullscreenAction() })
+                    BlurredBar(backdrop, blurActive) {
+                        SmallTopAppBar(title = title,
+                            navigationIcon = { top.yukonga.miuix.kmp.basic.IconButton(onClick = onBack) { top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null) } },
+                            actions = { FullscreenAction() },
+                            color = barColor)
+                    }
                 }
             },
         ) { innerPadding ->
             val pad = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp)) {
+            Column(Modifier.fillMaxSize().padding(pad).padding(16.dp).then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     top.yukonga.miuix.kmp.basic.Text(strings.enableResize, Modifier.weight(1f))
                     top.yukonga.miuix.kmp.basic.Switch(enabled, onCheckedChange = { enabled = it; scope.launch { conn?.imageResizeEnable(it) } })
@@ -66,7 +82,7 @@ fun ResizeScreen(onBack: () -> Unit) {
         Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
-                    TopAppBar(title = { Text(title) },
+                    AdaptiveTopAppBar(title = { Text(title) },
                         navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } },
                         actions = { FullscreenAction() })
                 }

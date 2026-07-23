@@ -44,6 +44,9 @@ import kotlin.math.PI
 import kotlin.math.roundToInt
 import org.cf0x.spicecompose.ui.screen.controllers.ControllerColors
 
+private val BoundColor = Color(0xFF4CAF50)
+private val SelectionHighlightColor = Color(0xFF00E5FF)
+
 private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 
 /**
@@ -175,7 +178,7 @@ fun DiyEditor(
                 val bound = widget.id == justBoundId
                 val enabled = widget.enabled
                 val selOverlay = when {
-                    bound -> Modifier.background(Color(0xFF4CAF50).copy(alpha = 0.35f))
+                    bound -> Modifier.background(BoundColor.copy(alpha = 0.35f))
                     sel -> Modifier.background(ControllerColors.primary().copy(alpha = 0.25f))
                     else -> Modifier
                 }
@@ -197,7 +200,7 @@ fun DiyEditor(
                             // Polygon
                             val polyFill = ControllerColors.buttonIdle()
                             val polySel = ControllerColors.primary().copy(alpha = 0.25f)
-                            val polyBound = Color(0xFF4CAF50).copy(alpha = 0.35f)
+                            val polyBound = BoundColor.copy(alpha = 0.35f)
                             Canvas(buttonMod) {
                                 val cx = size.width / 2f; val cy = size.height / 2f
                                 val rad = minOf(size.width, size.height) / 2f * (1f - widget.cornerRadius * 0.5f)
@@ -264,7 +267,7 @@ fun DiyEditor(
             if (hovered != null) {
                 val hf = widgetFraction(hovered)
                 Canvas(Modifier.fillMaxSize()) {
-                    drawRect(Color(0xFF00E5FF).copy(alpha = 0.4f),
+                    drawRect(SelectionHighlightColor.copy(alpha = 0.4f),
                         topLeft = Offset(canvasW.toPx() * hf.x - canvasW.toPx() * hf.w / 2f + offsetX.toPx(),
                                          canvasH.toPx() * hf.y - canvasH.toPx() * hf.h / 2f + offsetY.toPx()),
                         size = androidx.compose.ui.geometry.Size(canvasW.toPx() * hf.w, canvasH.toPx() * hf.h),

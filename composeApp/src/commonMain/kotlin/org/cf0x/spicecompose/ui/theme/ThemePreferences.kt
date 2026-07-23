@@ -76,10 +76,6 @@ object ThemePreferences {
         private set
     fun updateEnableBlur(v: Boolean) { enableBlur = v; s.putBoolean("enableBlur", v) }
 
-    var enableSmoothCorner by mutableStateOf(s.getBoolean("enableSmoothCorner", true))
-        private set
-    fun updateEnableSmoothCorner(v: Boolean) { enableSmoothCorner = v; s.putBoolean("enableSmoothCorner", v) }
-
     var ssQuality by mutableIntStateOf(s.getInt("ssQuality", 60))
         private set
     fun updateSsQuality(v: Int) { ssQuality = v; s.putInt("ssQuality", v) }
@@ -107,4 +103,8 @@ object ThemePreferences {
     var devMode by mutableStateOf(s.getBoolean("devMode", false))
         private set
     fun updateDevMode(v: Boolean) { devMode = v; s.putBoolean("devMode", v) }
+
+    var sidebarExpanded by mutableStateOf(s.getBoolean("sidebarExpanded", false))
+        private set
+    fun updateSidebarExpanded(v: Boolean) { sidebarExpanded = v; s.putBoolean("sidebarExpanded", v) }
 }

@@ -21,12 +21,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import org.cf0x.spicecompose.data.ServerConfig
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
+import org.cf0x.spicecompose.ui.component.WideContentBox
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import androidx.compose.material.icons.rounded.*
 
@@ -39,19 +43,20 @@ fun StatusPagerMaterial(
     onAddClick: () -> Unit,
     onEdit: (ServerConfig) -> Unit,
     onDelete: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val strings = LocalAppStrings.current
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AdaptiveTopAppBar(
                 title = { Text(strings.servers) },
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = strings.backDesc)
                     }
                 },
                 actions = {
@@ -67,12 +72,13 @@ fun StatusPagerMaterial(
                 Text(strings.noServers)
             }
         } else {
-            LazyColumn(
+            WideContentBox { LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection),
-                contentPadding = innerPadding,
+                contentPadding = PaddingValues(top = innerPadding.calculateTopPadding(), bottom = bottomPadding),
             ) {
+                item { Spacer(Modifier.height(12.dp)) }
                 items(servers, key = { it.id }) { server ->
                     ServerCardMaterial(
                         server = server,
@@ -82,6 +88,8 @@ fun StatusPagerMaterial(
                         onDelete = onDelete
                     )
                 }
+                item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
+            }
             }
         }
     }
@@ -101,16 +109,14 @@ fun ServerCardMaterial(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .combinedClickable(
+                onClick = onSelect,
+                onLongClick = onEdit
+            ),
     ) {
-        Column(
-            Modifier
-                .padding(16.dp)
-                .combinedClickable(
-                    onClick = onSelect,
-                    onLongClick = onEdit
-                )
-        ) {
+        Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Rounded.Computer,

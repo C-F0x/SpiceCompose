@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.cf0x.spicecompose.network.ConnectionManager
+import org.cf0x.spicecompose.network.ConnectionStatus
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.platform.SystemBarsManager
@@ -36,12 +37,6 @@ fun App() {
     // Custom toast for connect/disconnect notifications
     var toastText by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        connectionManager.toastMessage.collect { msg ->
-            toastText = msg
-        }
-    }
-
     LaunchedEffect(fullscreenMode.value) {
         SystemBarsManager.setFullscreen(fullscreenMode.value)
     }
@@ -54,6 +49,26 @@ fun App() {
         // Read strings from XML resources — recomposed when p.appLanguage changes
         // because LocalLocale re-triggers the Compose tree via Configuration update
         val strings = appStrings()
+
+        // Toast listeners — placed here so appStrings() is available
+        LaunchedEffect(Unit) {
+            connectionManager.toastMessage.collect { msg ->
+                toastText = when (msg) {
+                    "disconnected" -> strings.disconnected
+                    "connection_timeout" -> strings.connectionTimeout
+                    "connection_refused" -> strings.connectionRefused
+                    "unknown_error" -> strings.unknownError
+                    "server_died" -> strings.serverDied
+                    else -> msg
+                }
+            }
+        }
+        LaunchedEffect(connectionManager.status.value) {
+            if (connectionManager.status.value == ConnectionStatus.Connected) {
+                toastText = strings.connected
+            }
+        }
+
         CompositionLocalProvider(
             LocalAppStrings            provides strings,
             LocalColorMode             provides p.colorMode,
@@ -61,7 +76,6 @@ fun App() {
             LocalPaletteStyle          provides p.paletteStyle,
             LocalColorSpecVersion      provides p.colorSpecVersion,
             LocalEnableBlur            provides p.enableBlur,
-            LocalEnableSmoothCorner    provides p.enableSmoothCorner,
             LocalPageScale             provides p.pageScale,
             LocalFloatingBottomBar     provides p.floatingBottomBar,
             LocalFloatingBottomBarBlur provides p.floatingBottomBarBlur,
@@ -78,7 +92,6 @@ fun App() {
                 paletteStyle = p.paletteStyle,
                 specVersion  = p.colorSpecVersion,
                 pageScale    = p.pageScale,
-                isM3E        = p.enableSmoothCorner,
             ) {
                 Box(Modifier.fillMaxSize()) {
                     MainScreen(
@@ -114,8 +127,6 @@ fun App() {
                                 onFloatingBottomBarBlurChange = { p.updateFloatingBottomBarBlur(it) },
                                 enableBlur                    = p.enableBlur,
                                 onEnableBlurChange            = { p.updateEnableBlur(it) },
-                                enableSmoothCorner            = p.enableSmoothCorner,
-                                onEnableSmoothCornerChange    = { p.updateEnableSmoothCorner(it) },
                             )
                         },
                     )

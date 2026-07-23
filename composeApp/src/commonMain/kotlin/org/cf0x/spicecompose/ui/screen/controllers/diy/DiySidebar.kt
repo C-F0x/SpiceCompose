@@ -322,7 +322,7 @@ private fun WidgetRow(
     }
 
     Row(
-        Modifier.fillMaxWidth().background(bg).combinedClickable(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(bg).combinedClickable(
             onClick = onClick,
             onLongClick = { showMenu = true },
         ).padding(horizontal = 8.dp, vertical = 6.dp),

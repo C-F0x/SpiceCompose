@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -26,7 +29,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -36,12 +38,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
@@ -79,7 +84,7 @@ fun AboutScreenMaterial(
     Scaffold(
         topBar = {
             if (!fullscreen.value && !p.toolbarHidden) {
-                TopAppBar(
+                AdaptiveTopAppBar(
                     title = { Text(uiState.appName, modifier = Modifier.alpha(titleAlpha)) },
                     navigationIcon = {
                         IconButton(onClick = actions.onBack) {
@@ -94,13 +99,15 @@ fun AboutScreenMaterial(
             }
         },
     ) { innerPadding ->
-        val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .horizontalCutoutPadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
-            contentPadding = padding,
+            contentPadding = PaddingValues(
+                top = if (fullscreen.value) 0.dp else innerPadding.calculateTopPadding()
+            ),
         ) {
             // ── Logo header ───────────────────────────────────────────────────
             item {
@@ -136,7 +143,7 @@ fun AboutScreenMaterial(
             item {
                 HorizontalDivider()
                 ListItem(
-                    modifier = Modifier.clickable { actions.onOpenLink(GITHUB_URL) },
+                    modifier = Modifier.clipToBounds().clickable { actions.onOpenLink(GITHUB_URL) },
                     headlineContent = { Text(strings.github) },
                     supportingContent = { Text(GITHUB_URL) },
                     leadingContent = { Icon(Icons.Rounded.Code, null) },
@@ -146,13 +153,15 @@ fun AboutScreenMaterial(
             // ── Controller FAQ ────────────────────────────────────────────────
             item {
                 ListItem(
-                    modifier = Modifier.clickable { actions.onOpenFaq() },
+                    modifier = Modifier.clipToBounds().clickable { actions.onOpenFaq() },
                     headlineContent = { Text("Controller FAQ") },
                     supportingContent = { Text("Game code to full name reference") },
                     leadingContent = { Icon(Icons.Rounded.Gamepad, null) },
                     trailingContent = { Icon(Icons.Rounded.ChevronRight, null) },
                 )
             }
+
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
         }
     }
 }

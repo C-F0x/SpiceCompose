@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 
 /**
@@ -67,6 +68,7 @@ fun ThemePreviewCard(
     val outline = MaterialTheme.colorScheme.outlineVariant
     val onBg    = MaterialTheme.colorScheme.onBackground
     val uiMode  = LocalUiMode.current
+    val strings = LocalAppStrings.current
 
     // Resolve effective nav layout (Auto depends on screen width in dp)
     val useRail = when (navLayoutMode) {
@@ -166,9 +168,10 @@ private fun ContentArea(
     onBg: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier,
 ) {
+    val strings = LocalAppStrings.current
     Column(modifier = modifier) {
         // App label
-        Text("SpiceCompose", fontSize = 7.sp, color = onBg,
+        Text(strings.appName, fontSize = 7.sp, color = onBg,
             modifier = Modifier.padding(bottom = 4.dp))
 
         when (uiMode) {

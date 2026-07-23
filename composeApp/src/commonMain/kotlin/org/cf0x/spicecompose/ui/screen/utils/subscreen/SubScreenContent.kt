@@ -19,6 +19,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.network.TouchControl
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.network.spiceapi.wrappers.captureGetJPG
 
 @Composable
@@ -30,6 +31,7 @@ fun SubScreenContent(
     pollIntervalMs: Long = 100,
     onShareReady: ((ByteArray) -> Unit)? = null
 ) {
+    val strings = LocalAppStrings.current
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
@@ -72,7 +74,7 @@ fun SubScreenContent(
         if (img != null) {
             Image(
                 bitmap = img,
-                contentDescription = "Sub Screen",
+                contentDescription = strings.subScreen,
                 modifier = Modifier
                     .fillMaxSize()
                     .onGloballyPositioned { displaySize = it.size }

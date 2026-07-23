@@ -32,6 +32,7 @@ import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WebAsset
+import androidx.compose.material.icons.rounded.ViewSidebar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -58,6 +59,7 @@ import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.Card
@@ -76,6 +78,12 @@ import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.textStyles
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -84,6 +92,10 @@ private val BlockSpacing = 8.dp
 @Composable
 fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActions) {
     val scrollBehavior = MiuixScrollBehavior()
+    val enableBlur = LocalEnableBlur.current
+    val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     val strings        = LocalAppStrings.current
     val fullscreen     = LocalFullscreenMode.current
     val p              = ThemePreferences
@@ -107,18 +119,21 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
     Scaffold(
         topBar = {
             if (!fullscreen.value && !p.toolbarHidden) {
-                TopAppBar(
-                    title          = strings.themeSettings,
-                    navigationIcon = {
-                        IconButton(onClick = actions.onBack) {
-                            Icon(MiuixIcons.Back, contentDescription = null)
-                        }
-                    },
-                    actions = {
-                        FullscreenAction()
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
+                BlurredBar(backdrop, blurActive) {
+                    TopAppBar(
+                        title          = strings.themeSettings,
+                        navigationIcon = {
+                            IconButton(onClick = actions.onBack) {
+                                Icon(MiuixIcons.Back, contentDescription = null)
+                            }
+                        },
+                        actions = {
+                            FullscreenAction()
+                        },
+                        color = barColor,
+                        scrollBehavior = scrollBehavior,
+                    )
+                }
             }
         },
         popupHost = {},
@@ -127,9 +142,11 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
+                .horizontalCutoutPadding()
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
                 .padding(horizontal = 12.dp),
             contentPadding = PaddingValues(top = topPadding),
             verticalArrangement = Arrangement.spacedBy(BlockSpacing),
@@ -227,6 +244,15 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                             checked = uiState.floatingBottomBarBlur,
                             onCheckedChange = actions.onSetFloatingBottomBarBlur,
                             startAction = { PrefIcon(Icons.Rounded.BlurOn) },
+                        )
+                    }
+                    if (uiState.navLayoutMode != NavLayoutMode.BottomBar) {
+                        SwitchPreference(
+                            title   = strings.sidebarLabels,
+                            summary = strings.sidebarLabelsSummary,
+                            checked = ThemePreferences.sidebarExpanded,
+                            onCheckedChange = { ThemePreferences.updateSidebarExpanded(it) },
+                            startAction = { PrefIcon(Icons.Rounded.ViewSidebar) },
                         )
                     }
                 }

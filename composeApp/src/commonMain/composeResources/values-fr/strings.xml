@@ -110,10 +110,6 @@
     <string name="liquid_glass_summary">Effet de verre dépoli sur la barre flottante</string>
     <string name="enable_blur">Flou</string>
     <string name="enable_blur_summary">Effet de flou sur les barres</string>
-    <string name="smooth_corner">Coins lisses</string>
-    <string name="smooth_corner_summary">Forme de coin super-elliptique</string>
-    <string name="m3e">Material 3 Expressive</string>
-    <string name="m3e_summary">Appliquer le style M3 Expressive</string>
     <string name="predictive_back">Retour prédictif</string>
     <string name="predictive_back_summary">Activer le geste de retour prédictif</string>
     <string name="github">GitHub</string>
@@ -121,4 +117,137 @@
     <string name="section_color">Couleur</string>
     <string name="section_layout">Disposition</string>
     <string name="section_effects">Effets</string>
+
+    <!-- Page Outils -->
+    <string name="game_controller">Manette de jeu</string>
+    <string name="game_controller_summary">Contrôleur d\'arcade virtuel</string>
+    <string name="lcd_info">Infos LCD</string>
+    <string name="lcd_info_summary">Diagnostic du panneau tactile LCD</string>
+    <string name="screen_resize">Redimensionnement</string>
+    <string name="screen_resize_summary">Préréglages de disposition</string>
+    <string name="game_controller_2">Manette de jeu 2.0</string>
+    <string name="game_controller_2_summary">Éditeur de disposition DIY &amp; lecteur</string>
+    <string name="enable_resize">Activer le redim.</string>
+    <string name="scene_label">Scène : %d</string>
+
+    <!-- Écran Pièces -->
+    <string name="insert_coin">Insérer %d pièce(s)</string>
+    <string name="coin_blocked">BLOQUÉ</string>
+    <string name="coin_open">Ouvert</string>
+    <string name="coin_checking">Vérification…</string>
+    <string name="coin_blocker_status">Bloqueur de pièces : %s</string>
+
+    <!-- Infos machine -->
+    <string name="avs_info">Infos AVS</string>
+    <string name="launcher_info">Infos lanceur</string>
+    <string name="memory_usage">Utilisation mémoire</string>
+
+    <!-- États vides -->
+    <string name="no_analogs_available">Aucun analogique disponible :(</string>
+    <string name="no_lights_available">Aucune lumière disponible :(</string>
+    <string name="no_buttons_available">Aucun bouton disponible :(</string>
+    <string name="no_lcd_data">Aucune donnée LCD</string>
+    <string name="no_patches_found">Aucun patch trouvé</string>
+
+    <!-- Patches -->
+    <string name="preset">Préréglage</string>
+    <string name="patch_enabled">(Activé)</string>
+    <string name="patch_disabled">(Désactivé)</string>
+
+    <!-- FAQ Contrôleur -->
+    <string name="controller_faq">FAQ du contrôleur</string>
+    <string name="implemented">Implémenté</string>
+    <string name="not_yet_implemented">Pas encore implémenté</string>
+
+    <!-- Divers -->
+    <string name="toggle_fullscreen">Basculer en plein écran</string>
+    <string name="edit_server">Modifier le serveur</string>
+
+    <!-- Paramètres supplémentaires -->
+    <string name="game_control">Contrôle du jeu</string>
+    <string name="restart">Redémarrer</string>
+    <string name="shutdown">Éteindre</string>
+    <string name="reboot">Redémarrer</string>
+    <string name="screenshot">Capture d\'écran</string>
+    <string name="quality">Qualité</string>
+    <string name="divide">Diviser</string>
+    <string name="vibration">Vibration</string>
+    <string name="duration">Durée</string>
+    <string name="test">Test</string>
+
+    <!-- Clavier supplémentaires -->
+    <string name="process">Processus</string>
+    <string name="card_management">Gestion des cartes</string>
+
+    <!-- Sous-écran / Contrôleur -->
+    <string name="screenshot_settings">Paramètres de capture</string>
+    <string name="share">Partager</string>
+    <string name="refresh">Actualiser</string>
+    <string name="controller_coming_soon">Disposition du contrôleur à venir</string>
+    <string name="sub_view_label">Sous-vue #%d</string>
+    <string name="no_controller_view">Ce jeu n\'a pas encore de vue contrôleur :(</string>
+    <string name="connect_first">Veuillez d\'abord vous connecter à un serveur.</string>
+    <string name="diy_controller">Contrôleur DIY</string>
+    <string name="diy_controller_summary">Éditeur de disposition personnalisé &amp; lecteur</string>
+    <string name="dev_mode">Mode développeur</string>
+    <string name="dev_mode_summary">Afficher Patchs, Infos LCD, Redim., Contrôleur DIY</string>
+    <string name="connect_hint">Cliquez pour connecter</string>
+    <string name="disconnect_hint">Cliquez pour déconnecter</string>
+
+    <!-- Utilitaire machine -->
+    <string name="cabinet_utility">Utilitaire machine</string>
+    <string name="coin_amount_hint">1–16</string>
+    <string name="coin_insert">Insérer</string>
+    <string name="coin_set">Définir</string>
+    <string name="nfc_label">NFC</string>
+    <string name="no_nfc_support">L\'appareil ne prend pas en charge NFC</string>
+    <string name="key_delete">Suppr</string>
+    <string name="card_swipe">Passer la carte</string>
+    <string name="no_cards_exist">Aucune carte, appuyez sur + pour ajouter</string>
+    <string name="kill_game">Tuer le jeu</string>
+
+    <!-- Ressources migrées -->
+    <string name="accent_color">Couleur d\'accent</string>
+    <string name="auto_detect">(Auto-détection)</string>
+    <string name="back_desc">Retour</string>
+    <string name="cycle_view_desc">Cycler la vue</string>
+    <string name="debug_select_desc">Sélection débogage</string>
+    <string name="game_label">Jeu : %s</string>
+    <string name="hex_label">Hex</string>
+    <string name="hex_placeholder">#6750A4</string>
+    <string name="invalid_hex">Hex invalide, format : #RRGGBB</string>
+    <string name="off">Désactivé</string>
+    <string name="on">Activé</string>
+    <string name="system_color">Couleur système</string>
+
+    <!-- Messages d\'erreur de connexion -->
+    <string name="connection_timeout">Délai de connexion dépassé</string>
+    <string name="connection_refused">Connexion refusée</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="server_died">Serveur déconnecté</string>
+
+    <!-- Barre d\'outils de l\'éditeur DIY -->
+    <string name="grid_and_guides">Grille &amp; guides</string>
+    <string name="show_grid">Afficher la grille</string>
+    <string name="snap">Alignement</string>
+    <string name="grid_lines">Lignes de grille</string>
+    <string name="guide_points">Points de guidage</string>
+    <string name="h_line">Ligne H</string>
+    <string name="v_line">Ligne V</string>
+    <string name="point">Point</string>
+    <string name="x_step_format">Pas X : %1$d%%</string>
+    <string name="y_step_format">Pas Y : %1$d%%</string>
+
+    <!-- Noms des styles d\'interface -->
+    <string name="style_miuix">Miuix</string>
+    <string name="style_material">Material</string>
+
+    <!-- Suffixes de version -->
+    <string name="beta_suffix">(BETA)</string>
+    <string name="classic_suffix">(C)</string>
+
+    <!-- Remplacement de la langue système -->
+    <string name="system_locale_overridden_hint">Défini via les paramètres système</string>
+    <string name="sidebar_labels">Étiquettes latérales</string>
+    <string name="sidebar_labels_summary">Afficher les étiquettes dans la barre latérale</string>
 </resources>

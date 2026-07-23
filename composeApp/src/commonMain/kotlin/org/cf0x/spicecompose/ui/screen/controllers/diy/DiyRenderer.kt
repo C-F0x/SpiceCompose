@@ -46,6 +46,8 @@ import org.cf0x.spicecompose.ui.screen.controllers.ButtonControl
 import org.cf0x.spicecompose.ui.screen.controllers.ControllerButton
 import org.cf0x.spicecompose.ui.screen.controllers.ControllerColors
 
+private val BoundColor = Color(0xFF4CAF50)
+
 private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 
 /**
@@ -181,7 +183,7 @@ private fun DiyFaderBar(fader: DiyWidget.Fader, w: Dp, h: Dp, cm: ConnectionMana
         contentAlignment = Alignment.CenterStart) {
         if (fader.style == "full") {
             // Full style: entire track filled proportionally
-            val trackColor = if (fader.colorize) Color(0xFF4CAF50) else ControllerColors.primary()
+            val trackColor = if (fader.colorize) BoundColor else ControllerColors.primary()
             Box(Modifier.fillMaxSize(value).background(trackColor))
         } else {
             // Thin style: thin bar + thumb

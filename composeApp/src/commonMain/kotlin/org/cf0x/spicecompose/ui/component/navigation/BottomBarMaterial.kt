@@ -21,7 +21,7 @@ fun BottomBarMaterial(
             NavigationBarItem(
                 selected = mainState.selectedPage == dest.index,
                 onClick  = { maybeVibrate(20); mainState.animateToPage(dest.index) },
-                icon     = { Icon(dest.icon, contentDescription = dest.label) },
+                icon     = { Icon(if (mainState.selectedPage == dest.index) dest.materialFilled else dest.materialOutlined, contentDescription = dest.label) },
                 label    = { Text(dest.label) },
             )
         }

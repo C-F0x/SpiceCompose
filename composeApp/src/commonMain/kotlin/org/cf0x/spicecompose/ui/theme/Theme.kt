@@ -37,7 +37,6 @@ fun SpiceComposeTheme(
     paletteStyle: PaletteStyle            = PaletteStyle.TonalSpot,
     specVersion:  ColorSpec.SpecVersion   = ColorSpec.SpecVersion.SPEC_2021,
     pageScale:    Float                   = 1.0f,
-    isM3E:        Boolean                 = false,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
@@ -171,7 +170,7 @@ fun SpiceComposeTheme(
             ) {
                 MaterialTheme(
                     colorScheme = m3Scheme,
-                    typography = getTypography(isM3E)
+                    typography = getTypography()
                 ) {
                     content()
                 }

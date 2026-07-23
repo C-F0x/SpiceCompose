@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Brightness1
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.ChevronRight
@@ -28,6 +27,7 @@ import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.ViewSidebar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +44,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,16 +67,18 @@ import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.platform.vibrationAvailable
 import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.i18n.AppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 
-private val BlockSpacing = 8.dp
+private val BlockSpacing = 12.dp
 
 @ExperimentalMaterial3Api
 @Composable
@@ -109,7 +110,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
     Scaffold(
         topBar = {
             if (!fullscreen.value && !p.toolbarHidden) {
-                TopAppBar(
+                AdaptiveTopAppBar(
                     title = { Text(strings.themeSettings) },
                     navigationIcon = {
                         IconButton(onClick = actions.onBack) {
@@ -126,7 +127,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
     ) { padding ->
         val contentPadding = if (fullscreen.value) PaddingValues(0.dp) else padding
         LazyColumn(
-            modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.fillMaxSize().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(BlockSpacing)
         ) {
@@ -153,7 +154,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
             item {
                 TonalCard(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    shape = SpiceTheme.containerShape()
+                    shape = SpiceTheme.cornerShape(24.dp)
                 ) {
                     Column {
                         if (uiState.colorMode != ColorMode.LIGHT) {
@@ -196,35 +197,6 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
 
-                        ExposedDropdownMenuBox(expanded = specExpanded, onExpandedChange = { specExpanded = it }) {
-                            ListItem(
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                                headlineContent = { Text(strings.colorSpec) },
-                                supportingContent = {
-                                    Text(if (uiState.colorSpecVersion == ColorSpec.SpecVersion.SPEC_2025) strings.spec2025 else strings.spec2021)
-                                },
-                                leadingContent = { Icon(Icons.Rounded.Science, null) },
-                                trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(specExpanded) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                            DropdownMenu(expanded = specExpanded, onDismissRequest = { specExpanded = false }) {
-                                listOf(strings.spec2021, strings.spec2025).forEachIndexed { i, label ->
-                                    DropdownMenuItem(text = { Text(label) }, onClick = {
-                                        actions.onSetColorSpecVersion(if (i == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021)
-                                        specExpanded = false
-                                    })
-                                }
-                            }
-                        }
-
-                        ListItem(
-                            headlineContent = { Text(strings.m3e) },
-                            supportingContent = { Text(strings.m3eSummary) },
-                            leadingContent = { Icon(Icons.Rounded.AutoAwesome, null) },
-                            trailingContent = { Switch(uiState.enableSmoothCorner, actions.onSetEnableSmoothCorner) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-
                         ExposedDropdownMenuBox(expanded = navExpanded, onExpandedChange = { navExpanded = it }) {
                             ListItem(
                                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -241,12 +213,21 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             }
                         }
                     }
+                    if (uiState.navLayoutMode != NavLayoutMode.BottomBar) {
+                        ListItem(
+                            headlineContent = { Text(strings.sidebarLabels) },
+                            supportingContent = { Text(strings.sidebarLabelsSummary) },
+                            leadingContent = { Icon(Icons.Rounded.ViewSidebar, null) },
+                            trailingContent = { Switch(ThemePreferences.sidebarExpanded, { ThemePreferences.updateSidebarExpanded(it) }) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                    }
                 }
             }
 
             // ── Scale ────────────────────────────────────────────────────────
             item {
-                TonalCard(modifier = Modifier.padding(horizontal = 16.dp), shape = SpiceTheme.containerShape()) {
+                TonalCard(modifier = Modifier.padding(horizontal = 16.dp), shape = SpiceTheme.cornerShape(24.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         ListItem(
                             headlineContent = { Text(strings.pageScale) },
@@ -299,6 +280,7 @@ private fun M3ModeChip(icon: ImageVector, selected: Boolean, modifier: Modifier 
 
 @Composable
 private fun ToggleCardMaterial(title: String, checked: Boolean, onToggle: (Boolean) -> Unit) {
+    val strings = LocalAppStrings.current
     TonalCard(
         modifier = Modifier.fillMaxWidth(),
         shape = SpiceTheme.cornerShape(24.dp),
@@ -306,7 +288,7 @@ private fun ToggleCardMaterial(title: String, checked: Boolean, onToggle: (Boole
     ) {
         ListItem(
             headlineContent = { Text(title) },
-            supportingContent = { Text(if (checked) "On" else "Off") },
+            supportingContent = { Text(if (checked) strings.on else strings.off) },
             trailingContent = { Switch(checked = checked, onCheckedChange = onToggle) },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
         )

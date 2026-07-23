@@ -15,6 +15,7 @@ import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.platform.maybeVibrate
@@ -29,6 +30,11 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -40,15 +46,22 @@ fun SettingsPagerMiuix(
     actions: SettingsScreenActions,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val enableBlur = LocalEnableBlur.current
+    val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     val strings = LocalAppStrings.current
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = strings.settings,
-                actions = {},
-                scrollBehavior = scrollBehavior,
-            )
+            BlurredBar(backdrop, blurActive) {
+                TopAppBar(
+                    title = strings.settings,
+                    actions = {},
+                    color = barColor,
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         popupHost = {},
     ) { innerPadding ->
@@ -58,6 +71,7 @@ fun SettingsPagerMiuix(
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
                 .padding(horizontal = BlockSpacing),
             contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             overscrollEffect = null,
@@ -72,7 +86,7 @@ fun SettingsPagerMiuix(
                     OverlayDropdownPreference(
                         title = strings.language,
                         summary = if (langEnabled) uiState.language.displayName
-                                  else "${uiState.language.displayName} · Set via system settings",
+                                  else "${uiState.language.displayName} · ${strings.systemLocaleOverriddenHint}",
                         items = AppLanguage.entries.map { it.displayName },
                         selectedIndex = uiState.language.ordinal,
                         onSelectedIndexChange = {
@@ -100,7 +114,7 @@ fun SettingsPagerMiuix(
                     OverlayDropdownPreference(
                         title = strings.uiStyle,
                         summary = strings.uiStyleSummary,
-                        items = listOf("Miuix", "Material"),
+                        items = listOf(strings.styleMiuix, strings.styleMaterial),
                         selectedIndex = if (uiState.uiMode == UiMode.Material) 1 else 0,
                         onSelectedIndexChange = {
                             maybeVibrate(15)

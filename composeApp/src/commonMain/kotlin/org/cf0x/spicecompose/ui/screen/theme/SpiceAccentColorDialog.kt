@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.ui.component.ColorPickerWheel
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.rememberSystemAccentColor
 
 /**
@@ -22,12 +23,13 @@ fun SpiceAccentColorDialog(
     onConfirm: (Color) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val strings = LocalAppStrings.current
     val systemAccent = rememberSystemAccentColor()
     var pickedColor by remember { mutableStateOf(current) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("强调色") },
+        title = { Text(strings.accentColor) },
         text = {
             Column(
                 modifier = Modifier
@@ -52,21 +54,21 @@ fun SpiceAccentColorDialog(
                     onClick = { onConfirm(systemAccent) },
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("系统取色", maxLines = 1)
+                    Text(strings.systemColor, maxLines = 1)
                 }
                 // 取消
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("取消")
+                    Text(strings.cancel)
                 }
                 // 确认
                 Button(
                     onClick = { onConfirm(pickedColor) },
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("确认")
+                    Text(strings.ok)
                 }
             }
         },

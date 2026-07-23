@@ -24,6 +24,7 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import top.yukonga.miuix.kmp.basic.Card
@@ -41,7 +42,6 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import androidx.compose.material3.Icon as M3Icon
 import androidx.compose.material3.IconButton as M3IconButton
 import androidx.compose.material3.Scaffold as M3Scaffold
-import androidx.compose.material3.TopAppBar as M3TopAppBar
 
 data class ControllerFaqEntry(
     val code: String,
@@ -166,11 +166,11 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
         M3Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
-                    M3TopAppBar(
+                    AdaptiveTopAppBar(
                         title = { M3Text(strings.controllerFaq) },
                         navigationIcon = {
                             M3IconButton(onClick = onBack) {
-                                M3Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                                M3Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = strings.backDesc)
                             }
                         },
                         actions = { FullscreenAction() },
@@ -180,7 +180,7 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
         ) { innerPadding ->
             val pad = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(pad),
+                modifier = Modifier.fillMaxSize().padding(pad).padding(horizontal = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 item { Spacer(Modifier.height(8.dp)) }

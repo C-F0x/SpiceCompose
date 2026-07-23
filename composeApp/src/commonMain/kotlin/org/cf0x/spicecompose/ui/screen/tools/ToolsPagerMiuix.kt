@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.ScreenshotMonitor
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.platform.maybeVibrate
@@ -29,6 +30,12 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import org.cf0x.spicecompose.ui.theme.LocalDevMode
@@ -38,15 +45,22 @@ fun ToolsPagerMiuix(
     actions: ToolsScreenActions,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val enableBlur = LocalEnableBlur.current
+    val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     val strings = LocalAppStrings.current
     val devMode = LocalDevMode.current
     Scaffold(
         topBar = {
+            BlurredBar(backdrop, blurActive) {
                 TopAppBar(
                     title = strings.tools,
                     actions = {},
+                    color = barColor,
                     scrollBehavior = scrollBehavior,
                 )
+            }
         },
     ) { innerPadding ->
         LazyColumn(
@@ -55,6 +69,7 @@ fun ToolsPagerMiuix(
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
                 .padding(horizontal = 12.dp),
             contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
         ) {
@@ -141,7 +156,7 @@ fun ToolsPagerMiuix(
                     modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                 ) {
                     ArrowPreference(
-                        title = strings.gameController,
+                        title = "${strings.gameController}${strings.betaSuffix}",
                         summary = strings.gameControllerSummary,
                         startAction = {
                             Icon(Icons.Rounded.Gamepad, null, Modifier.padding(end = 6.dp), tint = colorScheme.onBackground)

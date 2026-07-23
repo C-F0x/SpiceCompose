@@ -54,18 +54,17 @@ class ConnectionManager {
                 client = newClient
                 _status.value = ConnectionStatus.Connected
                 println("[SpiceCompose] connect OK ← ${server.host}:${server.port}")
-                _toastMessage.tryEmit("已连接")
                 startHeartbeat()
             } catch (e: Exception) {
                 _status.value = ConnectionStatus.Disconnected
                 val reason = when {
-                    e is TimeoutCancellationException -> "连接超时"
-                    e.message == "Connection refused" -> "连接被拒绝"
-                    else -> e.message ?: "未知错误"
+                    e is TimeoutCancellationException -> "connection_timeout"
+                    e.message == "Connection refused" -> "connection_refused"
+                    else -> e.message ?: "unknown_error"
                 }
                 println("[SpiceCompose] connect FAILED: $reason")
                 _error.value = reason
-                _toastMessage.tryEmit("已断开，${reason}")
+                _toastMessage.tryEmit(reason)
                 _currentServer.value = null
                 client?.close(); client = null
             }
@@ -80,7 +79,7 @@ class ConnectionManager {
                 try {
                     client?.request("info", "avs")
                 } catch (_: Exception) {
-                    heartbeatFailed("服务端死亡")
+                    heartbeatFailed("server_died")
                     return@launch
                 }
             }
@@ -95,7 +94,7 @@ class ConnectionManager {
             client = null
             _status.value = ConnectionStatus.Disconnected
             _currentServer.value = null
-            _toastMessage.tryEmit("已断开，${reason}")
+            _toastMessage.tryEmit("heartbeat: ${reason}")
         }
     }
 
@@ -107,7 +106,7 @@ class ConnectionManager {
             client = null
             _status.value = ConnectionStatus.Disconnected
             _currentServer.value = null
-            _toastMessage.tryEmit("已断开")
+            _toastMessage.tryEmit("disconnected")
         }
     }
 

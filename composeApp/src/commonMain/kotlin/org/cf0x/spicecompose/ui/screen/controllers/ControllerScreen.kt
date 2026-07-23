@@ -3,6 +3,7 @@ package org.cf0x.spicecompose.ui.screen.controllers
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +42,7 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.screen.controllers.control.bbc.BbcController
 import org.cf0x.spicecompose.ui.screen.controllers.control.ddr.DdrController
@@ -170,11 +171,11 @@ fun ControllerScreen(
         Scaffold(
             topBar = {
                 if (!fullscreen.value && !p.toolbarHidden) {
-                    TopAppBar(
+                    AdaptiveTopAppBar(
                         title = { Text(strings.gameController) },
                         navigationIcon = {
                             IconButton(onClick = onBack) {
-                                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = strings.backDesc)
                             }
                         },
                         actions = {
@@ -199,14 +200,18 @@ private fun CycleSubViewButton(
     activeController: String?,
     onClick: () -> Unit,
 ) {
+    val strings = LocalAppStrings.current
     if (activeController != null) {
         if (LocalUiMode.current == UiMode.Miuix) {
-            top.yukonga.miuix.kmp.basic.IconButton(onClick = onClick) {
-                top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Autorenew, "Cycle view")
+            top.yukonga.miuix.kmp.basic.IconButton(
+                onClick = onClick,
+                modifier = Modifier.size(35.dp)
+            ) {
+                top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.Autorenew, strings.cycleViewDesc)
             }
         } else {
             IconButton(onClick = onClick) {
-                Icon(Icons.Rounded.Autorenew, contentDescription = "Cycle view")
+                Icon(Icons.Rounded.Autorenew, contentDescription = strings.cycleViewDesc)
             }
         }
     }
@@ -221,14 +226,18 @@ private fun DebugOverrideButton(
     onSelect: (String?) -> Unit,
 ) {
     Box {
+        val strings = LocalAppStrings.current
         if (LocalUiMode.current == UiMode.Miuix) {
-            top.yukonga.miuix.kmp.basic.IconButton(onClick = { onExpandedChange(true) }) {
-                top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.BugReport, "Debug select")
+            top.yukonga.miuix.kmp.basic.IconButton(
+                onClick = { onExpandedChange(true) },
+                modifier = Modifier.size(35.dp)
+            ) {
+                top.yukonga.miuix.kmp.basic.Icon(Icons.Rounded.BugReport, strings.debugSelectDesc)
             }
             // MIUiX dropdown — use Material DropdownMenu as MIUiX doesn't have one
             DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
                 DropdownMenuItem(
-                    text = { Text("(Auto-detect)") },
+                    text = { Text(strings.autoDetect) },
                     onClick = { onSelect(null); onExpandedChange(false) },
                 )
                 allControllerNames.forEach { name ->
@@ -240,11 +249,11 @@ private fun DebugOverrideButton(
             }
         } else {
             IconButton(onClick = { onExpandedChange(true) }) {
-                Icon(Icons.Rounded.BugReport, contentDescription = "Debug select")
+                Icon(Icons.Rounded.BugReport, contentDescription = strings.debugSelectDesc)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
                 DropdownMenuItem(
-                    text = { Text("(Auto-detect)") },
+                    text = { Text(strings.autoDetect) },
                     onClick = { onSelect(null); onExpandedChange(false) },
                 )
                 allControllerNames.forEach { name ->
@@ -297,7 +306,7 @@ private fun ControllerBody(
                 }
             }
             gameModel != null -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
-                Text("Game: $gameModel", style = MaterialTheme.typography.titleMedium)
+                Text(strings.gameLabel.format(gameModel), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 Text(strings.noControllerView, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

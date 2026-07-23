@@ -27,7 +27,9 @@ import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.TonalCard
+import org.cf0x.spicecompose.ui.component.WideContentBox
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
 import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
 
@@ -51,27 +53,27 @@ fun StatusHomeMaterial(
 
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            AdaptiveTopAppBar(
                 title = { Text(strings.status) },
                 scrollBehavior = scrollBehavior
             )
         }
     ) { innerPadding ->
-        LazyColumn(
+        WideContentBox { LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = innerPadding.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { Spacer(Modifier.height(8.dp)) }
+            item { Spacer(Modifier.height(12.dp)) }
             
             // Status Card (Container) - Clicking this toggles/connects
             item {
                 TonalCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = SpiceTheme.cornerShape(28.dp),
+                    shape = SpiceTheme.cornerShape(24.dp),
                     containerColor = when {
                         isConnected -> MaterialTheme.colorScheme.primaryContainer
                         isConnecting -> MaterialTheme.colorScheme.secondaryContainer
@@ -195,15 +197,16 @@ fun StatusHomeMaterial(
                 }
             }
             
-            item { Spacer(Modifier.height(24.dp)) }
+            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
+        }
         }
     }
 }
 
 @Composable
 fun InfoItemMaterial(title: String, content: String) {
-    TonalCard(shape = SpiceTheme.cornerShape(20.dp)) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+    TonalCard(shape = SpiceTheme.cornerShape(24.dp)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(text = title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             Text(
                 text = content,
@@ -219,9 +222,13 @@ fun MemoryStackedMaterial(title: String, memory: Map<String, Long>, isConnected:
     val gameUsed = if (isConnected) (memory["mem_used"] ?: 0L) else 0L
     val totalUsed = if (isConnected) (memory["mem_total_used"] ?: 1L) else 0L
     val total = if (isConnected) (memory["mem_total"] ?: 1L) else 1L
+    val vmemUsed = if (isConnected) (memory["vmem_used"] ?: 0L) else 0L
+    val vmemTotalUsed = if (isConnected) (memory["vmem_total_used"] ?: 0L) else 0L
+    val vmemTotal = if (isConnected) (memory["vmem_total"] ?: 0L) else 0L
     
-    TonalCard(shape = SpiceTheme.cornerShape(20.dp)) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+    TonalCard(shape = SpiceTheme.cornerShape(24.dp)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            // ── Physical Memory ──
             Text(text = title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(12.dp))
             Box(Modifier.fillMaxWidth().height(12.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)) {
@@ -230,6 +237,18 @@ fun MemoryStackedMaterial(title: String, memory: Map<String, Long>, isConnected:
             }
             Spacer(Modifier.height(8.dp))
             Text("${gameUsed / 1024 / 1024}MB / ${totalUsed / 1024 / 1024}MB / ${total / 1024 / 1024}MB", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+            // ── Virtual Memory ──
+            if (vmemTotal > 0) {
+                Spacer(Modifier.height(12.dp))
+                Text(text = "Virtual", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth().height(12.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                    Box(Modifier.fillMaxWidth(if (vmemTotal > 0) vmemTotalUsed.toFloat() / vmemTotal else 0f).fillMaxHeight().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)))
+                    Box(Modifier.fillMaxWidth(if (vmemTotal > 0) vmemUsed.toFloat() / vmemTotal else 0f).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("${vmemUsed / 1024 / 1024}MB / ${vmemTotalUsed / 1024 / 1024}MB / ${vmemTotal / 1024 / 1024}MB", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

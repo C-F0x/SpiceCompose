@@ -35,6 +35,8 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+
 private enum class DragZone { NONE, RING, SQUARE }
 
 @Composable
@@ -43,6 +45,8 @@ fun ColorPickerWheel(
     onColorChanged: (Color) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalAppStrings.current
+
     // Convert initial color to HSV
     val initHsv = remember(initialColor) { colorToHsv(initialColor) }
 
@@ -212,11 +216,11 @@ fun ColorPickerWheel(
                     hexInput = if (clean.startsWith("#")) clean.take(7)
                     else "#${clean.take(6)}"
                 },
-                label          = { Text("Hex") },
-                placeholder    = { Text("#6750A4") },
+                label          = { Text(strings.hexLabel) },
+                placeholder    = { Text(strings.hexPlaceholder) },
                 singleLine     = true,
                 isError        = hexError,
-                supportingText = if (hexError) {{ Text("Invalid hex, format: #RRGGBB") }} else null,
+                supportingText = if (hexError) {{ Text(strings.invalidHex) }} else null,
                 textStyle      = MaterialTheme.typography.bodyLarge.copy(
                     fontFamily = FontFamily.Monospace
                 ),

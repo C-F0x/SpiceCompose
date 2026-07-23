@@ -25,7 +25,6 @@ fun CustomizeScreen(
     floatingBottomBar: Boolean,      onFloatingBottomBarChange: (Boolean) -> Unit,
     floatingBottomBarBlur: Boolean,  onFloatingBottomBarBlurChange: (Boolean) -> Unit,
     enableBlur: Boolean,             onEnableBlurChange: (Boolean) -> Unit,
-    enableSmoothCorner: Boolean,     onEnableSmoothCornerChange: (Boolean) -> Unit,
     onBack: () -> Unit,
 ) {
     val uiMode = LocalUiMode.current
@@ -37,7 +36,7 @@ fun CustomizeScreen(
         keyColor = effectiveKeyColor, paletteStyle = paletteStyle,
         colorSpecVersion = colorSpecVersion, navLayoutMode = navLayoutMode, pageScale = pageScale,
         floatingBottomBar = floatingBottomBar, floatingBottomBarBlur = floatingBottomBarBlur,
-        enableBlur = enableBlur, enableSmoothCorner = enableSmoothCorner,
+        enableBlur = enableBlur,
     )
     val actions = CustomizeScreenActions(
         onBack = onBack, onSetColorMode = onColorModeChange, 
@@ -47,7 +46,7 @@ fun CustomizeScreen(
         onSetNavLayoutMode = onNavLayoutModeChange, onSetPageScale = onPageScaleChange,
         onSetFloatingBottomBar = onFloatingBottomBarChange,
         onSetFloatingBottomBarBlur = onFloatingBottomBarBlurChange,
-        onSetEnableBlur = onEnableBlurChange, onSetEnableSmoothCorner = onEnableSmoothCornerChange,
+        onSetEnableBlur = onEnableBlurChange,
     )
     when (LocalUiMode.current) {
         UiMode.Miuix    -> CustomizeScreenMiuix(uiState, actions)

@@ -1,12 +1,12 @@
 package org.cf0x.spicecompose.ui.screen.controllers.diy
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
@@ -33,8 +33,8 @@ object DiyIconRegistry {
         "ArrowDownward" to Icons.Rounded.ArrowDownward,
         "KeyboardArrowUp" to Icons.Rounded.KeyboardArrowUp,
         "KeyboardArrowDown" to Icons.Rounded.KeyboardArrowDown,
-        "KeyboardArrowLeft" to Icons.Rounded.KeyboardArrowLeft,
-        "KeyboardArrowRight" to Icons.Rounded.KeyboardArrowRight,
+        "KeyboardArrowLeft" to Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+        "KeyboardArrowRight" to Icons.AutoMirrored.Rounded.KeyboardArrowRight,
         "Refresh" to Icons.Rounded.Refresh,
         "Search" to Icons.Rounded.Search,
         "Star" to Icons.Rounded.Star,

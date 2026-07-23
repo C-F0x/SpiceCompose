@@ -111,10 +111,6 @@
     <string name="liquid_glass_summary">Frosted glass effect on the floating bar</string>
     <string name="enable_blur">Blur</string>
     <string name="enable_blur_summary">Blur effect on top and bottom bars</string>
-    <string name="smooth_corner">Smooth Corners</string>
-    <string name="smooth_corner_summary">Super-ellipse corner shape</string>
-    <string name="m3e">Material 3 Expressive</string>
-    <string name="m3e_summary">Apply M3 Expressive design styles</string>
     <string name="predictive_back">Predictive Back</string>
     <string name="predictive_back_summary">Enable predictive back gesture support</string>
     <string name="github">GitHub</string>
@@ -202,10 +198,56 @@
     <string name="cabinet_utility">Cabinet Utility</string>
     <string name="coin_amount_hint">1–16</string>
     <string name="coin_insert">Insert</string>
+    <string name="coin_set">Set</string>
     <string name="nfc_label">NFC</string>
     <string name="no_nfc_support">Device Doesn't Support NFC</string>
     <string name="key_delete">Del</string>
     <string name="card_swipe">Swipe Card</string>
     <string name="no_cards_exist">No Card Exist, Press + To Add</string>
     <string name="kill_game">Kill Game</string>
+
+    <!-- Migrated string resources -->
+    <string name="accent_color">Accent Color</string>
+    <string name="auto_detect">(Auto-detect)</string>
+    <string name="back_desc">Back</string>
+    <string name="cycle_view_desc">Cycle view</string>
+    <string name="debug_select_desc">Debug select</string>
+    <string name="game_label">Game: %s</string>
+    <string name="hex_label">Hex</string>
+    <string name="hex_placeholder">#6750A4</string>
+    <string name="invalid_hex">Invalid hex, format: #RRGGBB</string>
+    <string name="off">Off</string>
+    <string name="on">On</string>
+    <string name="system_color">System Color</string>
+
+    <!-- Connection error messages -->
+    <string name="connection_timeout">Connection timeout</string>
+    <string name="connection_refused">Connection refused</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="server_died">Server disconnected</string>
+
+    <!-- DIY Editor toolbar -->
+    <string name="grid_and_guides">Grid &amp; Guides</string>
+    <string name="show_grid">Show grid</string>
+    <string name="snap">Snap</string>
+    <string name="grid_lines">Grid lines</string>
+    <string name="guide_points">Guide points</string>
+    <string name="h_line">H Line</string>
+    <string name="v_line">V Line</string>
+    <string name="point">Point</string>
+    <string name="x_step_format">X step: %1$d%%</string>
+    <string name="y_step_format">Y step: %1$d%%</string>
+
+    <!-- UI Style names -->
+    <string name="style_miuix">Miuix</string>
+    <string name="style_material">Material</string>
+
+    <!-- Version suffixes -->
+    <string name="beta_suffix">(BETA)</string>
+    <string name="classic_suffix">(C)</string>
+
+    <!-- System locale override -->
+    <string name="system_locale_overridden_hint">Set via system settings</string>
+    <string name="sidebar_labels">Sidebar Labels</string>
+    <string name="sidebar_labels_summary">Show navigation labels in sidebar</string>
 </resources>

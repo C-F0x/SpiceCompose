@@ -6,13 +6,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -25,13 +26,19 @@ import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -86,25 +93,34 @@ fun PatchesScreen(onBack: () -> Unit) {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
+            val scrollBehavior = MiuixScrollBehavior()
+            val enableBlur = LocalEnableBlur.current
+            val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+            val blurActive = backdrop != null
+            val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
             top.yukonga.miuix.kmp.basic.Scaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
-                        SmallTopAppBar(
-                            title = strings.patches,
-                            navigationIcon = {
-                                IconButton(onClick = onBack) {
-                                    top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
-                                }
-                            },
-                            actions = {
-                                FullscreenAction()
-                            }
-                        )
+                        BlurredBar(backdrop, blurActive) {
+                            SmallTopAppBar(
+                                title = strings.patches,
+                                navigationIcon = {
+                                    IconButton(onClick = onBack) {
+                                        top.yukonga.miuix.kmp.basic.Icon(MiuixIcons.Back, null)
+                                    }
+                                },
+                                actions = {
+                                    FullscreenAction()
+                                },
+                                color = barColor,
+                                scrollBehavior = scrollBehavior
+                            )
+                        }
                     }
                 }
             ) { innerPadding ->
-                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-                Column(Modifier.fillMaxSize().padding(padding)) {
+                val topPadding = innerPadding.calculateTopPadding()
+                Column(Modifier.fillMaxSize().padding(top = topPadding)) {
                     Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.Center) {
                         tabs.forEachIndexed { index, title ->
                             top.yukonga.miuix.kmp.basic.TextButton(
@@ -123,38 +139,44 @@ fun PatchesScreen(onBack: () -> Unit) {
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(columns),
-                            modifier = Modifier.weight(1f).fillMaxWidth(),
-                            contentPadding = PaddingValues(4.dp)
+                            modifier = Modifier.weight(1f).fillMaxWidth().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection)
+                                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier),
+                            contentPadding = PaddingValues(top = topPadding)
                         ) {
+                            item { Spacer(Modifier.height(12.dp)) }
                             items(list) { patch ->
                                 PatchItemMiuix(patch, patchStates[patch.name] ?: PatchStatus.Unknown, onToggle)
                             }
+                            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                         }
                     }
                 }
             }
         }
         UiMode.Material -> {
+            @OptIn(ExperimentalMaterial3Api::class)
+            val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior()
             androidx.compose.material3.Scaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
                         @OptIn(ExperimentalMaterial3Api::class)
-                        androidx.compose.material3.TopAppBar(
+                        AdaptiveTopAppBar(
                             title = { androidx.compose.material3.Text(strings.patches) },
                             navigationIcon = {
                                 androidx.compose.material3.IconButton(onClick = onBack) {
-                                    androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                                    androidx.compose.material3.Icon(Icons.AutoMirrored.Outlined.ArrowBack, null)
                                 }
                             },
                             actions = {
                                 FullscreenAction()
-                            }
+                            },
+                            scrollBehavior = scrollBehavior
                         )
                     }
                 }
             ) { innerPadding ->
-                val padding = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
-                Column(Modifier.fillMaxSize().padding(padding)) {
+                val topPadding = innerPadding.calculateTopPadding()
+                Column(Modifier.fillMaxSize().padding(top = topPadding)) {
                     SecondaryTabRow(selectedTabIndex = selectedTab) {
                         tabs.forEachIndexed { index, title ->
                             Tab(selected = selectedTab == index, onClick = { selectedTab = index }, text = { androidx.compose.material3.Text(title) })
@@ -169,11 +191,14 @@ fun PatchesScreen(onBack: () -> Unit) {
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(columns),
-                            modifier = Modifier.weight(1f).fillMaxWidth()
+                            modifier = Modifier.weight(1f).fillMaxWidth().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection),
+                            contentPadding = PaddingValues(top = topPadding)
                         ) {
+                            item { Spacer(Modifier.height(12.dp)) }
                             items(list) { patch ->
                                 PatchItemMaterial(patch, patchStates[patch.name] ?: PatchStatus.Unknown, onToggle)
                             }
+                            item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                         }
                     }
                 }

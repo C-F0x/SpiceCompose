@@ -47,7 +47,6 @@ fun SettingsScreen(
     floatingBottomBar: Boolean,      onFloatingBottomBarChange: (Boolean) -> Unit,
     floatingBottomBarBlur: Boolean,  onFloatingBottomBarBlurChange: (Boolean) -> Unit,
     enableBlur: Boolean,             onEnableBlurChange: (Boolean) -> Unit,
-    enableSmoothCorner: Boolean,     onEnableSmoothCornerChange: (Boolean) -> Unit,
 ) {
     var route by rememberSaveable { mutableStateOf(ROUTE_MAIN) }
     val mainState = LocalMainPagerState.current
@@ -84,7 +83,6 @@ fun SettingsScreen(
             floatingBottomBar = floatingBottomBar, onFloatingBottomBarChange = onFloatingBottomBarChange,
             floatingBottomBarBlur = floatingBottomBarBlur, onFloatingBottomBarBlurChange = onFloatingBottomBarBlurChange,
             enableBlur = enableBlur,             onEnableBlurChange = onEnableBlurChange,
-            enableSmoothCorner = enableSmoothCorner, onEnableSmoothCornerChange = onEnableSmoothCornerChange,
             onBack = { route = ROUTE_MAIN },
         )
         ROUTE_ABOUT -> AboutScreen(onBack = { route = ROUTE_MAIN }, onOpenFaq = { route = ROUTE_FAQ })

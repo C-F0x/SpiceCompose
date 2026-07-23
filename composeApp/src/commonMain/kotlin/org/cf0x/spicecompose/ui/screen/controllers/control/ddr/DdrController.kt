@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,8 +54,8 @@ fun DdrController(connectionManager: ConnectionManager, subViewIndex: Int) {
                 val wgt = widgets[wi]
                 val icon = @Composable { when (gridPos) {
                     2 -> Icon(Icons.Rounded.KeyboardArrowUp, null, tint = ControllerColors.onSurface())
-                    4 -> Icon(Icons.Rounded.KeyboardArrowLeft, null, tint = ControllerColors.onSurface())
-                    6 -> Icon(Icons.Rounded.KeyboardArrowRight, null, tint = ControllerColors.onSurface())
+                    4 -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, null, tint = ControllerColors.onSurface())
+                    6 -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = ControllerColors.onSurface())
                     8 -> Icon(Icons.Rounded.KeyboardArrowDown, null, tint = ControllerColors.onSurface())
                     else -> Text("START", color = ControllerColors.onSurface(), fontSize = 9.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(2.dp))
                 } }

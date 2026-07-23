@@ -5,19 +5,23 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -32,17 +36,23 @@ import org.cf0x.spicecompose.platform.nfcAvailable
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
+import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
+import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.util.BlurredBar
+import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -75,6 +85,8 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     // ── Coin state ───────────────────────────────────────────────────────
     var coinBlocker by remember { mutableStateOf<Boolean?>(null) }
     var coinAmount by remember { mutableIntStateOf(p.coinDefaultAmount) }
+    var coinStock by remember { mutableIntStateOf(0) }
+    var coinSetMode by remember { mutableStateOf(false) }
     val selectedCard = remember(chosenCardId, cards) { if (chosenCardId == null) null else cards.find { it.id == chosenCardId } }
 
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
@@ -94,6 +106,7 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     LaunchedEffect(connection) {
         while (isActive) {
             coinBlocker = try { connection?.coinBlockerGet() } catch (_: Exception) { null }
+            coinStock = try { connection?.coinGet() ?: 0 } catch (_: Exception) { coinStock }
             delay(2000)
         }
     }
@@ -123,10 +136,11 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     fun CoinRowCard() {
         val statusText = when (coinBlocker) { true -> strings.coinBlocked; false -> strings.coinOpen; null -> strings.coinChecking }
         val color = when (coinBlocker) { true -> statusColors.warning; false -> statusColors.healthy; null -> statusColors.neutral }
+        val coinLabel = if (coinSetMode) strings.coinSet else strings.coinInsert
         Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
             Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                MiuixText(strings.coins, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(8.dp))
+                MiuixText("${strings.coins}: $coinStock", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.weight(1f))
                 // ── Stepper: - / NUM / + ──
                 MiuixIconButton(onClick = { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }) {
                     MiuixIcon(Icons.Rounded.Remove, null)
@@ -135,15 +149,28 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                 MiuixIconButton(onClick = { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }) {
                     MiuixIcon(Icons.Rounded.Add, null)
                 }
-                // ── Insert ──
+                // ── Insert / Set with long-press toggle ──
                 Spacer(Modifier.width(8.dp))
-                TextButton(text = strings.coinInsert, onClick = { scope.launch { connection?.coinInsert(coinAmount) } }, colors = top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary())
-                Spacer(Modifier.weight(1f))
-                // ── Blocker status ──
+                Card(
+                    modifier = Modifier.height(36.dp),
+                    onClick = {
+                        scope.launch {
+                            if (coinSetMode) connection?.coinSet(coinAmount)
+                            else connection?.coinInsert(coinAmount)
+                        }
+                    },
+                    onLongPress = { coinSetMode = !coinSetMode }
+                ) {
+                    Box(Modifier.fillMaxHeight().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+                        MiuixText(coinLabel, color = MiuixTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                // ── Status ──
                 Row(Modifier.background(MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     MiuixIcon(Icons.Rounded.Money, null, tint = color, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    MiuixText(statusText, fontSize = 13.sp, color = color)
+                    Spacer(Modifier.width(4.dp))
+                    MiuixText("${strings.status}: $statusText", fontSize = 13.sp, color = color)
                 }
             }
         }
@@ -214,9 +241,9 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                     MiuixText(strings.noCardsExist, fontSize = 14.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 } else {
                     cards.forEach { card ->
-                        PillMiuix(card.name, chosenCardId == card.id, true, {
-                            chosenCardId = if (chosenCardId == card.id) null else card.id
-                            if (chosenCardId != null) { scope.launch { onInsert(card.cardId) } }
+                        PillMiuix(card.name, false, true, {
+                            chosenCardId = card.id
+                            scope.launch { onInsert(card.cardId) }
                         }, { editingCard = card })
                     }
                 }
@@ -228,15 +255,22 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
             val scrollBehavior = MiuixScrollBehavior()
+            val enableBlur = LocalEnableBlur.current
+            val backdrop = rememberBlurBackdrop(enableBlur && LocalUiMode.current == UiMode.Miuix)
+            val blurActive = backdrop != null
+            val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
             MiuixScaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
-                        SmallTopAppBar(
-                            title = strings.cabinetUtility,
-                            navigationIcon = { MiuixIconButton(onClick = onBack) { MiuixIcon(MiuixIcons.Back, null) } },
-                            actions = { FullscreenAction() },
-                            scrollBehavior = scrollBehavior,
-                        )
+                        BlurredBar(backdrop, blurActive) {
+                            SmallTopAppBar(
+                                title = strings.cabinetUtility,
+                                navigationIcon = { MiuixIconButton(onClick = onBack) { MiuixIcon(MiuixIcons.Back, null) } },
+                                actions = { FullscreenAction() },
+                                color = barColor,
+                                scrollBehavior = scrollBehavior,
+                            )
+                        }
                     }
                 }
             ) { innerPadding ->
@@ -258,7 +292,8 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                     // ── Narrow: keypad first, then rest ─────────────────
                     LazyColumn(
                         modifier = Modifier.fillMaxHeight().scrollEndHaptic().overScrollVertical()
-                            .nestedScroll(scrollBehavior.nestedScrollConnection).padding(horizontal = 12.dp),
+                            .nestedScroll(scrollBehavior.nestedScrollConnection).padding(horizontal = 12.dp)
+                            .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier),
                         contentPadding = PaddingValues(top = topPadding),
                     ) {
                         item { Spacer(Modifier.height(12.dp)) }
@@ -272,14 +307,17 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
             }
         }
         UiMode.Material -> {
+            @OptIn(ExperimentalMaterial3Api::class)
+            val scrollBehavior = androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior()
             androidx.compose.material3.Scaffold(
                 topBar = {
                     if (!fullscreen.value && !p.toolbarHidden) {
                         @OptIn(ExperimentalMaterial3Api::class)
-                        androidx.compose.material3.TopAppBar(
+                        AdaptiveTopAppBar(
                             title = { androidx.compose.material3.Text(strings.cabinetUtility) },
-                            navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Rounded.ArrowBack, null) } },
-                            actions = { FullscreenAction() }
+                            navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) } },
+                            actions = { FullscreenAction() },
+                            scrollBehavior = scrollBehavior
                         )
                     }
                 }
@@ -287,25 +325,29 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                 val pad = if (fullscreen.value) PaddingValues(0.dp) else innerPadding
                 if (isLarge) {
                     Row(Modifier.fillMaxSize().padding(pad).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        KeypadCardMaterial(currentMode, modeLabel, strings.keyDelete, chosenCardId != null, strings.cardSwipe, onKeyClick, { currentMode = (currentMode + 1) % 2 }, { selectedCard?.let { scope.launch { onInsert(it.cardId) } } }, Modifier.weight(1f))
+                        KeypadCardMaterial(strings.keyDelete, onKeyClick, Modifier.weight(1f))
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                            CoinRowCardMaterial(coinBlocker, coinAmount, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { connection?.coinInsert(coinAmount) } })
+                            CoinRowCardMaterial(coinBlocker, coinAmount, coinStock, coinSetMode, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { if (coinSetMode) connection?.coinSet(coinAmount) else connection?.coinInsert(coinAmount) } }, { coinSetMode = !coinSetMode })
                             Spacer(Modifier.height(12.dp))
                             ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } })
                             Spacer(Modifier.height(24.dp))
-                            CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it; if (chosenCardId != null) { val card = cards.find { c -> c.id == chosenCardId }; card?.let { scope.launch { onInsert(it.cardId) } } } }, { editingCard = it }, modeLabel, { currentMode = (currentMode + 1) % 2 })
+                            CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, { currentMode = (currentMode + 1) % 2 })
                         }
                     }
                 } else {
-                    Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(16.dp)) {
-                        KeypadCardMaterial(currentMode, modeLabel, strings.keyDelete, chosenCardId != null, strings.cardSwipe, onKeyClick, { currentMode = (currentMode + 1) % 2 }, { selectedCard?.let { scope.launch { onInsert(it.cardId) } } })
-                        Spacer(Modifier.height(12.dp))
-                        CoinRowCardMaterial(coinBlocker, coinAmount, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { connection?.coinInsert(coinAmount) } })
-                        Spacer(Modifier.height(12.dp))
-                        ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } })
-                        Spacer(Modifier.height(24.dp))
-                        CardManagementBlockMaterial(strings, nfcAvailable, showAddDialog, { showAddDialog = true }, cards, chosenCardId, { chosenCardId = if (chosenCardId == it) null else it; if (chosenCardId != null) { val card = cards.find { c -> c.id == chosenCardId }; card?.let { scope.launch { onInsert(it.cardId) } } } }, { editingCard = it }, modeLabel, { currentMode = (currentMode + 1) % 2 })
-                        Spacer(Modifier.height(24.dp))
+                    val topPad = innerPadding.calculateTopPadding()
+                    LazyColumn(
+                        Modifier.fillMaxSize().horizontalCutoutPadding().nestedScroll(scrollBehavior.nestedScrollConnection).padding(horizontal = 16.dp),
+                        contentPadding = PaddingValues(top = topPad)
+                    ) {
+                        item { KeypadCardMaterial(strings.keyDelete, onKeyClick) }
+                        item { Spacer(Modifier.height(12.dp)) }
+                        item { CoinRowCardMaterial(coinBlocker, coinAmount, coinStock, coinSetMode, strings, statusColors, { if (coinAmount > 1) { coinAmount--; p.updateCoinDefaultAmount(coinAmount) } }, { if (coinAmount < 16) { coinAmount++; p.updateCoinDefaultAmount(coinAmount) } }, { scope.launch { if (coinSetMode) connection?.coinSet(coinAmount) else connection?.coinInsert(coinAmount) } }, { coinSetMode = !coinSetMode }) }
+                        item { Spacer(Modifier.height(12.dp)) }
+                        item { ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } }) }
+                        item { Spacer(Modifier.height(24.dp)) }
+                        item { CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, { currentMode = (currentMode + 1) % 2 }) }
+                        item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                     }
                 }
             }
@@ -316,30 +358,38 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
 // ── Material helper composables ────────────────────────────────────────
 
 @Composable
-private fun CoinRowCardMaterial(blocked: Boolean?, coinAmount: Int, strings: org.cf0x.spicecompose.ui.i18n.AppStrings, statusColors: org.cf0x.spicecompose.ui.theme.StatusColors, onDecrement: () -> Unit, onIncrement: () -> Unit, onInsert: () -> Unit) {
+private fun CoinRowCardMaterial(blocked: Boolean?, coinAmount: Int, coinStock: Int, coinSetMode: Boolean, strings: org.cf0x.spicecompose.ui.i18n.AppStrings, statusColors: org.cf0x.spicecompose.ui.theme.StatusColors, onDecrement: () -> Unit, onIncrement: () -> Unit, onCoinAction: () -> Unit, onToggleMode: () -> Unit) {
     val statusText = when (blocked) { true -> strings.coinBlocked; false -> strings.coinOpen; null -> strings.coinChecking }
     val color = when (blocked) { true -> statusColors.warning; false -> statusColors.healthy; null -> statusColors.neutral }
+    val coinLabel = if (coinSetMode) strings.coinSet else strings.coinInsert
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            androidx.compose.material3.Text(strings.coins, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(8.dp))
+            androidx.compose.material3.Text("${strings.coins}: $coinStock", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
             androidx.compose.material3.IconButton(onClick = onDecrement) { androidx.compose.material3.Icon(Icons.Rounded.Remove, null) }
             androidx.compose.material3.Text("$coinAmount", modifier = Modifier.width(36.dp), textAlign = TextAlign.Center)
             androidx.compose.material3.IconButton(onClick = onIncrement) { androidx.compose.material3.Icon(Icons.Rounded.Add, null) }
             Spacer(Modifier.width(8.dp))
-            androidx.compose.material3.TextButton(onClick = onInsert) { androidx.compose.material3.Text(strings.coinInsert) }
+            Surface(
+                modifier = Modifier.height(36.dp).combinedClickable(onClick = onCoinAction, onLongClick = onToggleMode),
+                shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Box(Modifier.fillMaxHeight().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.Text(coinLabel, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                }
+            }
             Spacer(Modifier.weight(1f))
             Row(Modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 androidx.compose.material3.Icon(Icons.Rounded.Money, null, tint = color, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                androidx.compose.material3.Text(statusText, fontSize = 13.sp, color = color)
+                Spacer(Modifier.width(4.dp))
+                androidx.compose.material3.Text("${strings.status}: $statusText", fontSize = 13.sp, color = color)
             }
         }
     }
 }
 
 @Composable
-private fun KeypadCardMaterial(currentMode: Int, modeLabel: String, keyDelete: String, hasSelection: Boolean, cardSwipeLabel: String, onKeyClick: (String) -> Unit, onModeToggle: () -> Unit, onSwipeCard: () -> Unit, modifier: Modifier = Modifier) {
+private fun KeypadCardMaterial(keyDelete: String, onKeyClick: (String) -> Unit, modifier: Modifier = Modifier) {
     val keys = listOf("7","8","9", "4","5","6", "1","2","3", "0","00",".")
     Card(modifier = modifier) {
         Column(Modifier.padding(16.dp).fillMaxWidth()) {
@@ -355,11 +405,6 @@ private fun KeypadCardMaterial(currentMode: Int, modeLabel: String, keyDelete: S
                             }
                         }
                     }
-                }
-                Spacer(Modifier.height(4.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = onModeToggle, modifier = Modifier.weight(1f)) { androidx.compose.material3.Text(modeLabel) }
-                    Button(onClick = onSwipeCard, modifier = Modifier.weight(1f), enabled = hasSelection) { androidx.compose.material3.Text(cardSwipeLabel) }
                 }
             }
         }
@@ -385,7 +430,7 @@ private fun ProcessCardMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppString
 }
 
 @Composable
-private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, nfcAvailable: Boolean, showAddDialog: Boolean, onAddClick: () -> Unit, cards: List<CardConfig>, chosenCardId: String?, onSelect: (String) -> Unit, onEdit: (CardConfig) -> Unit, modeLabel: String, onModeToggle: () -> Unit) {
+private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, cards: List<CardConfig>, onInsert: (String) -> Unit, onEdit: (CardConfig) -> Unit, onAddClick: () -> Unit, modeLabel: String, onModeToggle: () -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text(strings.cardManagement, style = MaterialTheme.typography.titleSmall)
@@ -398,7 +443,7 @@ private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.A
             if (cards.isEmpty()) {
                 androidx.compose.material3.Text(strings.noCardsExist, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            cards.forEach { card -> PillMaterial(card.name, chosenCardId == card.id, true, { onSelect(card.id) }, { onEdit(card) }) }
+            cards.forEach { card -> PillMaterial(card.name, false, true, { onInsert(card.cardId) }, { onEdit(card) }) }
         }
     }
 }
@@ -429,10 +474,16 @@ private fun KeyButtonMaterial(label: String, modifier: Modifier = Modifier, onCl
 private fun PillMiuix(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
     val bgColor = when { !enabled -> MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f); selected -> MiuixTheme.colorScheme.primary; else -> MiuixTheme.colorScheme.surfaceVariant }
     val txtColor = when { !enabled -> MiuixTheme.colorScheme.onSurface.copy(alpha = 0.3f); selected -> MiuixTheme.colorScheme.onPrimary; else -> MiuixTheme.colorScheme.onSurface }
-    Card(modifier = Modifier.height(36.dp), colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = bgColor), onClick = { if (enabled) onClick() }, onLongPress = { if (enabled) onLongClick() }) {
-        Box(Modifier.fillMaxHeight().padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
-            MiuixText(label, fontSize = 14.sp, color = txtColor)
-        }
+    Box(
+        modifier = Modifier
+            .height(36.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(bgColor, RoundedCornerShape(8.dp))
+            .combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        MiuixText(label, fontSize = 14.sp, color = txtColor)
     }
 }
 
@@ -440,7 +491,7 @@ private fun PillMiuix(label: String, selected: Boolean, enabled: Boolean, onClic
 private fun PillMaterial(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
     val bgColor = when { !enabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f); selected -> MaterialTheme.colorScheme.primary; else -> MaterialTheme.colorScheme.surfaceVariant }
     val txtColor = when { !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f); selected -> MaterialTheme.colorScheme.onPrimary; else -> MaterialTheme.colorScheme.onSurface }
-    Surface(modifier = Modifier.height(36.dp).combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick), shape = MaterialTheme.shapes.medium, color = bgColor) {
+    Surface(modifier = Modifier.height(36.dp).clip(MaterialTheme.shapes.medium).combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick), shape = MaterialTheme.shapes.medium, color = bgColor) {
         Box(Modifier.padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
             androidx.compose.material3.Text(label, fontSize = 14.sp, color = txtColor)
         }

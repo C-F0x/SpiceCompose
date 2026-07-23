@@ -1,16 +1,23 @@
 package org.cf0x.spicecompose.ui.i18n
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import org.jetbrains.compose.resources.stringResource
 import spicecompose.composeapp.generated.resources.Res
 import spicecompose.composeapp.generated.resources.*
 
+@Immutable
 data class AppStrings(
     val settings: String, val language: String, val appearance: String,
+    val accentColor: String,
+    val appName: String,
+    val autoDetect: String,
     val uiStyle: String, val uiStyleSummary: String,
     val themeSettings: String, val themeSettingsSummary: String,
-    val about: String, val ok: String, val cancel: String, val custom: String,
+    val about: String, val off: String, val ok: String, val on: String, val cancel: String, val custom: String,
+    val cycleViewDesc: String,
+    val debugSelectDesc: String,
     val utils: String, val subScreen: String, val subScreenSummary: String,
     val cabinetInfo: String, val cabinetInfoSummary: String,
     val patches: String, val patchesSummary: String,
@@ -29,9 +36,10 @@ data class AppStrings(
     val status: String, val discard: String, val save: String, val fullscreen: String,
     val connected: String, val disconnected: String, val connecting: String,
     val targetServer: String, val servers: String,
+    val backDesc: String,
     val bonjour: String, val cabinetSpec: String, val backendUrl: String,
     val spiceVersion: String, val spiceCompile: String, val systemTime: String,
-    val launcherArgs: String, val gameMemory: String, val systemMemory: String,
+    val launcherArgs: String, val gameMemory: String, val systemColor: String, val systemMemory: String,
     val deviceMemory: String, val memoryStacked: String,
     val cardName: String, val cardId: String, val publicId: String,
     val triggerId: String, val addCard: String, val editCard: String,
@@ -55,10 +63,10 @@ data class AppStrings(
     val enableBlur: String, val enableBlurSummary: String,
     val devMode: String, val devModeSummary: String,
     val connectHint: String, val disconnectHint: String,
-    val smoothCorner: String, val smoothCornerSummary: String,
-    val m3e: String, val m3eSummary: String,
     val predictiveBack: String, val predictiveBackSummary: String,
     val github: String, val version: String,
+    val hexLabel: String,
+    val hexPlaceholder: String,
     val sectionColor: String, val sectionLayout: String, val sectionEffects: String,
 
     // Tools page
@@ -66,6 +74,7 @@ data class AppStrings(
     val lcdInfo: String, val lcdInfoSummary: String,
     val screenResize: String, val screenResizeSummary: String,
     val gameController2: String, val gameController2Summary: String,
+    val gameLabel: String,
     val enableResize: String, val sceneLabel: String,
 
     // Coin screen
@@ -83,7 +92,7 @@ data class AppStrings(
     val preset: String, val patchEnabled: String, val patchDisabled: String,
 
     // Controller FAQ
-    val controllerFaq: String, val implemented: String, val notYetImplemented: String,
+    val controllerFaq: String, val implemented: String, val invalidHex: String, val notYetImplemented: String,
 
     // Misc
     val toggleFullscreen: String, val editServer: String,
@@ -102,7 +111,29 @@ data class AppStrings(
 
     // Cabinet Utility
     val cabinetUtility: String, val coinAmountHint: String, val coinInsert: String,
-    val nfcLabel: String, val noNfcSupport: String, val keyDelete: String, val cardSwipe: String, val noCardsExist: String, val killGame: String,
+    val coinSet: String, val nfcLabel: String, val noNfcSupport: String, val keyDelete: String, val cardSwipe: String, val noCardsExist: String, val killGame: String,
+
+    // Connection errors
+    val connectionTimeout: String, val connectionRefused: String,
+    val unknownError: String, val serverDied: String,
+
+    // DIY Editor toolbar
+    val gridAndGuides: String, val showGrid: String,
+    val snap: String, val gridLines: String, val guidePoints: String,
+    val hLine: String, val vLine: String, val point: String,
+    val xStepFormat: String, val yStepFormat: String,
+
+    // UI Style names
+    val styleMiuix: String, val styleMaterial: String,
+
+    // Version suffixes
+    val betaSuffix: String, val classicSuffix: String,
+
+    // System locale override hint
+    val systemLocaleOverriddenHint: String,
+
+    // Sidebar labels
+    val sidebarLabels: String, val sidebarLabelsSummary: String,
 )
 
 @Composable
@@ -110,14 +141,21 @@ fun appStrings() = AppStrings(
     settings = stringResource(Res.string.settings),
     language = stringResource(Res.string.language),
     appearance = stringResource(Res.string.appearance),
+    accentColor = stringResource(Res.string.accent_color),
+    appName = stringResource(Res.string.app_name),
+    autoDetect = stringResource(Res.string.auto_detect),
     uiStyle = stringResource(Res.string.ui_style),
     uiStyleSummary = stringResource(Res.string.ui_style_summary),
     themeSettings = stringResource(Res.string.theme_settings),
     themeSettingsSummary = stringResource(Res.string.theme_settings_summary),
     about = stringResource(Res.string.about),
+    off = stringResource(Res.string.off),
     ok = stringResource(Res.string.ok),
+    on = stringResource(Res.string.on),
     cancel = stringResource(Res.string.cancel),
     custom = stringResource(Res.string.custom),
+    cycleViewDesc = stringResource(Res.string.cycle_view_desc),
+    debugSelectDesc = stringResource(Res.string.debug_select_desc),
     utils = stringResource(Res.string.utils),
     subScreen = stringResource(Res.string.sub_screen),
     subScreenSummary = stringResource(Res.string.sub_screen_summary),
@@ -160,12 +198,14 @@ fun appStrings() = AppStrings(
     servers = stringResource(Res.string.servers),
     bonjour = stringResource(Res.string.bonjour),
     cabinetSpec = stringResource(Res.string.cabinet_spec),
+    backDesc = stringResource(Res.string.back_desc),
     backendUrl = stringResource(Res.string.backend_url),
     spiceVersion = stringResource(Res.string.spice_version),
     spiceCompile = stringResource(Res.string.spice_compile),
     systemTime = stringResource(Res.string.system_time),
     launcherArgs = stringResource(Res.string.launcher_args),
     gameMemory = stringResource(Res.string.game_memory),
+    systemColor = stringResource(Res.string.system_color),
     systemMemory = stringResource(Res.string.system_memory),
     deviceMemory = stringResource(Res.string.device_memory),
     memoryStacked = stringResource(Res.string.memory_stacked),
@@ -221,14 +261,12 @@ fun appStrings() = AppStrings(
     devModeSummary = stringResource(Res.string.dev_mode_summary),
     connectHint = stringResource(Res.string.connect_hint),
     disconnectHint = stringResource(Res.string.disconnect_hint),
-    smoothCorner = stringResource(Res.string.smooth_corner),
-    smoothCornerSummary = stringResource(Res.string.smooth_corner_summary),
-    m3e = stringResource(Res.string.m3e),
-    m3eSummary = stringResource(Res.string.m3e_summary),
     predictiveBack = stringResource(Res.string.predictive_back),
     predictiveBackSummary = stringResource(Res.string.predictive_back_summary),
     github = stringResource(Res.string.github),
     version = stringResource(Res.string.version),
+    hexLabel = stringResource(Res.string.hex_label),
+    hexPlaceholder = stringResource(Res.string.hex_placeholder),
     sectionColor = stringResource(Res.string.section_color),
     sectionLayout = stringResource(Res.string.section_layout),
     sectionEffects = stringResource(Res.string.section_effects),
@@ -242,6 +280,7 @@ fun appStrings() = AppStrings(
     screenResizeSummary = stringResource(Res.string.screen_resize_summary),
     gameController2 = stringResource(Res.string.game_controller_2),
     gameController2Summary = stringResource(Res.string.game_controller_2_summary),
+    gameLabel = stringResource(Res.string.game_label),
     enableResize = stringResource(Res.string.enable_resize),
     sceneLabel = stringResource(Res.string.scene_label),
 
@@ -272,6 +311,7 @@ fun appStrings() = AppStrings(
     // Controller FAQ
     controllerFaq = stringResource(Res.string.controller_faq),
     implemented = stringResource(Res.string.implemented),
+    invalidHex = stringResource(Res.string.invalid_hex),
     notYetImplemented = stringResource(Res.string.not_yet_implemented),
 
     // Misc
@@ -307,12 +347,46 @@ fun appStrings() = AppStrings(
     cabinetUtility = stringResource(Res.string.cabinet_utility),
     coinAmountHint = stringResource(Res.string.coin_amount_hint),
     coinInsert = stringResource(Res.string.coin_insert),
+    coinSet = stringResource(Res.string.coin_set),
     nfcLabel = stringResource(Res.string.nfc_label),
     noNfcSupport = stringResource(Res.string.no_nfc_support),
     keyDelete = stringResource(Res.string.key_delete),
     cardSwipe = stringResource(Res.string.card_swipe),
     noCardsExist = stringResource(Res.string.no_cards_exist),
     killGame = stringResource(Res.string.kill_game),
+
+    // Connection errors
+    connectionTimeout = stringResource(Res.string.connection_timeout),
+    connectionRefused = stringResource(Res.string.connection_refused),
+    unknownError = stringResource(Res.string.unknown_error),
+    serverDied = stringResource(Res.string.server_died),
+
+    // DIY Editor toolbar
+    gridAndGuides = stringResource(Res.string.grid_and_guides),
+    showGrid = stringResource(Res.string.show_grid),
+    snap = stringResource(Res.string.snap),
+    gridLines = stringResource(Res.string.grid_lines),
+    guidePoints = stringResource(Res.string.guide_points),
+    hLine = stringResource(Res.string.h_line),
+    vLine = stringResource(Res.string.v_line),
+    point = stringResource(Res.string.point),
+    xStepFormat = stringResource(Res.string.x_step_format),
+    yStepFormat = stringResource(Res.string.y_step_format),
+
+    // UI Style names
+    styleMiuix = stringResource(Res.string.style_miuix),
+    styleMaterial = stringResource(Res.string.style_material),
+
+    // Version suffixes
+    betaSuffix = stringResource(Res.string.beta_suffix),
+    classicSuffix = stringResource(Res.string.classic_suffix),
+
+    // System locale override hint
+    systemLocaleOverriddenHint = stringResource(Res.string.system_locale_overridden_hint),
+
+    // Sidebar labels
+    sidebarLabels = stringResource(Res.string.sidebar_labels),
+    sidebarLabelsSummary = stringResource(Res.string.sidebar_labels_summary),
 )
 
 val LocalAppStrings = staticCompositionLocalOf<AppStrings> { 

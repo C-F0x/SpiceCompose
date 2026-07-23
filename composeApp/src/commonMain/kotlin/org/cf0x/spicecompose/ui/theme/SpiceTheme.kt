@@ -1,6 +1,5 @@
 package org.cf0x.spicecompose.ui.theme
 
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -11,41 +10,40 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Global design token accessor.
+ *
+ * Material 3 mode → delegates to [MaterialTheme.shapes] tokens.
+ * Miuix mode → miuix components use squircle internally,
+ *              custom shapes use [RoundedCornerShape] via [cornerShape].
  */
 object SpiceTheme {
 
-    /** Corner radius tokens. */
+    /** Corner radius tokens (dp values, for reference / [cornerShape] fallback). */
     val radiusExtraLarge: Dp = 28.dp
     val radiusLarge:      Dp = 24.dp
     val radiusMedium:     Dp = 16.dp
     val radiusSmall:      Dp = 8.dp
 
     /**
-     * Returns the appropriate shape for Containers (Large cards, Dialogs).
-     * MD3: 28dp, M3E: Circle (Capsule)
+     * Container shape for large cards and dialogs.
+     * Material 3 → [MaterialTheme.shapes.extraLarge] (~28dp)
      */
     @Composable
-    fun containerShape(): Shape {
-        val isM3E = LocalEnableSmoothCorner.current
-        return if (isM3E) CircleShape else RoundedCornerShape(radiusExtraLarge)
-    }
+    fun containerShape(): Shape = MaterialTheme.shapes.extraLarge
 
     /**
-     * Returns the appropriate shape for Items (List items, Small buttons).
-     * MD3: 16dp, M3E: Circle (Capsule)
+     * Item shape for list items and small buttons.
+     * Material 3 → [MaterialTheme.shapes.medium] (~16dp)
      */
     @Composable
-    fun itemShape(): Shape {
-        val isM3E = LocalEnableSmoothCorner.current
-        return if (isM3E) CircleShape else RoundedCornerShape(radiusMedium)
-    }
+    fun itemShape(): Shape = MaterialTheme.shapes.medium
 
-    /** Legacy / Universal accessor */
+    /**
+     * Universal shape accessor — accepts an explicit radius.
+     * In Material 3 screens, prefer [containerShape] / [itemShape]
+     * so they resolve to Material shapes tokens.
+     */
     @Composable
-    fun cornerShape(radius: Dp = radiusExtraLarge): Shape {
-        val isM3E = LocalEnableSmoothCorner.current
-        return if (isM3E) CircleShape else RoundedCornerShape(radius)
-    }
+    fun cornerShape(radius: Dp = radiusExtraLarge): Shape = RoundedCornerShape(radius)
 
     val primary: Color @Composable get() = MaterialTheme.colorScheme.primary
     val onPrimary: Color @Composable get() = MaterialTheme.colorScheme.onPrimary

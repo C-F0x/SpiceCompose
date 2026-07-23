@@ -110,10 +110,6 @@
     <string name="liquid_glass_summary">對懸浮底欄應用作液態玻璃顯示效果</string>
     <string name="enable_blur">模糊</string>
     <string name="enable_blur_summary">啟用頂欄和底欄的模糊效果</string>
-    <string name="smooth_corner">平滑圆角</string>
-    <string name="smooth_corner_summary">使用超橢圓圓角形狀</string>
-    <string name="m3e">Material 3 Expressive</string>
-    <string name="m3e_summary">應用 Material 3 表現力設計風格</string>
     <string name="predictive_back">預測性返回手勢</string>
     <string name="predictive_back_summary">啟用對預測性返回手勢的支援</string>
     <string name="github">GitHub</string>
@@ -121,4 +117,137 @@
     <string name="section_color">顏色</string>
     <string name="section_layout">佈局</string>
     <string name="section_effects">效果</string>
+
+    <!-- 控制頁 -->
+    <string name="game_controller">虛擬控制器</string>
+    <string name="game_controller_summary">虛擬框體控制器</string>
+    <string name="lcd_info">LCD 資訊</string>
+    <string name="lcd_info_summary">LCD 觸控面板診斷</string>
+    <string name="screen_resize">畫面縮放</string>
+    <string name="screen_resize_summary">視窗佈局預設</string>
+    <string name="game_controller_2">虛擬控制器 2.0</string>
+    <string name="game_controller_2_summary">DIY 佈局編輯器與播放器</string>
+    <string name="enable_resize">啟用縮放</string>
+    <string name="scene_label">場景: %d</string>
+
+    <!-- 投幣頁 -->
+    <string name="insert_coin">插入 %d 枚幣</string>
+    <string name="coin_blocked">已封鎖</string>
+    <string name="coin_open">開放</string>
+    <string name="coin_checking">檢查中…</string>
+    <string name="coin_blocker_status">投幣器狀態: %s</string>
+
+    <!-- 機台資訊 -->
+    <string name="avs_info">AVS 資訊</string>
+    <string name="launcher_info">啟動器資訊</string>
+    <string name="memory_usage">記憶體佔用</string>
+
+    <!-- 空狀態 -->
+    <string name="no_analogs_available">無可用搖桿 :(</string>
+    <string name="no_lights_available">無可用燈光 :(</string>
+    <string name="no_buttons_available">無可用按鍵 :(</string>
+    <string name="no_lcd_data">無 LCD 資料</string>
+    <string name="no_patches_found">未找到修補程式</string>
+
+    <!-- 修補程式 -->
+    <string name="preset">預設</string>
+    <string name="patch_enabled">（已啟用）</string>
+    <string name="patch_disabled">（已停用）</string>
+
+    <!-- 控制器 FAQ -->
+    <string name="controller_faq">控制器 FAQ</string>
+    <string name="implemented">已實作</string>
+    <string name="not_yet_implemented">尚未實作</string>
+
+    <!-- 其他 -->
+    <string name="toggle_fullscreen">切換全螢幕</string>
+    <string name="edit_server">編輯伺服器</string>
+
+    <!-- Settings extras -->
+    <string name="game_control">遊戲控制</string>
+    <string name="restart">重新啟動</string>
+    <string name="shutdown">關機</string>
+    <string name="reboot">重新開機</string>
+    <string name="screenshot">螢幕截圖</string>
+    <string name="quality">品質</string>
+    <string name="divide">分割</string>
+    <string name="vibration">震動</string>
+    <string name="duration">持續時間</string>
+    <string name="test">測試</string>
+
+    <!-- Keypad extras -->
+    <string name="process">程序管理</string>
+    <string name="card_management">卡片管理</string>
+
+    <!-- 截圖 / 控制器 -->
+    <string name="screenshot_settings">截圖設定</string>
+    <string name="share">分享</string>
+    <string name="refresh">重新整理</string>
+    <string name="controller_coming_soon">控制器佈局即將推出</string>
+    <string name="sub_view_label">子視圖 #%d</string>
+    <string name="no_controller_view">此遊戲暫無控制器視圖 :(</string>
+    <string name="connect_first">請先連接到伺服器。</string>
+    <string name="diy_controller">DIY 控制器</string>
+    <string name="diy_controller_summary">自訂佈局編輯器與播放器</string>
+    <string name="dev_mode">開發者模式</string>
+    <string name="dev_mode_summary">顯示 修補程式管理、LCD 資訊、畫面縮放、DIY 控制器</string>
+    <string name="connect_hint">點擊以嘗試連線</string>
+    <string name="disconnect_hint">點擊以取消連線</string>
+
+    <!-- 框體工具 -->
+    <string name="cabinet_utility">框體工具</string>
+    <string name="coin_amount_hint">1–16</string>
+    <string name="coin_insert">投幣</string>
+    <string name="coin_set">設定</string>
+    <string name="nfc_label">NFC</string>
+    <string name="no_nfc_support">裝置不支援 NFC</string>
+    <string name="key_delete">刪除</string>
+    <string name="card_swipe">刷卡</string>
+    <string name="no_cards_exist">暫無卡片，按 + 新增</string>
+    <string name="kill_game">結束遊戲程序</string>
+
+    <!-- Migrated string resources -->
+    <string name="accent_color">強調色</string>
+    <string name="auto_detect">（自動偵測）</string>
+    <string name="back_desc">返回</string>
+    <string name="cycle_view_desc">循環檢視</string>
+    <string name="debug_select_desc">偵錯選擇</string>
+    <string name="game_label">遊戲: %s</string>
+    <string name="hex_label">Hex</string>
+    <string name="hex_placeholder">#6750A4</string>
+    <string name="invalid_hex">無效 Hex 格式，格式: #RRGGBB</string>
+    <string name="off">關閉</string>
+    <string name="on">開啟</string>
+    <string name="system_color">系統顏色</string>
+
+    <!-- 連線錯誤訊息 -->
+    <string name="connection_timeout">連線逾時</string>
+    <string name="connection_refused">連線被拒絕</string>
+    <string name="unknown_error">未知錯誤</string>
+    <string name="server_died">伺服器已斷開</string>
+
+    <!-- DIY 編輯器工具列 -->
+    <string name="grid_and_guides">網格與參考線</string>
+    <string name="show_grid">顯示網格</string>
+    <string name="snap">吸附</string>
+    <string name="grid_lines">網格線</string>
+    <string name="guide_points">參考點</string>
+    <string name="h_line">橫線</string>
+    <string name="v_line">豎線</string>
+    <string name="point">點</string>
+    <string name="x_step_format">X 步長: %1$d%%</string>
+    <string name="y_step_format">Y 步長: %1$d%%</string>
+
+    <!-- UI 風格名稱 -->
+    <string name="style_miuix">Miuix</string>
+    <string name="style_material">Material</string>
+
+    <!-- 版本後綴 -->
+    <string name="beta_suffix">（BETA）</string>
+    <string name="classic_suffix">（C）</string>
+
+    <!-- 系統語言覆蓋 -->
+    <string name="system_locale_overridden_hint">透過系統設定配置</string>
+    <string name="sidebar_labels">側邊欄標籤</string>
+    <string name="sidebar_labels_summary">在側邊欄中顯示導覽標籤</string>
 </resources>

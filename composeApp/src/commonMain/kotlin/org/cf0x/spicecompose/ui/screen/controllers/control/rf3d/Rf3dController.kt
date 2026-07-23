@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.ArrowDropUp
 import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
@@ -41,7 +41,8 @@ fun Rf3dController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val widgets = remember { rf3dButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
     val icons = mapOf("View" to Icons.Rounded.Refresh, "2D/3D" to Icons.Rounded.Search,
-        "Wheel Left" to Icons.Rounded.KeyboardArrowLeft, "Wheel Right" to Icons.Rounded.KeyboardArrowRight,
+        "Wheel Left" to Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+        "Wheel Right" to Icons.AutoMirrored.Rounded.KeyboardArrowRight,
         "Accelerate" to Icons.Rounded.ArrowUpward, "Brake" to Icons.Rounded.ArrowDownward,
         "Auto Lever Down" to Icons.Rounded.ArrowDropDown, "Auto Lever Up" to Icons.Rounded.ArrowDropUp)
 
