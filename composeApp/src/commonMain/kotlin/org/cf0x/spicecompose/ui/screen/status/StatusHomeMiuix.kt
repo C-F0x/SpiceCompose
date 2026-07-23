@@ -23,7 +23,7 @@ import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
-import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
+import org.cf0x.spicecompose.util.APP_VERSION
 import org.cf0x.spicecompose.ui.theme.LocalStatusColors
 import org.cf0x.spicecompose.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.basic.*

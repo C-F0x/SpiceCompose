@@ -31,7 +31,7 @@ import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.TonalCard
 import org.cf0x.spicecompose.ui.component.WideContentBox
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
-import org.cf0x.spicecompose.ui.screen.about.APP_VERSION
+import org.cf0x.spicecompose.util.APP_VERSION
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
