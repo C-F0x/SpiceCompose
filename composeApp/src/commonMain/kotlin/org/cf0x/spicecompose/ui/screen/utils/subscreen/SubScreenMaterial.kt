@@ -18,7 +18,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.platform.saveImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +34,7 @@ fun SubScreenMaterial(
     var latestCapture by remember { mutableStateOf<ByteArray?>(null) }
     var captureScreen by remember { mutableIntStateOf(1) }
     var availableScreens by remember { mutableStateOf<List<Int>>(emptyList()) }
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     val cm = LocalConnectionManager.current
     LaunchedEffect(cm.getClient()) {

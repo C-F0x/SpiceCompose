@@ -18,8 +18,7 @@ import org.cf0x.spicecompose.ui.navigation.Destination
 import org.cf0x.spicecompose.ui.navigation.LocalMainPagerState
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.screen.about.AboutScreen
-import org.cf0x.spicecompose.ui.screen.settings.ControllerFaqScreen
-import org.cf0x.spicecompose.ui.screen.theme.CustomizeScreen
+import org.cf0x.spicecompose.ui.screen.custom.CustomizeScreen
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import org.cf0x.spicecompose.ui.SpiceBackHandler

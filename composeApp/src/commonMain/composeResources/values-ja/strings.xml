@@ -158,6 +158,8 @@
     <string name="controller_faq">コントローラーFAQ</string>
     <string name="implemented">実装済み</string>
     <string name="not_yet_implemented">未実装</string>
+    <string name="wip">開発中</string>
+    <string name="none_yet">なし — 検証後にWIPから移動</string>
 
     <!-- その他 -->
     <string name="toggle_fullscreen">全画面切り替え</string>
@@ -187,8 +189,15 @@
     <string name="sub_view_label">サブビュー #%d</string>
     <string name="no_controller_view">このゲームにはまだコントローラービューがありません :(</string>
     <string name="connect_first">先にサーバーに接続してください。</string>
+    <string name="doesnt_support">このゲームはサポートされていません</string>
     <string name="diy_controller">DIYコントローラー</string>
     <string name="diy_controller_summary">カスタムレイアウトエディター＆プレイヤー</string>
+    <string name="send_mode">送信モード</string>
+    <string name="send_mode_summary">ボタン状態の変更をSpice2xに送信する方法</string>
+    <string name="send_mode_event">イベント駆動</string>
+    <string name="send_mode_crystal">クリスタル駆動</string>
+    <string name="send_frequency">送信周波数</string>
+    <string name="send_frequency_summary">クリスタル駆動時の更新レート（50–1000 Hz）</string>
     <string name="dev_mode">開発者モード</string>
     <string name="dev_mode_summary">パッチ、LCD情報、画面リサイズ、DIYコントローラーを表示</string>
     <string name="connect_hint">クリックして接続</string>

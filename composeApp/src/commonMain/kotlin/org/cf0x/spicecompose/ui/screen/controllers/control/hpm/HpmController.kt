@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ fun HpmController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { hpmButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
+    SideEffect { buttonControl.clearAllBounds() }
     val si = if (subViewIndex % 2 == 1) 5 else 0
     val colors = listOf(Color(0xFFD05050), Color(0xFF5050E0), Color(0xFFF0F050), Color(0xFF50B050))
 

@@ -159,6 +159,8 @@
     <string name="controller_faq">Controller FAQ</string>
     <string name="implemented">Implemented</string>
     <string name="not_yet_implemented">Not yet implemented</string>
+    <string name="wip">Work in Progress</string>
+    <string name="none_yet">None yet — move from WIP after testing</string>
 
     <!-- Misc -->
     <string name="toggle_fullscreen">Toggle Fullscreen</string>
@@ -187,8 +189,15 @@
     <string name="sub_view_label">Sub-view #%d</string>
     <string name="no_controller_view">This game does not yet have a controller view :(</string>
     <string name="connect_first">Please connect to a server first.</string>
+    <string name="doesnt_support">Does not support this game</string>
     <string name="diy_controller">DIY Controller</string>
     <string name="diy_controller_summary">Custom layout editor &amp; player</string>
+    <string name="send_mode">Send Mode</string>
+    <string name="send_mode_summary">How button state changes are dispatched to Spice2x</string>
+    <string name="send_mode_event">Event-driven</string>
+    <string name="send_mode_crystal">Crystal-driven</string>
+    <string name="send_frequency">Send Frequency</string>
+    <string name="send_frequency_summary">Max dispatch rate for event-driven; fixed rate for crystal-driven (50–1000 Hz)</string>
     <string name="dev_mode">Developer Mode</string>
     <string name="dev_mode_summary">Show Patches, LCD Info, Screen Resize, DIY Controller</string>
     <string name="connect_hint">Click to connect</string>

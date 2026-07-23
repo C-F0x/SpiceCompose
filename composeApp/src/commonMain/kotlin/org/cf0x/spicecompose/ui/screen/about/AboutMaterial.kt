@@ -49,7 +49,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 
 @ExperimentalMaterial3Api
 @Composable
@@ -62,7 +62,7 @@ fun AboutScreenMaterial(
     val listState     = rememberLazyListState()
     var logoHeightPx by remember { mutableIntStateOf(0) }
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     SpiceBackHandler(enabled = fullscreen.value) {
         fullscreen.value = false

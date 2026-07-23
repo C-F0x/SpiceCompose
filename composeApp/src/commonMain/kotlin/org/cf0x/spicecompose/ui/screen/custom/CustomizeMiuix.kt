@@ -1,8 +1,7 @@
-package org.cf0x.spicecompose.ui.screen.theme
+package org.cf0x.spicecompose.ui.screen.custom
 
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,9 +26,8 @@ import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Vibration
-import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WebAsset
 import androidx.compose.material.icons.rounded.ViewSidebar
@@ -48,12 +46,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamiccolor.ColorSpec
-import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
-import org.cf0x.spicecompose.platform.maybeVibrate
-import org.cf0x.spicecompose.platform.vibrationAvailable
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.AppStrings
@@ -61,7 +57,8 @@ import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.ColorMode
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
+import org.cf0x.spicecompose.ui.theme.SendMode
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -69,7 +66,6 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -98,7 +94,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
     val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     val strings        = LocalAppStrings.current
     val fullscreen     = LocalFullscreenMode.current
-    val p              = ThemePreferences
+    val p              = CustomPreferences
     val scope          = rememberCoroutineScope()
 
     SpiceBackHandler(enabled = fullscreen.value) {
@@ -107,6 +103,7 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
 
     var showAccentPicker by rememberSaveable { mutableStateOf(false) }
     var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+    var localFreq  by remember(p.sendFrequency)  { mutableFloatStateOf(p.sendFrequency.toFloat()) }
 
     if (showAccentPicker) {
         SpiceAccentColorDialog(
@@ -250,8 +247,8 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                         SwitchPreference(
                             title   = strings.sidebarLabels,
                             summary = strings.sidebarLabelsSummary,
-                            checked = ThemePreferences.sidebarExpanded,
-                            onCheckedChange = { ThemePreferences.updateSidebarExpanded(it) },
+                            checked = CustomPreferences.sidebarExpanded,
+                            onCheckedChange = { CustomPreferences.updateSidebarExpanded(it) },
                             startAction = { PrefIcon(Icons.Rounded.ViewSidebar) },
                         )
                     }
@@ -293,6 +290,79 @@ fun CustomizeScreenMiuix(uiState: CustomizeUiState, actions: CustomizeScreenActi
                             valueRange         = 0.6f..1.4f,
                             modifier           = Modifier.fillMaxWidth().padding(top = 4.dp),
                         )
+                    }
+                }
+            }
+
+            // ── Send Mode ─────────────────────────────────────────────────
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PrefIcon(Icons.Rounded.Send)
+                            Column(Modifier.weight(1f)) {
+                                Text(strings.sendMode,        style = textStyles.main, color = colorScheme.onBackground)
+                                Text(strings.sendModeSummary, style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val eventSelected = p.sendMode == SendMode.EventDriven
+                            val crystalSelected = p.sendMode == SendMode.CrystalDriven
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (eventSelected) colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
+                                    .clickable { p.updateSendMode(SendMode.EventDriven) }
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    strings.sendModeEvent,
+                                    style = textStyles.main,
+                                    color = if (eventSelected) colorScheme.primary else colorScheme.onSurfaceVariantSummary,
+                                    fontWeight = if (eventSelected) FontWeight.Bold else FontWeight.Normal,
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (crystalSelected) colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
+                                    .clickable { p.updateSendMode(SendMode.CrystalDriven) }
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    strings.sendModeCrystal,
+                                    style = textStyles.main,
+                                    color = if (crystalSelected) colorScheme.primary else colorScheme.onSurfaceVariantSummary,
+                                    fontWeight = if (crystalSelected) FontWeight.Bold else FontWeight.Normal,
+                                )
+                            }
+                        }
+                        if (p.sendMode == SendMode.CrystalDriven) {
+                            Spacer(Modifier.height(12.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(strings.sendFrequency,        style = textStyles.main, color = colorScheme.onBackground)
+                                    Text(strings.sendFrequencySummary, style = textStyles.main, color = colorScheme.onSurfaceVariantSummary)
+                                }
+                                Text(
+                                    "${localFreq.toInt()} Hz",
+                                    style = textStyles.main, color = colorScheme.onSurfaceVariantSummary
+                                )
+                            }
+                            Slider(
+                                value              = localFreq,
+                                onValueChange      = { localFreq = it },
+                                onValueChangeFinished = { p.updateSendFrequency(localFreq.toInt()) },
+                                valueRange         = 50f..1000f,
+                                steps              = 0,
+                                modifier           = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            )
+                        }
                     }
                 }
             }

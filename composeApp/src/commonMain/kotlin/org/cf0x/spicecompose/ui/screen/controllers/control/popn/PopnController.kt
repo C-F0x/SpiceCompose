@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ fun PopnController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { popnButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
+    SideEffect { buttonControl.clearAllBounds() }
     val viewNo = subViewIndex % 2; val round = viewNo == 0
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {

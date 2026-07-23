@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ fun XifController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { xifButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
+    SideEffect { buttonControl.clearAllBounds() }
 
     var faderL by remember { mutableFloatStateOf(0.5f) }
     var faderR by remember { mutableFloatStateOf(0.5f) }

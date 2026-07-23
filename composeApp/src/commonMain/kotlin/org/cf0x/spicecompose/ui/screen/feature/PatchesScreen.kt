@@ -31,7 +31,7 @@ import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalStatusColors
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
@@ -52,7 +52,7 @@ fun PatchesScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     SpiceBackHandler(enabled = fullscreen.value) {
         fullscreen.value = false

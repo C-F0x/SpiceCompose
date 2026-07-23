@@ -1,4 +1,4 @@
-package org.cf0x.spicecompose.ui.screen.theme
+package org.cf0x.spicecompose.ui.screen.custom
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -25,12 +24,13 @@ import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.ViewSidebar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -43,7 +43,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,11 +60,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamiccolor.ColorSpec
-import kotlinx.coroutines.launch
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
-import org.cf0x.spicecompose.platform.maybeVibrate
-import org.cf0x.spicecompose.platform.vibrationAvailable
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
@@ -76,7 +71,8 @@ import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.ColorMode
 import org.cf0x.spicecompose.ui.theme.SpiceTheme
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
+import org.cf0x.spicecompose.ui.theme.SendMode
 
 private val BlockSpacing = 12.dp
 
@@ -86,7 +82,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
     val strings        = LocalAppStrings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val fullscreen     = LocalFullscreenMode.current
-    val p              = ThemePreferences
+    val p              = CustomPreferences
     val scope          = rememberCoroutineScope()
 
     SpiceBackHandler(enabled = fullscreen.value) {
@@ -98,6 +94,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
     var paletteExpanded  by rememberSaveable { mutableStateOf(false) }
     var specExpanded     by rememberSaveable { mutableStateOf(false) }
     var localScale by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+    var localFreq  by remember(p.sendFrequency)  { mutableFloatStateOf(p.sendFrequency.toFloat()) }
 
     if (showAccentPicker) {
         SpiceAccentColorDialog(
@@ -218,7 +215,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             headlineContent = { Text(strings.sidebarLabels) },
                             supportingContent = { Text(strings.sidebarLabelsSummary) },
                             leadingContent = { Icon(Icons.Rounded.ViewSidebar, null) },
-                            trailingContent = { Switch(ThemePreferences.sidebarExpanded, { ThemePreferences.updateSidebarExpanded(it) }) },
+                            trailingContent = { Switch(CustomPreferences.sidebarExpanded, { CustomPreferences.updateSidebarExpanded(it) }) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }
@@ -242,6 +239,55 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
                             valueRange = 0.6f..1.4f,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                         )
+                    }
+                }
+            }
+
+            // ── Send Mode ─────────────────────────────────────────────────
+            item {
+                TonalCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    shape = SpiceTheme.cornerShape(24.dp)
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        ListItem(
+                            headlineContent = { Text(strings.sendMode) },
+                            supportingContent = { Text(strings.sendModeSummary) },
+                            leadingContent = { Icon(Icons.Rounded.Send, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterChip(
+                                selected = p.sendMode == SendMode.EventDriven,
+                                onClick = { p.updateSendMode(SendMode.EventDriven) },
+                                label = { Text(strings.sendModeEvent) },
+                                modifier = Modifier.weight(1f),
+                            )
+                            FilterChip(
+                                selected = p.sendMode == SendMode.CrystalDriven,
+                                onClick = { p.updateSendMode(SendMode.CrystalDriven) },
+                                label = { Text(strings.sendModeCrystal) },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (p.sendMode == SendMode.CrystalDriven) {
+                            Spacer(Modifier.height(12.dp))
+                            ListItem(
+                                headlineContent = { Text(strings.sendFrequency) },
+                                supportingContent = { Text(strings.sendFrequencySummary) },
+                                trailingContent = { Text("${localFreq.toInt()} Hz", color = MaterialTheme.colorScheme.primary) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                            Slider(
+                                value = localFreq,
+                                onValueChange = { localFreq = it },
+                                onValueChangeFinished = { p.updateSendFrequency(localFreq.toInt()) },
+                                valueRange = 50f..1000f,
+                                steps = 0,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +39,8 @@ private operator fun Dp.times(f: Float): Dp = Dp(value * f)
 fun DdrController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { ddrButtonNames.map { buttonControl.registerWidget(it) } }
-    LaunchedEffect(Unit) { buttonControl.init() }; val viewNo = subViewIndex % 4
+    LaunchedEffect(Unit) { buttonControl.init() }
+    SideEffect { buttonControl.clearAllBounds() }; val viewNo = subViewIndex % 4
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
         BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {

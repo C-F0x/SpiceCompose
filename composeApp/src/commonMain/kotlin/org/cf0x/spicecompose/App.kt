@@ -24,7 +24,7 @@ import org.cf0x.spicecompose.ui.theme.*
 @ExperimentalMaterial3Api
 @Composable
 fun App() {
-    val p       = ThemePreferences
+    val p       = CustomPreferences
 
     // Shared state: true when a sub-page (ThemeScreen / AboutScreen) is shown.
     // Passed down via CompositionLocal so MainScreen can disable pager swipe.

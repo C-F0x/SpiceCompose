@@ -37,7 +37,7 @@ import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.ui.util.BlurredBar
 import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
@@ -51,7 +51,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun ButtonsScreen(onBack: () -> Unit) {
     val strings = LocalAppStrings.current
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
     
     val connectionManager = LocalConnectionManager.current
     val connection = connectionManager.getClient()

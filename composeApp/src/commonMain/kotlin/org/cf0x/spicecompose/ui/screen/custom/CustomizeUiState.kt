@@ -1,4 +1,4 @@
-package org.cf0x.spicecompose.ui.screen.theme
+package org.cf0x.spicecompose.ui.screen.custom
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color

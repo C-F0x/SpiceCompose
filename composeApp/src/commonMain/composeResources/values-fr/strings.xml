@@ -158,6 +158,8 @@
     <string name="controller_faq">FAQ du contrôleur</string>
     <string name="implemented">Implémenté</string>
     <string name="not_yet_implemented">Pas encore implémenté</string>
+    <string name="wip">En cours</string>
+    <string name="none_yet">Aucun — passez de WIP après validation</string>
 
     <!-- Divers -->
     <string name="toggle_fullscreen">Basculer en plein écran</string>
@@ -187,8 +189,15 @@
     <string name="sub_view_label">Sous-vue #%d</string>
     <string name="no_controller_view">Ce jeu n\'a pas encore de vue contrôleur :(</string>
     <string name="connect_first">Veuillez d\'abord vous connecter à un serveur.</string>
+    <string name="doesnt_support">Ne prend pas en charge ce jeu</string>
     <string name="diy_controller">Contrôleur DIY</string>
     <string name="diy_controller_summary">Éditeur de disposition personnalisé &amp; lecteur</string>
+    <string name="send_mode">Mode d\'envoi</string>
+    <string name="send_mode_summary">Comment les changements d\'état sont envoyés à Spice2x</string>
+    <string name="send_mode_event">Par événement</string>
+    <string name="send_mode_crystal">Par oscillateur</string>
+    <string name="send_frequency">Fréquence d\'envoi</string>
+    <string name="send_frequency_summary">Fréquence en mode oscillateur (50–1000 Hz)</string>
     <string name="dev_mode">Mode développeur</string>
     <string name="dev_mode_summary">Afficher Patchs, Infos LCD, Redim., Contrôleur DIY</string>
     <string name="connect_hint">Cliquez pour connecter</string>

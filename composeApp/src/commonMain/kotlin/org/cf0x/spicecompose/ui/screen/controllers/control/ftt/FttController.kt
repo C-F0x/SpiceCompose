@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ fun FttController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { (1..4).map { "Pad $it" }.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
+    SideEffect { buttonControl.clearAllBounds() }
     val colors = listOf(Color(0xFFB0F0FF), Color(0xFFB0F0FF), Color(0xFFF050C0), Color(0xFFF050C0))
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {

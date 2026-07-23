@@ -5,25 +5,36 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.TimeSource
 import org.cf0x.spicecompose.network.ConnectionManager
 import org.cf0x.spicecompose.network.spiceapi.wrappers.ButtonState
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsRead
 import org.cf0x.spicecompose.network.spiceapi.wrappers.buttonsWrite
 import org.cf0x.spicecompose.platform.maybeVibrate
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
+import org.cf0x.spicecompose.ui.theme.SendMode
 
 /**
- * Multi-touch button tracking engine for virtual game controllers.
+ * Multi-touch button tracking engine — snapshot-based, dual-mode.
  *
- * Translates pointer (touch/mouse) events into SPICE button-write calls.
- * Mirrors the Flutter [ButtonControl] from SpiceCompanion.
+ * Collects all currently-pressed pointers every frame, hit-tests against
+ * every registered widget, diffs the result against the previous frame,
+ * and sends exactly one [buttonsWrite] call per tick when anything changes.
+ *
+ * Two dispatch modes, configured via [CustomPreferences.sendMode]:
+ * - **Event-driven**: [tick] fires from the [pointerInput] modifier when a
+ *   [PointerEvent] arrives, throttled to [CustomPreferences.sendFrequency] Hz.
+ * - **Crystal-driven**: [tick] fires from a fixed-frequency timer coroutine
+ *   at [CustomPreferences.sendFrequency] Hz (50–1000).
  *
  * Usage in a Composable:
  * ```
@@ -31,52 +42,59 @@ import org.cf0x.spicecompose.platform.maybeVibrate
  * LaunchedEffect(Unit) { buttonControl.init() }
  *
  * Box(buttonControl.pointerInputModifier().fillMaxSize()) {
- *     // Each button registers itself via registerWidget
  *     ControllerButton(
- *         name = "BT-A",
+ *         widget = buttonControl.registerWidget("BT-A"),
  *         buttonControl = buttonControl,
- *         modifier = Modifier.onGloballyPositioned { coords ->
- *             buttonControl.updateBounds("BT-A", coords)
- *         }
  *     )
  * }
  * ```
  */
 class ButtonControl(private val connectionManager: ConnectionManager) {
 
-    /** One entry per on-screen button; bounds updated every recomposition. */
+    /** One entry per on-screen button widget; [isDown] updated every tick. */
     data class ButtonWidget(
         val name: String,
         var bounds: Rect = Rect.Zero,
-        /** Pointer IDs (finger / stylus) currently touching this widget. */
-        val pointers: MutableSet<Long> = mutableSetOf()
-    ) {
-        val isDown: Boolean get() = pointers.isNotEmpty()
-    }
+        var isDown: Boolean = false,
+    )
 
     /** Registry of on-screen button widgets. */
     val widgets = mutableStateListOf<ButtonWidget>()
 
-    /** State list from the last [init] call (parsed [buttonsRead] response). */
+    /** Button list from the last [init] call (parsed [buttonsRead] response). */
     val buttons = mutableStateListOf<ButtonState>()
 
-    /** Incremented on every press / release so dependent UI can recompose. */
+    /** Incremented on every tick that changes state — drives UI recomposition. */
     val notifier = mutableIntStateOf(0)
 
-    // ── flush control ──────────────────────────────────────────────────────
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var buttonsFlushed = true
-    private var writeCounter = 0
+    // ── Internal ─────────────────────────────────────────────────────────
 
-    // ── public API ─────────────────────────────────────────────────────────
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var currentPointers: Map<Long, Offset> = emptyMap()
+    private var windowOffset = Offset.Zero
+    private val pendingChanges = mutableListOf<ButtonState>()
+    private var lastTickMark = TimeSource.Monotonic.markNow()
 
-    /** Read the current button list from the connected game (async). */
+    // ── Public API ────────────────────────────────────────────────────────
+
+    /** Read the current button list from the connected game and start the crystal ticker. */
     suspend fun init() {
         val client = connectionManager.getClient() ?: return
         val read = client.buttonsRead()
         read.forEach { it.active = false }
         buttons.clear()
         buttons.addAll(read)
+
+        // Crystal ticker — always runs; gated by mode check inside the loop.
+        scope.launch {
+            while (isActive) {
+                val freq = CustomPreferences.sendFrequency.coerceIn(50, 1000)
+                delay(1000L / freq)
+                if (CustomPreferences.sendMode == SendMode.CrystalDriven) {
+                    tick()
+                }
+            }
+        }
     }
 
     /** Register a new widget for the given button name (allows duplicates). */
@@ -91,133 +109,78 @@ class ButtonControl(private val connectionManager: ConnectionManager) {
         for (w in widgets) if (w.name == name) w.bounds = bounds
     }
 
-    // ── pointer input modifier ────────────────────────────────────────────
+    /** Clear all widget bounds — call on subview switch so stale widgets don't fire. */
+    fun clearAllBounds() {
+        for (w in widgets) w.bounds = Rect.Zero
+    }
 
-    private var windowOffset = Offset.Zero
+    // ── Pointer input modifier ────────────────────────────────────────────
 
-    /**
-     * Returns a [Modifier] that should be placed on the layout container
-     * that wraps all controller buttons. Uses window coordinates so that
-     * centering offsets (aspect-ratio boxes, etc.) don't break hit-testing.
-     */
     fun pointerInputModifier(): Modifier = Modifier
         .onGloballyPositioned { windowOffset = it.positionInWindow() }
         .pointerInput(Unit) {
             awaitPointerEventScope {
                 while (true) {
                     val event = awaitPointerEvent()
-                    for (change in event.changes) {
-                        val pointerId = change.id.value
-                        val position = windowOffset + change.position
-                        val type = event.type
+                    currentPointers = event.changes
+                        .filter { it.pressed }
+                        .associate { it.id.value to (windowOffset + it.position) }
 
-                        when (type) {
-                            PointerEventType.Press   -> processPointer(pointerId, position, down = true)
-                            PointerEventType.Release -> processPointer(pointerId, position, down = false)
-                            PointerEventType.Move    -> processPointerMove(pointerId, position)
-                            else -> {}
+                    if (CustomPreferences.sendMode == SendMode.EventDriven) {
+                        val elapsed = lastTickMark.elapsedNow()
+                        val intervalNs = 1_000_000_000L / CustomPreferences.sendFrequency.coerceIn(50, 1000)
+                        if (elapsed.inWholeNanoseconds >= intervalNs) {
+                            lastTickMark = TimeSource.Monotonic.markNow()
+                            scope.launch { tick() }
                         }
                     }
                 }
             }
         }
 
-    // ── pointer dispatch ──────────────────────────────────────────────────
+    // ── Tick ──────────────────────────────────────────────────────────────
 
-    private fun processPointer(pointerId: Long, position: Offset, down: Boolean) {
+    /** Diff snapshot against previous frame; flush changes when dirty. */
+    private suspend fun tick() {
+        pendingChanges.clear()
+        var dirty = false
+        var anyPress = false
+
         for (widget in widgets) {
             if (widget.bounds == Rect.Zero) continue
-
-            val hit = widget.bounds.contains(position)
-            var dirty = false
-
-            if (hit) {
-                if (down) {
-                    if (widget.pointers.add(pointerId)) dirty = true
-                } else {
-                    if (widget.pointers.remove(pointerId)) dirty = true
-                }
-            } else if (widget.pointers.contains(pointerId)) {
-                if (widget.pointers.remove(pointerId)) dirty = true
+            val hit = currentPointers.values.any { widget.bounds.contains(it) }
+            if (widget.isDown != hit) {
+                widget.isDown = hit
+                dirty = true
+                if (hit) anyPress = true
+                setState(widget.name, hit)
             }
+        }
 
-            if (dirty) {
-                notifier.intValue++
-                setState(widget.name, widget.isDown)
+        if (dirty) {
+            notifier.intValue++
+            if (anyPress) maybeVibrate(30)
+
+            val client = connectionManager.getClient()
+            if (client != null && pendingChanges.isNotEmpty()) {
+                try { client.buttonsWrite(pendingChanges.toList()) }
+                catch (_: Exception) { /* best-effort */ }
             }
         }
     }
 
-    private fun processPointerMove(pointerId: Long, position: Offset) {
-        for (widget in widgets) {
-            if (widget.bounds == Rect.Zero) continue
-
-            val hit = widget.bounds.contains(position)
-            val wasTracked = widget.pointers.contains(pointerId)
-            var dirty = false
-
-            if (hit && !wasTracked) {
-                if (widget.pointers.add(pointerId)) dirty = true
-                notifier.intValue++
-                setState(widget.name, widget.isDown)
-            } else if (!hit && wasTracked) {
-                if (widget.pointers.remove(pointerId)) dirty = true
-                notifier.intValue++
-                setState(widget.name, widget.isDown)
-            }
-        }
-    }
-
-    // ── state → network ───────────────────────────────────────────────────
+    // ── State helpers ─────────────────────────────────────────────────────
 
     private fun setState(name: String, pressed: Boolean) {
         val velocity = if (pressed) 1.0 else 0.0
-        if (setVelocity(name, velocity)) {
-            maybeVibrate(30)
-        }
-    }
-
-    private fun setVelocity(name: String, state: Double): Boolean {
-        var flush = false
         for (button in buttons) {
             if (button.name == name) {
-                if (button.state != state) {
-                    button.state = state
-                    button.active = true
-                    buttonsFlushed = false
-                    flush = true
+                if (button.state != velocity) {
+                    button.state = velocity
+                    pendingChanges.add(button.copy())
                 }
                 break
             }
-        }
-        if (flush) flushState()
-        return flush
-    }
-
-    private fun flushState() {
-        val client = connectionManager.getClient() ?: return
-
-        scope.launch {
-            if (buttonsFlushed || buttons.isEmpty() || writeCounter > 0) return@launch
-
-            val activeButtons = mutableListOf<ButtonState>()
-            for (button in buttons) {
-                if (button.active) {
-                    button.active = false
-                    activeButtons.add(button)
-                }
-            }
-            buttonsFlushed = true
-            writeCounter++
-
-            try {
-                client.buttonsWrite(activeButtons)
-            } catch (_: Exception) {
-                // best-effort
-            } finally {
-                writeCounter--
-            }
-            if (!buttonsFlushed) flushState()
         }
     }
 }

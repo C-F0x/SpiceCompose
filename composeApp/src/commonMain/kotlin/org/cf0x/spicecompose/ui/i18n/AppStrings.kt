@@ -93,6 +93,7 @@ data class AppStrings(
 
     // Controller FAQ
     val controllerFaq: String, val implemented: String, val invalidHex: String, val notYetImplemented: String,
+    val wip: String, val noneYet: String,
 
     // Misc
     val toggleFullscreen: String, val editServer: String,
@@ -106,8 +107,10 @@ data class AppStrings(
     // SubScreen / Controller / DIY
     val screenshotSettings: String, val share: String, val refresh: String,
     val controllerComingSoon: String, val subViewLabel: String,
-    val noControllerView: String, val connectFirst: String,
+    val noControllerView: String, val connectFirst: String, val doesntSupport: String,
     val diyController: String, val diyControllerSummary: String,
+    val sendMode: String, val sendModeSummary: String, val sendModeEvent: String, val sendModeCrystal: String,
+    val sendFrequency: String, val sendFrequencySummary: String,
 
     // Cabinet Utility
     val cabinetUtility: String, val coinAmountHint: String, val coinInsert: String,
@@ -313,6 +316,8 @@ fun appStrings() = AppStrings(
     implemented = stringResource(Res.string.implemented),
     invalidHex = stringResource(Res.string.invalid_hex),
     notYetImplemented = stringResource(Res.string.not_yet_implemented),
+    wip = stringResource(Res.string.wip),
+    noneYet = stringResource(Res.string.none_yet),
 
     // Misc
     toggleFullscreen = stringResource(Res.string.toggle_fullscreen),
@@ -340,8 +345,15 @@ fun appStrings() = AppStrings(
     subViewLabel = stringResource(Res.string.sub_view_label),
     noControllerView = stringResource(Res.string.no_controller_view),
     connectFirst = stringResource(Res.string.connect_first),
+    doesntSupport = stringResource(Res.string.doesnt_support),
     diyController = stringResource(Res.string.diy_controller),
     diyControllerSummary = stringResource(Res.string.diy_controller_summary),
+    sendMode = stringResource(Res.string.send_mode),
+    sendModeSummary = stringResource(Res.string.send_mode_summary),
+    sendModeEvent = stringResource(Res.string.send_mode_event),
+    sendModeCrystal = stringResource(Res.string.send_mode_crystal),
+    sendFrequency = stringResource(Res.string.send_frequency),
+    sendFrequencySummary = stringResource(Res.string.send_frequency_summary),
 
     // Cabinet Utility
     cabinetUtility = stringResource(Res.string.cabinet_utility),

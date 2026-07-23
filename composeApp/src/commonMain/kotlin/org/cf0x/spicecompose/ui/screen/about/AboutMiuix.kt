@@ -38,7 +38,7 @@ import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -73,7 +73,7 @@ fun AboutScreenMiuix(
     val listState      = rememberLazyListState()
     var logoHeightPx by remember { mutableIntStateOf(0) }
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     SpiceBackHandler(enabled = fullscreen.value) {
         fullscreen.value = false

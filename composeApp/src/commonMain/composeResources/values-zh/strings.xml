@@ -159,6 +159,8 @@
     <string name="controller_faq">控制器 FAQ</string>
     <string name="implemented">已实现</string>
     <string name="not_yet_implemented">尚未实现</string>
+    <string name="wip">开发中</string>
+    <string name="none_yet">暂无 — 从下方 WIP 验收后移上</string>
 
     <!-- 其他 -->
     <string name="toggle_fullscreen">切换全屏</string>
@@ -188,8 +190,15 @@
     <string name="sub_view_label">子视图 #%d</string>
     <string name="no_controller_view">此游戏暂无控制器视图 :(</string>
     <string name="connect_first">请先连接到服务器。</string>
+    <string name="doesnt_support">不支持此游戏</string>
     <string name="diy_controller">DIY 控制器</string>
     <string name="diy_controller_summary">自定义布局编辑器与播放器</string>
+    <string name="send_mode">发送模式</string>
+    <string name="send_mode_summary">按钮状态变化如何发送到 Spice2x</string>
+    <string name="send_mode_event">事件驱动</string>
+    <string name="send_mode_crystal">晶振驱动</string>
+    <string name="send_frequency">发送频率</string>
+    <string name="send_frequency_summary">事件驱动下的最大发包频率；晶振驱动下的固定频率（50–1000 Hz）</string>
     <string name="dev_mode">开发者模式</string>
     <string name="dev_mode_summary">显示 补丁管理、LCD 信息、画面缩放、DIY 控制器</string>
     <string name="connect_hint">点击以尝试连接</string>

@@ -14,7 +14,9 @@ import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 
-object ThemePreferences {
+enum class SendMode { EventDriven, CrystalDriven }
+
+object CustomPreferences {
     private val s: Settings by lazy { Settings() }
 
     var uiMode by mutableStateOf(UiMode.entries.getOrElse(s.getInt("uiMode", 0)) { UiMode.Miuix })
@@ -99,6 +101,14 @@ object ThemePreferences {
     var coinDefaultAmount by mutableIntStateOf(s.getInt("coinDefaultAmount", 1))
         private set
     fun updateCoinDefaultAmount(v: Int) { coinDefaultAmount = v; s.putInt("coinDefaultAmount", v) }
+
+    var sendMode by mutableStateOf(SendMode.entries.getOrElse(s.getInt("sendMode", 0)) { SendMode.EventDriven })
+        private set
+    fun updateSendMode(v: SendMode) { sendMode = v; s.putInt("sendMode", v.ordinal) }
+
+    var sendFrequency by mutableIntStateOf(s.getInt("sendFrequency", 120).coerceIn(50, 1000))
+        private set
+    fun updateSendFrequency(v: Int) { sendFrequency = v.coerceIn(50, 1000); s.putInt("sendFrequency", sendFrequency) }
 
     var devMode by mutableStateOf(s.getBoolean("devMode", false))
         private set

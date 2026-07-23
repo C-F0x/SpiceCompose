@@ -158,6 +158,8 @@
     <string name="controller_faq">컨트롤러 FAQ</string>
     <string name="implemented">구현됨</string>
     <string name="not_yet_implemented">아직 구현되지 않음</string>
+    <string name="wip">개발 중</string>
+    <string name="none_yet">없음 — 검수 후 WIP에서 이동</string>
 
     <!-- 기타 -->
     <string name="toggle_fullscreen">전체 화면 전환</string>
@@ -187,8 +189,15 @@
     <string name="sub_view_label">서브뷰 #%d</string>
     <string name="no_controller_view">이 게임에는 아직 컨트롤러 뷰가 없습니다 :(</string>
     <string name="connect_first">먼저 서버에 연결하세요.</string>
+    <string name="doesnt_support">이 게임은 지원되지 않습니다</string>
     <string name="diy_controller">DIY 컨트롤러</string>
     <string name="diy_controller_summary">사용자 정의 레이아웃 편집기 및 플레이어</string>
+    <string name="send_mode">전송 모드</string>
+    <string name="send_mode_summary">버튼 상태 변경을 Spice2x에 전송하는 방법</string>
+    <string name="send_mode_event">이벤트 구동</string>
+    <string name="send_mode_crystal">크리스탈 구동</string>
+    <string name="send_frequency">전송 주파수</string>
+    <string name="send_frequency_summary">크리스탈 구동 시 업데이트 레이트 (50–1000 Hz)</string>
     <string name="dev_mode">개발자 모드</string>
     <string name="dev_mode_summary">패치, LCD 정보, 화면 크기 조정, DIY 컨트롤러 표시</string>
     <string name="connect_hint">클릭하여 연결</string>

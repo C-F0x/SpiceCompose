@@ -26,7 +26,7 @@ import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -43,54 +43,57 @@ import androidx.compose.material3.Icon as M3Icon
 import androidx.compose.material3.IconButton as M3IconButton
 import androidx.compose.material3.Scaffold as M3Scaffold
 
+enum class ControllerStatus { Implemented, Wip, NotYetImplemented }
+
 data class ControllerFaqEntry(
     val code: String,
     val firmware: String,
     val name: String,
-    val hasController: Boolean,
+    val status: ControllerStatus,
+    val maxPlayerNum: Int = 1,
 )
 
 val controllerFaq = listOf(
-    ControllerFaqEntry("BBC",  "R66",                     "BishiBashi Channel",                               true),
-    ControllerFaqEntry("DDR",  "JDX / KDX / MDX",         "DanceDanceRevolution",                             true),
-    ControllerFaqEntry("DRS",  "REC",                     "DANCERUSH STARDOM",                                true),
-    ControllerFaqEntry("FTT",  "MMD",                     "Future TomTom",                                    true),
-    ControllerFaqEntry("HPM",  "JMP",                     "HELLO! POP\u2019N MUSIC",                          true),
-    ControllerFaqEntry("IIDX", "JDZ / KDX / LDJ",         "beatmania IIDX",                                   true),
-    ControllerFaqEntry("JB",   "J44 / K44 / L44",         "jubeat",                                           true),
-    ControllerFaqEntry("LP",   "KLP",                     "LOVEPLUS / \u30E9\u30D6\u30D7\u30E9\u30B9 EVERY",  true),
-    ControllerFaqEntry("NOST", "PAN",                     "NOSTALGIA",                                        true),
-    ControllerFaqEntry("POPN", "K39 / L39 / M39",         "pop\u2019n music",                                 true),
-    ControllerFaqEntry("RF3D", "JGT",                     "ROAD FIGHTERS",                                    true),
-    ControllerFaqEntry("SDVX", "KFC",                     "SOUND VOLTEX",                                     true),
-    ControllerFaqEntry("WE",   "KCK / NCK",               "World Soccer Winning Eleven Arcade Game Styles",   true),
-    ControllerFaqEntry("BTS",  "NBT",                     "BeatStream",                                       false),
-    ControllerFaqEntry("CCJ",  "UJK",                     "CHASE CHASE JOKERS",                               false),
-    ControllerFaqEntry("DEA",  "KDM",                     "DanceEvolution ARCADE",                            false),
-    ControllerFaqEntry("GD",   "J32..M32 (6 models)",     "GITADORA",                                         false),
-    ControllerFaqEntry("MFC",  "KK9",                     "MAHJONG FIGHT CLUB",                               false),
-    ControllerFaqEntry("MFG",  "VFG",                     "MAHJONG FIGHT GIRL",                               false),
-    ControllerFaqEntry("MGS",  "I36",                     "METAL GEAR SOLID THE ARCADE",                      false),
-    ControllerFaqEntry("MSC",  "PIX",                     "M\u00DASECA",                                      false),
-    ControllerFaqEntry("OD",   "NCG",                     "Oto&co D\u2019or / \u30AA\u30C8\u30AB\u30C9\u30FC\u30EB", false),
-    ControllerFaqEntry("OGP",  "JC9",                     "ONGAKU PARADISE",                                  false),
-    ControllerFaqEntry("PAS",  "LA9",                     "PASELI Charging Machine",                          false),
-    ControllerFaqEntry("PLC",  "XIF",                     "Polaris Chord",                                    true),
-    ControllerFaqEntry("QKS",  "UKS",                     "QuizKnock STADIUM",                                false),
-    ControllerFaqEntry("QMA",  "JMA / KMA / LMA",         "QUIZ MAGIC ACADEMY",                               false),
-    ControllerFaqEntry("REF",  "KBR / LBR / MBR",         "REFLEC BEAT",                                      false),
-    ControllerFaqEntry("SC",   "KGG",                     "STEEL CHRONICLE",                                  false),
-    ControllerFaqEntry("SCO",  "NSC",                     "SCOTTO",                                           false),
-    ControllerFaqEntry("SPC",  "N/A",                     "SILENT SCOPE CHRONOS GEIST",                       false),
-    ControllerFaqEntry("TCS",  "KBI",                     "\u5929\u4E0B\u4E00\u5C06\u68CB\u4F1A / TENKAICHI SHOGIKAI", false),
-    ControllerFaqEntry("WBS",  "TBS",                     "\u6B66\u88C5\u795E\u59EB ARMORED PRINCESS BATTLE CONDUCTOR", false),
+    ControllerFaqEntry("BBC",  "R66",                     "BishiBashi Channel",                               ControllerStatus.Wip,               maxPlayerNum = 4),
+    ControllerFaqEntry("DDR",  "JDX / KDX / MDX / TDX",    "DanceDanceRevolution",                             ControllerStatus.Implemented,       maxPlayerNum = 2),
+    ControllerFaqEntry("DRS",  "REC",                     "DANCERUSH STARDOM",                                ControllerStatus.Wip,               maxPlayerNum = 2),
+    ControllerFaqEntry("FTT",  "MMD",                     "Future TomTom",                                    ControllerStatus.Wip),
+    ControllerFaqEntry("HPM",  "JMP",                     "HELLO! POP\u2019N MUSIC",                          ControllerStatus.Wip,               maxPlayerNum = 2),
+    ControllerFaqEntry("IIDX", "JDZ / KDZ / LDJ / TDJ",    "beatmania IIDX",                                   ControllerStatus.Implemented,               maxPlayerNum = 2),
+    ControllerFaqEntry("JB",   "J44 / K44 / L44",         "jubeat",                                           ControllerStatus.Wip),
+    ControllerFaqEntry("LP",   "KLP",                     "LOVEPLUS / \u30E9\u30D6\u30D7\u30E9\u30B9 EVERY",  ControllerStatus.Wip),
+    ControllerFaqEntry("NOST", "PAN",                     "NOSTALGIA",                                        ControllerStatus.Wip),
+    ControllerFaqEntry("POPN", "K39 / L39 / M39",         "pop\u2019n music",                                 ControllerStatus.Wip),
+    ControllerFaqEntry("RF3D", "JGT",                     "ROAD FIGHTERS",                                    ControllerStatus.Wip),
+    ControllerFaqEntry("SDVX", "KFC / UFC",               "SOUND VOLTEX",                                     ControllerStatus.Implemented),
+    ControllerFaqEntry("WE",   "KCK / NCK",               "World Soccer Winning Eleven Arcade Game Styles",   ControllerStatus.Wip),
+    ControllerFaqEntry("PLC",  "XIF",                     "Polaris Chord",                                    ControllerStatus.Wip),
+    ControllerFaqEntry("BTS",  "NBT",                     "BeatStream",                                       ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("CCJ",  "UJK",                     "CHASE CHASE JOKERS",                               ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("DEA",  "KDM",                     "DanceEvolution ARCADE",                            ControllerStatus.NotYetImplemented, maxPlayerNum = 2),
+    ControllerFaqEntry("GD",   "J32..M32 (6 models)",     "GITADORA",                                         ControllerStatus.NotYetImplemented, maxPlayerNum = 3),
+    ControllerFaqEntry("MFC",  "KK9",                     "MAHJONG FIGHT CLUB",                               ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("MFG",  "VFG",                     "MAHJONG FIGHT GIRL",                               ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("MGS",  "I36",                     "METAL GEAR SOLID THE ARCADE",                      ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("MSC",  "PIX",                     "M\u00DASECA",                                      ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("OD",   "NCG",                     "Oto&co D\u2019or / \u30AA\u30C8\u30AB\u30C9\u30FC\u30EB", ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("OGP",  "JC9",                     "ONGAKU PARADISE",                                  ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("PAS",  "LA9",                     "PASELI Charging Machine",                          ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("QKS",  "UKS",                     "QuizKnock STADIUM",                                ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("QMA",  "JMA / KMA / LMA",         "QUIZ MAGIC ACADEMY",                               ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("REF",  "KBR / LBR / MBR",         "REFLEC BEAT",                                      ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("SC",   "KGG",                     "STEEL CHRONICLE",                                  ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("SCO",  "NSC",                     "SCOTTO",                                           ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("SPC",  "N/A",                     "SILENT SCOPE CHRONOS GEIST",                       ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("TCS",  "KBI",                     "\u5929\u4E0B\u4E00\u5C06\u68CB\u4F1A / TENKAICHI SHOGIKAI", ControllerStatus.NotYetImplemented),
+    ControllerFaqEntry("WBS",  "TBS",                     "\u6B66\u88C5\u795E\u59EB ARMORED PRINCESS BATTLE CONDUCTOR", ControllerStatus.NotYetImplemented),
 )
 
 @Composable
 fun ControllerFaqScreen(onBack: () -> Unit) {
     val fullscreen = LocalFullscreenMode.current
     val uiMode = LocalUiMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     val strings = LocalAppStrings.current
 
@@ -133,10 +136,38 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
                         color = MiuixTheme.colorScheme.primary,
                     )
                 }
+                val implemented = controllerFaq.filter { it.status == ControllerStatus.Implemented }
+                if (implemented.isNotEmpty()) {
+                    item {
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+                            implemented.forEach { entry -> FaqRowMiuix(entry, ControllerStatus.Implemented) }
+                        }
+                    }
+                } else {
+                    item {
+                        MiuixText(
+                            strings.noneYet,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp),
+                            fontSize = 12.sp,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        )
+                    }
+                }
+
+                item { Spacer(Modifier.height(8.dp)) }
+                item {
+                    MiuixText(
+                        strings.wip,
+                        modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 8.dp),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MiuixTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    )
+                }
                 item {
                     Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-                        controllerFaq.filter { it.hasController }.forEach { entry ->
-                            FaqRowMiuix(entry, implemented = true)
+                        controllerFaq.filter { it.status == ControllerStatus.Wip }.forEach { entry ->
+                            FaqRowMiuix(entry, ControllerStatus.Wip)
                         }
                     }
                 }
@@ -153,8 +184,8 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
                 }
                 item {
                     Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-                        controllerFaq.filter { !it.hasController }.forEach { entry ->
-                            FaqRowMiuix(entry, implemented = false)
+                        controllerFaq.filter { it.status == ControllerStatus.NotYetImplemented }.forEach { entry ->
+                            FaqRowMiuix(entry, ControllerStatus.NotYetImplemented)
                         }
                     }
                 }
@@ -192,12 +223,46 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
                         },
                     )
                 }
-                controllerFaq.filter { it.hasController }.forEach { entry ->
+                val implemented = controllerFaq.filter { it.status == ControllerStatus.Implemented }
+                if (implemented.isNotEmpty()) {
+                    implemented.forEach { entry ->
+                        item {
+                            ListItem(
+                                headlineContent = { M3Text(entry.name) },
+                                supportingContent = { M3Text("${entry.code}  |  Firmware: ${entry.firmware}") },
+                                leadingContent = { M3Icon(Icons.Rounded.Gamepad, null, tint = MaterialTheme.colorScheme.primary) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            )
+                        }
+                    }
+                } else {
+                    item {
+                        ListItem(
+                            headlineContent = {
+                                M3Text(strings.noneYet, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+                    }
+                }
+
+                item { Spacer(Modifier.height(8.dp)) }
+                item { HorizontalDivider() }
+                item { Spacer(Modifier.height(8.dp)) }
+
+                item {
+                    ListItem(
+                        headlineContent = {
+                            M3Text(strings.wip, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary)
+                        },
+                    )
+                }
+                controllerFaq.filter { it.status == ControllerStatus.Wip }.forEach { entry ->
                     item {
                         ListItem(
                             headlineContent = { M3Text(entry.name) },
                             supportingContent = { M3Text("${entry.code}  |  Firmware: ${entry.firmware}") },
-                            leadingContent = { M3Icon(Icons.Rounded.Gamepad, null, tint = MaterialTheme.colorScheme.primary) },
+                            leadingContent = { M3Icon(Icons.Rounded.Gamepad, null, tint = MaterialTheme.colorScheme.tertiary) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
@@ -214,7 +279,7 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
                         },
                     )
                 }
-                controllerFaq.filter { !it.hasController }.forEach { entry ->
+                controllerFaq.filter { it.status == ControllerStatus.NotYetImplemented }.forEach { entry ->
                     item {
                         ListItem(
                             headlineContent = { M3Text(entry.name) },
@@ -235,10 +300,16 @@ fun ControllerFaqScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun FaqRowMiuix(entry: ControllerFaqEntry, implemented: Boolean) {
-    val tint = if (implemented) MiuixTheme.colorScheme.primary
-               else MiuixTheme.colorScheme.onSurfaceVariantActions.copy(alpha = 0.5f)
-    val icon = if (implemented) Icons.Rounded.Gamepad else Icons.Rounded.SportsEsports
+private fun FaqRowMiuix(entry: ControllerFaqEntry, status: ControllerStatus) {
+    val tint = when (status) {
+        ControllerStatus.Implemented -> MiuixTheme.colorScheme.primary
+        ControllerStatus.Wip -> MiuixTheme.colorScheme.primary.copy(alpha = 0.6f)
+        ControllerStatus.NotYetImplemented -> MiuixTheme.colorScheme.onSurfaceVariantActions.copy(alpha = 0.5f)
+    }
+    val icon = when (status) {
+        ControllerStatus.Implemented, ControllerStatus.Wip -> Icons.Rounded.Gamepad
+        ControllerStatus.NotYetImplemented -> Icons.Rounded.SportsEsports
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),

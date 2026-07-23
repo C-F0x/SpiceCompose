@@ -41,7 +41,7 @@ import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.FullscreenAction
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -51,7 +51,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiyScreen(connectionManager: ConnectionManager, onBack: () -> Unit) {
-    val fullscreen = LocalFullscreenMode.current; val uiMode = LocalUiMode.current; val p = ThemePreferences
+    val fullscreen = LocalFullscreenMode.current; val uiMode = LocalUiMode.current; val p = CustomPreferences
     val strings = LocalAppStrings.current
     val repo = remember { DiyRepository() }
 

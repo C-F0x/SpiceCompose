@@ -39,7 +39,7 @@ import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.navigation.horizontalCutoutPadding
@@ -59,7 +59,7 @@ fun LightsScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
     val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
     
     var lightStates by remember { mutableStateOf<List<LightState>>(emptyList()) }
     val draggingNames = remember { mutableStateListOf<String>() }

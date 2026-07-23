@@ -35,6 +35,7 @@ import org.cf0x.spicecompose.platform.maybeVibrate
 import org.cf0x.spicecompose.platform.nfcAvailable
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
+import org.cf0x.spicecompose.ui.screen.controllers.layoutByModel
 import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
@@ -44,7 +45,7 @@ import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
 import org.cf0x.spicecompose.ui.theme.LocalStatusColors
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.ui.util.BlurredBar
 import org.cf0x.spicecompose.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.*
@@ -66,7 +67,7 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     val connection = connectionManager.getClient()
     val scope = rememberCoroutineScope()
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
     val statusColors = LocalStatusColors.current
     val windowSize = LocalWindowSize.current
     val isLarge = windowSize != WindowSize.Compact
@@ -79,8 +80,12 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
     var editingCard by remember { mutableStateOf<CardConfig?>(null) }
 
     // ── Keypad state ─────────────────────────────────────────────────────
-    var currentMode by remember { mutableIntStateOf(0) }
-    val modeLabel = if (currentMode == 0) "P1" else "P2"
+    var gameModel by remember { mutableStateOf<String?>(null) }
+    val maxPlayerNum = remember(gameModel) {
+        gameModel?.let { layoutByModel[it]?.maxPlayerNum } ?: 1
+    }
+    var currentMode by remember(maxPlayerNum) { mutableIntStateOf(0) }
+    val modeLabel = if (maxPlayerNum <= 1) "" else if (currentMode == 0) "P1" else "P2"
 
     // ── Coin state ───────────────────────────────────────────────────────
     var coinBlocker by remember { mutableStateOf<Boolean?>(null) }
@@ -99,6 +104,14 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                 val card = cards.find { it.id == chosenCardId }
                 card?.let { client.cardInsert(currentMode, it.cardId); maybeVibrate(100) }
             }
+        }
+    }
+
+    // ── Game model poll, for maxPlayerNum ───────────────────────────────
+    LaunchedEffect(connection) {
+        while (isActive) {
+            gameModel = try { connection?.infoAVS()?.get("model") } catch (_: Exception) { gameModel }
+            delay(5000)
         }
     }
 
@@ -235,8 +248,10 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
             }
             Spacer(Modifier.height(4.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // ── P1/P2 compact toggle ──
-                PillMiuix(modeLabel, true, true, { currentMode = (currentMode + 1) % 2 }, {})
+                // ── P1/P2 compact toggle (hidden for single-player games) ──
+                if (maxPlayerNum > 1) {
+                    PillMiuix(modeLabel, true, true, { currentMode = (currentMode + 1) % 2 }, {})
+                }
                 if (cards.isEmpty()) {
                     MiuixText(strings.noCardsExist, fontSize = 14.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
                 } else {
@@ -331,7 +346,7 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                             Spacer(Modifier.height(12.dp))
                             ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } })
                             Spacer(Modifier.height(24.dp))
-                            CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, { currentMode = (currentMode + 1) % 2 })
+                            CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, maxPlayerNum, { currentMode = (currentMode + 1) % 2 })
                         }
                     }
                 } else {
@@ -346,7 +361,7 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
                         item { Spacer(Modifier.height(12.dp)) }
                         item { ProcessCardMaterial(strings, connection, scope, onDisconnect = { connectionManager.disconnect() }, onReconnect = { connectionManager.currentServer.value?.let { connectionManager.connect(it) } }) }
                         item { Spacer(Modifier.height(24.dp)) }
-                        item { CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, { currentMode = (currentMode + 1) % 2 }) }
+                        item { CardManagementBlockMaterial(strings, cards, { chosenCardId = it; scope.launch { onInsert(it) } }, { editingCard = it }, { showAddDialog = true }, modeLabel, maxPlayerNum, { currentMode = (currentMode + 1) % 2 }) }
                         item { Spacer(Modifier.height(24.dp).navigationBarsPadding()) }
                     }
                 }
@@ -430,7 +445,7 @@ private fun ProcessCardMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppString
 }
 
 @Composable
-private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, cards: List<CardConfig>, onInsert: (String) -> Unit, onEdit: (CardConfig) -> Unit, onAddClick: () -> Unit, modeLabel: String, onModeToggle: () -> Unit) {
+private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.AppStrings, cards: List<CardConfig>, onInsert: (String) -> Unit, onEdit: (CardConfig) -> Unit, onAddClick: () -> Unit, modeLabel: String, maxPlayerNum: Int = 1, onModeToggle: () -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.material3.Text(strings.cardManagement, style = MaterialTheme.typography.titleSmall)
@@ -439,7 +454,9 @@ private fun CardManagementBlockMaterial(strings: org.cf0x.spicecompose.ui.i18n.A
         }
         Spacer(Modifier.height(4.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PillMaterial(modeLabel, true, true, { onModeToggle() }, {})
+            if (maxPlayerNum > 1) {
+                PillMaterial(modeLabel, true, true, { onModeToggle() }, {})
+            }
             if (cards.isEmpty()) {
                 androidx.compose.material3.Text(strings.noCardsExist, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

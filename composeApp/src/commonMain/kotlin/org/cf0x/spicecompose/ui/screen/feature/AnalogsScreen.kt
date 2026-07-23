@@ -30,7 +30,7 @@ import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.theme.LocalEnableBlur
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.navigation.LocalWindowSize
 import org.cf0x.spicecompose.ui.navigation.WindowSize
@@ -52,7 +52,7 @@ fun AnalogsScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val windowSize = LocalWindowSize.current
     val fullscreen = org.cf0x.spicecompose.platform.LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
 
     var analogStates by remember { mutableStateOf<List<AnalogState>>(emptyList()) }
     val draggingNames = remember { mutableStateListOf<String>() }

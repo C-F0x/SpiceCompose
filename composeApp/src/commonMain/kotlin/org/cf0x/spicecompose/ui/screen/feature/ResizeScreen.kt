@@ -22,7 +22,7 @@ import org.cf0x.spicecompose.ui.UiMode
 import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-import org.cf0x.spicecompose.ui.theme.ThemePreferences
+import org.cf0x.spicecompose.ui.theme.CustomPreferences
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -40,7 +40,7 @@ fun ResizeScreen(onBack: () -> Unit) {
     val conn = cm.getClient()
     val scope = rememberCoroutineScope()
     val fullscreen = LocalFullscreenMode.current
-    val p = ThemePreferences
+    val p = CustomPreferences
     var enabled by remember { mutableStateOf(false) }
     var scene by remember { mutableIntStateOf(0) }
 

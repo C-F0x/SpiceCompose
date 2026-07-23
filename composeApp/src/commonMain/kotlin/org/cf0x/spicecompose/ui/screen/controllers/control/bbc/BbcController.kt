@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +28,8 @@ fun BbcController(connectionManager: ConnectionManager, subViewIndex: Int) {
     val buttonControl = remember { ButtonControl(connectionManager) }
     val widgets = remember { bbcButtonNames.map { buttonControl.registerWidget(it) } }
     LaunchedEffect(Unit) { buttonControl.init() }
-    val si = subViewIndex % 4 * 7
+    SideEffect { buttonControl.clearAllBounds() }
+    val si = subViewIndex % 4 * 6
 
     Box(buttonControl.pointerInputModifier().fillMaxSize().background(ControllerColors.background()), contentAlignment = Alignment.Center) {
         BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
@@ -39,7 +41,7 @@ fun BbcController(connectionManager: ConnectionManager, subViewIndex: Int) {
             btn(si + 3, w * 0.0625f, h * 0.05f, w * 0.3f, h * 0.3f, ControllerColors.surface())
             btn(si + 5, w * 0.2625f, h * 0.05f, w * 0.1f, h * 0.3f, ControllerColors.surface().copy(alpha = 0.5f))
             btn(si + 4, w * 0.6375f, h * 0.05f, w * 0.3f, h * 0.3f, ControllerColors.surface())
-            btn(si + 6, w * 0.6375f, h * 0.05f, w * 0.1f, h * 0.3f, ControllerColors.surface().copy(alpha = 0.5f))
+            btn(si + 5, w * 0.6375f, h * 0.05f, w * 0.1f, h * 0.3f, ControllerColors.surface().copy(alpha = 0.5f))
         }
     }
 }

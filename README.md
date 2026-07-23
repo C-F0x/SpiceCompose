@@ -1,40 +1,44 @@
-This is a Kotlin Multiplatform project targeting Android, Desktop (JVM).
+# SpiceCompose
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Inspired From [SpiceCompanion](https://github.com/LupinThidr/spicecompanion)
 
-### Build and Run Android Application
+The unofficial companion app to Spice2x. This app allows for remotely
+controlling and managing a running instance with the API enabled and
+configured.
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
 
-### Build and Run Desktop (JVM) Application
+## Features
+sync with [upstream](https://github.com/LupinThidr/spicecompanion/blob/master/README.md?#features)
 
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
+## Requirements
+- Spice2x
+- Android 12+
+- NFC (optional)
+
+
+## FAQ
+
+Q: SpiceCompose doesnt work even connected
+
+A: Shutdown spicecfg.exe
+
+
+Q: Controller works with err 
+
+A: Still WIP, but [New issue](https://github.com/C-F0x/SpiceCompose/issues/new) welcome
+
+
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## License
+
+```
+SpiceCompose — minty kotlin spicecompanion
+Copyright (C) 2026  C-F0x
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+```
