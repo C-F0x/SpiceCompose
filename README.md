@@ -10,6 +10,20 @@ configured.
 ## Features
 sync with [upstream](https://github.com/LupinThidr/spicecompanion/blob/master/README.md?#features)
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="33%"><img src="misc/main.png" alt="miuix_main" width="100%"/></td>
+    <td width="33%"><img src="misc/material.jpg" alt="material_main" width="100%"/></td>
+    <td width="34%" rowspan="2"><img src="tools.png" alt="cabinet tools" width="100%"/></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="misc/sub.png" alt="subscreen" width="100%"/></td>
+    <td width="33%"><img src="sevconfig.png" alt="service" width="100%"/></td>
+  </tr>
+</table>
+
 ## Requirements
 - Spice2x
 - Android 12+
