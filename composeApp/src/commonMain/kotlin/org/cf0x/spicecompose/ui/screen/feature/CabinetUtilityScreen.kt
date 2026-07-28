@@ -96,13 +96,14 @@ fun CabinetUtilityScreen(onBack: () -> Unit) {
 
     SpiceBackHandler(enabled = fullscreen.value) { fullscreen.value = false }
 
-    // ── NFC listener — always active, inserts to selected card slot ───
+    // ── NFC listener — always active, inserts scanned card ID ───
     LaunchedEffect(Unit) {
         NfcManager.tagIdFlow.collect { id ->
+            if (showAddDialog || editingCard != null) return@collect
             val client = connectionManager.getClient()
             if (client != null) {
-                val card = cards.find { it.id == chosenCardId }
-                card?.let { client.cardInsert(currentMode, it.cardId); maybeVibrate(100) }
+                client.cardInsert(currentMode, id)
+                maybeVibrate(100)
             }
         }
     }
