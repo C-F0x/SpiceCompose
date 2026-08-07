@@ -183,6 +183,13 @@
 
     <!-- サブ画面 / コントローラー -->
     <string name="screenshot_settings">スクリーンショット設定</string>
+    <string name="threads">スレッド数</string>
+    <string name="threads_hint">スレッドを増やすにはより高性能なデバイスが必要です</string>
+    <string name="poll_interval">ポーリング間隔（ms）</string>
+    <string name="poll_interval_hint">0 = 最速（遅延なし）</string>
+    <string name="screen">画面</string>
+    <string name="saved_to_downloads">ダウンロードに保存しました。</string>
+    <string name="sub_screen_not_available">サブスクリーンは利用できません :(</string>
     <string name="share">共有</string>
     <string name="refresh">更新</string>
     <string name="controller_coming_soon">コントローラーレイアウト準備中</string>

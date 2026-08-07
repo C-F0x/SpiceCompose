@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import org.cf0x.spicecompose.platform.ImageSaverContextHolder
 import org.cf0x.spicecompose.platform.NfcManager
 import org.cf0x.spicecompose.platform.SystemBarsManager
 import org.cf0x.spicecompose.platform.VibratorManager
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        ImageSaverContextHolder.context = this
         VibratorManager.init(this)
         SystemBarsManager.init(this)
 

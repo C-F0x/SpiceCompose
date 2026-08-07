@@ -55,7 +55,11 @@ fun StatusScreen() {
 
     // Disable main pager swipe when server list sub-page is open
     val inSubPage = LocalInSubPage.current
-    SideEffect { inSubPage.value = showServerList }
+    // Depth-paired enter/exit so concurrent pager pages can't overwrite each other.
+    DisposableEffect(inSubPage, showServerList) {
+        if (showServerList) inSubPage.enter() else inSubPage.exit()
+        onDispose { if (showServerList) inSubPage.exit() }
+    }
 
     LaunchedEffect(status) {
         if (status == ConnectionStatus.Connected) {

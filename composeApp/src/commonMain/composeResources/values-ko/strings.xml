@@ -183,6 +183,13 @@
 
     <!-- 서브 화면 / 컨트롤러 -->
     <string name="screenshot_settings">스크린샷 설정</string>
+    <string name="threads">스레드 수</string>
+    <string name="threads_hint">스레드를 늘리려면 더 높은 성능의 기기가 필요합니다</string>
+    <string name="poll_interval">폴링 간격(ms)</string>
+    <string name="poll_interval_hint">0 = 최고 속도(지연 없음)</string>
+    <string name="screen">화면</string>
+    <string name="saved_to_downloads">다운로드 폴더에 저장되었습니다.</string>
+    <string name="sub_screen_not_available">서브 스크린을 사용할 수 없습니다 :(</string>
     <string name="share">공유</string>
     <string name="refresh">새로고침</string>
     <string name="controller_coming_soon">컨트롤러 레이아웃 준비 중</string>

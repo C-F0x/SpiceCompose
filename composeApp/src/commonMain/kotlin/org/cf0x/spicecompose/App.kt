@@ -13,6 +13,7 @@ import org.cf0x.spicecompose.network.LocalConnectionManager
 import org.cf0x.spicecompose.platform.LocalFullscreenMode
 import org.cf0x.spicecompose.platform.SystemBarsManager
 import org.cf0x.spicecompose.ui.LocalInSubPage
+import org.cf0x.spicecompose.ui.SubPageState
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalLocale
@@ -28,7 +29,7 @@ fun App() {
 
     // Shared state: true when a sub-page (ThemeScreen / AboutScreen) is shown.
     // Passed down via CompositionLocal so MainScreen can disable pager swipe.
-    val inSubPage = remember { mutableStateOf(false) }
+    val inSubPage = remember { SubPageState() }
     val connectionManager = remember { ConnectionManager() }
     val fullscreenMode = remember { mutableStateOf(false) }
     val isMaterial = p.uiMode == org.cf0x.spicecompose.ui.UiMode.Material

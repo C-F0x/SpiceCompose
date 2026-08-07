@@ -15,6 +15,7 @@ import org.cf0x.spicecompose.ui.i18n.AppLanguage
 import org.cf0x.spicecompose.ui.navigation.NavLayoutMode
 
 enum class SendMode { EventDriven, CrystalDriven }
+enum class CaptureMode { Original, Capture2x }
 
 object CustomPreferences {
     private val s: Settings by lazy { Settings() }
@@ -85,6 +86,31 @@ object CustomPreferences {
     var ssDivide by mutableIntStateOf(s.getInt("ssDivide", 1))
         private set
     fun updateSsDivide(v: Int) { ssDivide = v; s.putInt("ssDivide", v) }
+
+    // Capture2x is temporarily disabled — UI only exposes Original mode.
+    // Re-enable later by restoring the archived value read and the Capture2x UI.
+    // var captureMode by mutableStateOf(CaptureMode.entries.getOrElse(s.getInt("captureMode", 0)) { CaptureMode.Original })
+    var captureMode by mutableStateOf(CaptureMode.Original)
+        private set
+    fun updateCaptureMode(v: CaptureMode) { captureMode = CaptureMode.Original; s.putInt("captureMode", CaptureMode.Original.ordinal) }
+
+    /** Client-side concurrent polling threads for the Original capture loop (1..16). */
+    var ssThreads by mutableIntStateOf(s.getInt("ssThreads", 2).coerceIn(1, 16))
+        private set
+    fun updateSsThreads(v: Int) { ssThreads = v.coerceIn(1, 16); s.putInt("ssThreads", ssThreads) }
+
+    /** Frame-gap cap (ms) for the Original capture loop — 0 = fastest (no delay). */
+    var ssPollIntervalMs by mutableIntStateOf(s.getInt("ssPollIntervalMs", 0).coerceIn(0, 500))
+        private set
+    fun updateSsPollIntervalMs(v: Int) { ssPollIntervalMs = v.coerceIn(0, 500); s.putInt("ssPollIntervalMs", ssPollIntervalMs) }
+
+    var capture2xFps by mutableIntStateOf(s.getInt("capture2xFps", 60))
+        private set
+    fun updateCapture2xFps(v: Int) { capture2xFps = v.coerceIn(1, 60); s.putInt("capture2xFps", capture2xFps) }
+
+    var capture2xDivide by mutableIntStateOf(s.getInt("capture2xDivide", 1))
+        private set
+    fun updateCapture2xDivide(v: Int) { capture2xDivide = v.coerceIn(1, 8); s.putInt("capture2xDivide", capture2xDivide) }
 
     var vibDuration by mutableIntStateOf(s.getInt("vibDuration", 50))
         private set

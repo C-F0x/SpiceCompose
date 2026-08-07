@@ -183,6 +183,13 @@
 
     <!-- Sous-écran / Contrôleur -->
     <string name="screenshot_settings">Paramètres de capture</string>
+    <string name="threads">Threads</string>
+    <string name="threads_hint">Plus de threads nécessitent un appareil plus performant</string>
+    <string name="poll_interval">Intervalle de sondage (ms)</string>
+    <string name="poll_interval_hint">0 = Plus rapide (sans délai)</string>
+    <string name="screen">Écran</string>
+    <string name="saved_to_downloads">Enregistré dans Téléchargements.</string>
+    <string name="sub_screen_not_available">Écran secondaire indisponible :(</string>
     <string name="share">Partager</string>
     <string name="refresh">Actualiser</string>
     <string name="controller_coming_soon">Disposition du contrôleur à venir</string>

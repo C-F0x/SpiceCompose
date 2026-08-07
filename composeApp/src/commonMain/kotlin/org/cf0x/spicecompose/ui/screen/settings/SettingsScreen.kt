@@ -59,7 +59,12 @@ fun SettingsScreen(
 
     // Notify MainScreen to disable pager swipe when in a sub-page
     val inSubPage = LocalInSubPage.current
-    inSubPage.value = route != ROUTE_MAIN
+    val subPageActive = route != ROUTE_MAIN
+    // Depth-paired enter/exit so concurrent pager pages can't overwrite each other.
+    DisposableEffect(inSubPage, subPageActive) {
+        if (subPageActive) inSubPage.enter() else inSubPage.exit()
+        onDispose { if (subPageActive) inSubPage.exit() }
+    }
 
     // Intercept back gesture on sub-pages only
     SpiceBackHandler(enabled = route != ROUTE_MAIN) { route = ROUTE_MAIN }

@@ -75,7 +75,12 @@ fun ToolsScreen() {
     }
 
     val inSubPage = LocalInSubPage.current
-    inSubPage.value = route != ROUTE_MAIN
+    val subPageActive = route != ROUTE_MAIN
+    // Depth-paired enter/exit so concurrent pager pages can't overwrite each other.
+    DisposableEffect(inSubPage, subPageActive) {
+        if (subPageActive) inSubPage.enter() else inSubPage.exit()
+        onDispose { if (subPageActive) inSubPage.exit() }
+    }
 
     SpiceBackHandler(enabled = route != ROUTE_MAIN) { route = ROUTE_MAIN }
 

@@ -183,6 +183,13 @@
 
     <!-- 截圖 / 控制器 -->
     <string name="screenshot_settings">截圖設定</string>
+    <string name="threads">執行緒數</string>
+    <string name="threads_hint">更多執行緒需要更高性能的裝置</string>
+    <string name="poll_interval">輪詢間隔（毫秒）</string>
+    <string name="poll_interval_hint">0 = 最快（無延遲）</string>
+    <string name="screen">螢幕</string>
+    <string name="saved_to_downloads">已儲存到下載目錄。</string>
+    <string name="sub_screen_not_available">副螢幕不可用 :(</string>
     <string name="share">分享</string>
     <string name="refresh">重新整理</string>
     <string name="controller_coming_soon">控制器佈局即將推出</string>

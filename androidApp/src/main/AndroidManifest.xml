@@ -15,7 +15,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SpiceCompose">
+        android:theme="@style/Theme.SpiceCompose"
+        android:usesCleartextTraffic="true">
 
         <!-- Android 14+ game optimisation: enable ANGLE / Vulkan interop driver -->
         <meta-data

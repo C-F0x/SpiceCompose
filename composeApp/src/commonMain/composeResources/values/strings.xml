@@ -183,6 +183,16 @@
 
     <!-- SubScreen / Controller -->
     <string name="screenshot_settings">Screenshot Settings</string>
+    <string name="capture_mode">Capture Mode</string>
+    <string name="capture_mode_original">Original (HTTP Polling)</string>
+    <string name="capture_mode_2x">2X (WebSocket Stream, BETA)</string>
+    <string name="threads">Threads</string>
+    <string name="threads_hint">More threads require higher performance devices</string>
+    <string name="poll_interval">Poll Interval (ms)</string>
+    <string name="poll_interval_hint">0 = Fastest (no delay)</string>
+    <string name="screen">Screen</string>
+    <string name="saved_to_downloads">Saved to Downloads.</string>
+    <string name="sub_screen_not_available">Sub Screen not available :(</string>
     <string name="share">Share</string>
     <string name="refresh">Refresh</string>
     <string name="controller_coming_soon">Controller layout coming soon</string>

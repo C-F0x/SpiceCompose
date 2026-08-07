@@ -105,7 +105,10 @@ data class AppStrings(
     val test: String, val process: String, val cardManagement: String,
 
     // SubScreen / Controller / DIY
-    val screenshotSettings: String, val share: String, val refresh: String,
+    val screenshotSettings: String, val captureMode: String, val captureModeOriginal: String, val captureMode2x: String, val share: String, val refresh: String,
+    val threads: String, val threadsHint: String,
+    val pollInterval: String, val pollIntervalHint: String,
+    val screen: String, val savedToDownloads: String, val subScreenNotAvailable: String,
     val controllerComingSoon: String, val subViewLabel: String,
     val noControllerView: String, val connectFirst: String, val doesntSupport: String,
     val diyController: String, val diyControllerSummary: String,
@@ -339,6 +342,16 @@ fun appStrings() = AppStrings(
 
     // SubScreen / Controller / DIY
     screenshotSettings = stringResource(Res.string.screenshot_settings),
+    captureMode = stringResource(Res.string.capture_mode),
+    captureModeOriginal = stringResource(Res.string.capture_mode_original),
+    captureMode2x = stringResource(Res.string.capture_mode_2x),
+    threads = stringResource(Res.string.threads),
+    threadsHint = stringResource(Res.string.threads_hint),
+    pollInterval = stringResource(Res.string.poll_interval),
+    pollIntervalHint = stringResource(Res.string.poll_interval_hint),
+    screen = stringResource(Res.string.screen),
+    savedToDownloads = stringResource(Res.string.saved_to_downloads),
+    subScreenNotAvailable = stringResource(Res.string.sub_screen_not_available),
     share = stringResource(Res.string.share),
     refresh = stringResource(Res.string.refresh),
     controllerComingSoon = stringResource(Res.string.controller_coming_soon),

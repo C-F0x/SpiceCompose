@@ -41,7 +41,7 @@ fun MainScreen(
     CompositionLocalProvider(LocalMainPagerState provides mainPagerState) {
         val isFloating     = LocalFloatingBottomBar.current
         val fullscreen     = LocalFullscreenMode.current
-        val inSubPage      = LocalInSubPage.current.value
+        val inSubPage      = LocalInSubPage.current.active
         val enableBlur     = LocalEnableBlur.current
         val uiMode         = LocalUiMode.current
         val blurBackdrop   = rememberBlurBackdrop(enableBlur && uiMode == UiMode.Miuix)

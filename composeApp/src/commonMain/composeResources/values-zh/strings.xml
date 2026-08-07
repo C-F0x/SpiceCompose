@@ -184,6 +184,13 @@
 
     <!-- 截图 / 控制器 -->
     <string name="screenshot_settings">截图设置</string>
+    <string name="threads">线程数</string>
+    <string name="threads_hint">更多线程需要更高性能的设备</string>
+    <string name="poll_interval">轮询间隔（毫秒）</string>
+    <string name="poll_interval_hint">0 = 最快（无延时）</string>
+    <string name="screen">屏幕</string>
+    <string name="saved_to_downloads">已保存到下载目录。</string>
+    <string name="sub_screen_not_available">副屏不可用 :(</string>
     <string name="share">分享</string>
     <string name="refresh">刷新</string>
     <string name="controller_coming_soon">控制器布局即将推出</string>
