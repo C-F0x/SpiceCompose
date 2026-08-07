@@ -3,9 +3,10 @@ package org.cf0x.spicecompose.network
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import org.cf0x.spicecompose.network.spiceapi.wrappers.TouchState
-import org.cf0x.spicecompose.network.spiceapi.wrappers.touchWrite
-import org.cf0x.spicecompose.network.spiceapi.wrappers.touchWriteReset
+import org.cf0x.spicecompose.platform.SpiceNative
 import org.cf0x.spicecompose.platform.maybeVibrate
 import kotlin.random.Random
 
@@ -18,7 +19,7 @@ class TouchControl(private val connectionManager: ConnectionManager) {
     private var curTouchID = 100000 + Random.nextInt(99999)
 
     private fun flushState() {
-        val connection = connectionManager.getClient() ?: return
+        if (connectionManager.getClient() == null) return
         
         scope.launch {
             mutex.withLock {
@@ -39,8 +40,21 @@ class TouchControl(private val connectionManager: ConnectionManager) {
             
             writeCounter++
             try {
-                if (updatedTouches.isNotEmpty()) connection.touchWrite(updatedTouches)
-                if (inactiveTouches.isNotEmpty()) connection.touchWriteReset(inactiveTouches.map { it.id })
+                // Touch writes go through the dedicated touch connection
+                // (SpiceNative.touchRequest) so they never queue behind
+                // screen-polling requests on the main connection.
+                if (updatedTouches.isNotEmpty()) {
+                    val params = buildJsonArray {
+                        updatedTouches.forEach {
+                            add(buildJsonArray { add(JsonPrimitive(it.id)); add(JsonPrimitive(it.x)); add(JsonPrimitive(it.y)) })
+                        }
+                    }
+                    SpiceNative.touchRequest("touch", "write", params.toString())
+                }
+                if (inactiveTouches.isNotEmpty()) {
+                    val ids = buildJsonArray { inactiveTouches.forEach { add(JsonPrimitive(it.id)) } }
+                    SpiceNative.touchRequest("touch", "write_reset", ids.toString())
+                }
             } catch (e: Exception) {
                 println("TouchControl flush error: ${e.message}")
             } finally {

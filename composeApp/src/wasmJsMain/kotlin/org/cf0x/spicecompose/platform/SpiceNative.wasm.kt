@@ -29,6 +29,14 @@ actual object SpiceNative {
         text.toString()
     } catch (e: Exception) { """{"error":"${e.message}"}""" }
 
+    actual suspend fun touchRequest(module: String, function: String, paramsJson: String): String = try {
+        val params = json.parseToJsonElement(paramsJson) as JsonArray
+        val body = json.encodeToString(RequestReq(module, function, params))
+        val resp = fetchPost("$BASE_URL/touch_request", body)
+        val text = resp.text().await()
+        text.toString()
+    } catch (e: Exception) { """{"error":"${e.message}"}""" }
+
     actual suspend fun disconnect() {
         try { fetchPost("$BASE_URL/disconnect", "{}") } catch (_: Exception) {}
     }

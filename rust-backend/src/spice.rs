@@ -91,6 +91,13 @@ impl SpiceConnection {
                 };
                 *conn.cipher.lock().await = new_rc4;
             }
+        } else {
+            // With a password we must still verify the peer actually speaks SPICE,
+            // otherwise any reachable TCP listener would pass as "connected".
+            timeout(Duration::from_secs(3), conn.request("info", "avs", vec![]))
+                .await
+                .map_err(|_| "SPICE verification timed out".to_string())?
+                .map_err(|e| format!("SPICE verification failed: {e}"))?;
         }
 
         Ok(conn)

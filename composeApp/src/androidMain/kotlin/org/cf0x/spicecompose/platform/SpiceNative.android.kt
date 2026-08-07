@@ -14,11 +14,15 @@ actual object SpiceNative {
     actual suspend fun request(module: String, function: String, paramsJson: String): String =
         withContext(Dispatchers.IO) { nativeRequest(module, function, paramsJson) }
 
+    actual suspend fun touchRequest(module: String, function: String, paramsJson: String): String =
+        withContext(Dispatchers.IO) { nativeTouchRequest(module, function, paramsJson) }
+
     actual suspend fun disconnect() =
         withContext(Dispatchers.IO) { nativeDisconnect() }
 
     // JNI native functions — blocking, called from IO dispatcher.
     private external fun nativeConnect(host: String, port: Int, password: String): Boolean
     private external fun nativeRequest(module: String, function: String, paramsJson: String): String
+    private external fun nativeTouchRequest(module: String, function: String, paramsJson: String): String
     private external fun nativeDisconnect()
 }

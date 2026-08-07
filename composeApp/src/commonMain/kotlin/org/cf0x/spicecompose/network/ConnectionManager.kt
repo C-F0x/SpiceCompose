@@ -28,6 +28,7 @@ class ConnectionManager {
 
     private var client: SpiceClient? = null
     private var heartbeatJob: Job? = null
+    private var connectJob: Job? = null
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -38,7 +39,8 @@ class ConnectionManager {
 
     fun connect(server: ServerConfig) {
         println("[SpiceCompose] connect → ${server.host}:${server.port}")
-        scope.launch {
+        connectJob?.cancel()
+        connectJob = scope.launch {
             try {
                 _status.value = ConnectionStatus.Connecting
                 _currentServer.value = server
@@ -46,15 +48,21 @@ class ConnectionManager {
 
                 client?.close()
                 val newClient = SpiceClient()
-                withTimeout(5000) {
+                // TCP connect (≤3s) + SPICE session verification (≤3s) inside the
+                // Rust backend; give the Kotlin side generous headroom.
+                withTimeout(12_000) {
                     val result = newClient.connect(server.host, server.port, server.password)
                     if (!result.connected) throw Exception("Connection refused")
                 }
+                if (!isActive) return@launch
 
                 client = newClient
                 _status.value = ConnectionStatus.Connected
                 println("[SpiceCompose] connect OK ← ${server.host}:${server.port}")
                 startHeartbeat()
+            } catch (e: CancellationException) {
+                // Disconnect/teardown cancelled this attempt — propagate, no toast.
+                throw e
             } catch (e: Exception) {
                 _status.value = ConnectionStatus.Disconnected
                 val reason = when {

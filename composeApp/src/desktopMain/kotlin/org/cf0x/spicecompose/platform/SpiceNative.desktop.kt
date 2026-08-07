@@ -66,6 +66,19 @@ actual object SpiceNative {
         }
     }
 
+    actual suspend fun touchRequest(module: String, function: String, paramsJson: String): String {
+        val params = Json.parseToJsonElement(paramsJson) as JsonArray
+        return try {
+            val response: JsonElement = client().post("$BASE_URL/touch_request") {
+                contentType(ContentType.Application.Json)
+                setBody(RequestBody(module, function, params))
+            }.body()
+            response.toString()
+        } catch (e: Exception) {
+            """{"error":"${e.message}"}"""
+        }
+    }
+
     actual suspend fun disconnect() {
         try { client().post("$BASE_URL/disconnect") } catch (_: Exception) {}
         _httpClient?.close()

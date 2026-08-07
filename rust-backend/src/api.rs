@@ -48,6 +48,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/status", get(status))
         .route("/connect", post(connect))
         .route("/request", post(spice_request))
+        .route("/touch_request", post(touch_request))
         .route("/disconnect", post(disconnect))
         .route("/ws", get(ws_handler))
         .with_state(state)
@@ -79,6 +80,19 @@ async fn connect(
         *conn_lock = Some(new_conn);
     }
 
+    // Dedicated touch connection — best-effort: keeps touch writes from queueing
+    // behind screen-polling requests. On failure, /touch_request falls back to the
+    // main connection.
+    {
+        let mut touch_lock = state.touch_connection.write().await;
+        if let Some(existing) = touch_lock.take() {
+            existing.disconnect().await;
+        }
+        if let Ok(touch_conn) = SpiceConnection::connect(&req.host, req.port, &req.password, Duration::from_secs(5)).await {
+            *touch_lock = Some(touch_conn);
+        }
+    }
+
     Ok(Json(StatusResponse {
         connected: true,
         host: Some(req.host),
@@ -107,10 +121,53 @@ async fn spice_request(
     Ok(Json(serde_json::to_value(response).expect("Response serialization should not fail")))
 }
 
+async fn touch_request(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<SpiceApiRequest>,
+) -> Result<Json<Value>, (StatusCode, String)> {
+    let response = {
+        // Prefer the dedicated touch connection so touch writes never wait behind
+        // screen-polling requests on the main connection.
+        let mut touch_lock = state.touch_connection.write().await;
+        if let Some(conn) = touch_lock.as_mut() {
+            match conn.request(&req.module, &req.function, req.params).await {
+                Ok(resp) => resp,
+                Err(e) => {
+                    *touch_lock = None;
+                    return Err((StatusCode::BAD_GATEWAY, e));
+                }
+            }
+        } else {
+            drop(touch_lock);
+            // Fall back to the main connection.
+            let mut conn_lock = state.connection.write().await;
+            let conn = conn_lock
+                .as_mut()
+                .ok_or_else(|| (StatusCode::BAD_REQUEST, "Not connected".to_string()))?;
+            match conn.request(&req.module, &req.function, req.params).await {
+                Ok(resp) => resp,
+                Err(e) => {
+                    *conn_lock = None;
+                    return Err((StatusCode::BAD_GATEWAY, e));
+                }
+            }
+        }
+    };
+    Ok(Json(serde_json::to_value(response).expect("Response serialization should not fail")))
+}
+
 async fn disconnect(State(state): State<Arc<AppState>>) -> Json<StatusResponse> {
-    let mut conn_lock = state.connection.write().await;
-    if let Some(existing) = conn_lock.take() {
-        existing.disconnect().await;
+    {
+        let mut conn_lock = state.connection.write().await;
+        if let Some(existing) = conn_lock.take() {
+            existing.disconnect().await;
+        }
+    }
+    {
+        let mut touch_lock = state.touch_connection.write().await;
+        if let Some(existing) = touch_lock.take() {
+            existing.disconnect().await;
+        }
     }
     Json(StatusResponse {
         connected: false,
