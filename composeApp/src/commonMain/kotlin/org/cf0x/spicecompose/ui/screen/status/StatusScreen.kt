@@ -36,6 +36,7 @@ fun StatusScreen() {
     val mainState = LocalMainPagerState.current
     val status by connectionManager.status.collectAsState()
     val currentServer by connectionManager.currentServer.collectAsState()
+    val latencyMs by connectionManager.latencyMs.collectAsState()
 
     val chosenServer = remember(chosenId, servers) { servers.find { it.id == chosenId } }
 
@@ -163,6 +164,7 @@ fun StatusScreen() {
                     UiMode.Miuix -> StatusHomeMiuix(
                         connectionStatus = status,
                         currentServer = chosenServer,
+                        latencyMs = latencyMs,
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,
@@ -173,6 +175,7 @@ fun StatusScreen() {
                     UiMode.Material -> StatusHomeMaterial(
                         connectionStatus = status,
                         currentServer = chosenServer,
+                        latencyMs = latencyMs,
                         avsInfo = avsInfo,
                         launcherInfo = launcherInfo,
                         memoryInfo = memoryInfo,

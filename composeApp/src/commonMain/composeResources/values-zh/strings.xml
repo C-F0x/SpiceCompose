@@ -210,6 +210,7 @@
     <string name="dev_mode_summary">显示 补丁管理、LCD 信息、画面缩放、DIY 控制器</string>
     <string name="connect_hint">点击以尝试连接</string>
     <string name="disconnect_hint">点击以取消连接</string>
+    <string name="latency">延迟</string>
 
     <!-- 框体工具 -->
     <string name="cabinet_utility">框体工具</string>

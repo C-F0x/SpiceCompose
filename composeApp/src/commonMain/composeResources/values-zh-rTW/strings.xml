@@ -209,6 +209,7 @@
     <string name="dev_mode_summary">顯示 修補程式管理、LCD 資訊、畫面縮放、DIY 控制器</string>
     <string name="connect_hint">點擊以嘗試連線</string>
     <string name="disconnect_hint">點擊以取消連線</string>
+    <string name="latency">延遲</string>
 
     <!-- 框體工具 -->
     <string name="cabinet_utility">框體工具</string>

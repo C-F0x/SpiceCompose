@@ -38,6 +38,7 @@ import org.cf0x.spicecompose.util.APP_VERSION
 fun StatusHomeMaterial(
     connectionStatus: ConnectionStatus,
     currentServer: ServerConfig?,
+    latencyMs: Long,
     avsInfo: Map<String, String>,
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
@@ -108,6 +109,11 @@ fun StatusHomeMaterial(
                                 Text(
                                     text = strings.disconnectHint,
                                     style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = "${strings.latency} : ${if (latencyMs > 0) "${latencyMs} ms" else "--"}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             } else if (!isConnecting) {
                                 Text(

@@ -74,30 +74,29 @@ impl SpiceConnection {
             _tx: tx,
         };
 
-        // If no password is configured, request a session_refresh.
-        // The server will generate a random password and encrypt future traffic.
-        // (With an existing password, session_refresh would change it, breaking reconnect.)
-        if password.is_empty() {
-            let resp = conn.request("control", "session_refresh", vec![])
-                .await
-                .map_err(|e| format!("Session refresh failed: {e}"))?;
+        // Always perform a session_refresh handshake — matches upstream
+        // SpiceCompanion, which refreshes the session on every new connection
+        // regardless of whether a password is configured. This serves two
+        // purposes:
+        //  1. It establishes the RC4 session key. With an existing password the
+        //     request is encrypted with it; without one the server issues a
+        //     random password, which we adopt for all subsequent traffic.
+        //  2. It verifies the peer actually speaks SPICE — any other reachable
+        //     TCP listener cannot answer the handshake, so it fails instead of
+        //     passing as "connected".
+        let resp = conn
+            .request("control", "session_refresh", vec![])
+            .await
+            .map_err(|e| format!("Session refresh failed: {e}"))?;
 
-            // Update cipher with the new password returned by the server
-            if let Some(new_password) = resp.data.first().and_then(|v| v.as_str()) {
-                let new_rc4 = if new_password.is_empty() {
-                    None
-                } else {
-                    Some(RC4::new(new_password.as_bytes()))
-                };
-                *conn.cipher.lock().await = new_rc4;
-            }
-        } else {
-            // With a password we must still verify the peer actually speaks SPICE,
-            // otherwise any reachable TCP listener would pass as "connected".
-            timeout(Duration::from_secs(3), conn.request("info", "avs", vec![]))
-                .await
-                .map_err(|_| "SPICE verification timed out".to_string())?
-                .map_err(|e| format!("SPICE verification failed: {e}"))?;
+        // Update cipher with the new password returned by the server
+        if let Some(new_password) = resp.data.first().and_then(|v| v.as_str()) {
+            let new_rc4 = if new_password.is_empty() {
+                None
+            } else {
+                Some(RC4::new(new_password.as_bytes()))
+            };
+            *conn.cipher.lock().await = new_rc4;
         }
 
         Ok(conn)
@@ -137,19 +136,23 @@ impl SpiceConnection {
             .await
             .map_err(|e| format!("Write: {e}"))?;
 
-        // Wait for matching response (5-second total timeout).
+        // Wait for matching response with a real timer (5-second total
+        // timeout). This must be a true timeout: if the server neither
+        // responds nor closes (e.g. wrong password where the decrypted
+        // garbage contains no NUL terminator), the recv below would
+        // otherwise hang forever.
+        let deadline = Duration::from_secs(5);
         let start = std::time::Instant::now();
         loop {
-            if start.elapsed() > std::time::Duration::from_secs(5) {
+            let remaining = deadline.saturating_sub(start.elapsed());
+            if remaining.is_zero() {
                 return Err("Request timed out".to_string());
             }
-
-            let response = self
-                .rx
-                .recv()
+            let received = timeout(remaining, self.rx.recv())
                 .await
-                .ok_or_else(|| "Connection closed".to_string())??;
-
+                .map_err(|_| "Request timed out".to_string())?
+                .ok_or_else(|| "Connection closed".to_string())?;
+            let response = received?;
             if response.id == id {
                 return Ok(response);
             }
@@ -179,6 +182,14 @@ async fn reader_loop(
         if let Some(null_pos) = frame_buf.iter().position(|&b| b == 0) {
             let frame: Vec<u8> = frame_buf.drain(..null_pos).collect();
             frame_buf.remove(0); // skip null byte
+
+            // Empty frames are ignored — the server sends a bare NUL byte (then
+            // closes the connection) when it cannot decrypt/parse a request (e.g.
+            // wrong password). Upstream SpiceCompanion also skips them and only
+            // fails on the EOF that follows, so we behave identically.
+            if frame.is_empty() {
+                continue;
+            }
 
             let result = String::from_utf8(frame)
                 .map_err(|e| format!("UTF-8: {e}"))

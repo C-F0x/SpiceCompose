@@ -43,6 +43,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 fun StatusHomeMiuix(
     connectionStatus: ConnectionStatus,
     currentServer: ServerConfig?,
+    latencyMs: Long,
     avsInfo: Map<String, String>,
     launcherInfo: Map<String, String>,
     memoryInfo: Map<String, Long>,
@@ -160,6 +161,14 @@ fun StatusHomeMiuix(
                                         fontSize = 13.sp,
                                         color = colorScheme.onSurfaceVariantSummary
                                     )
+                                    if (isConnected) {
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            text = "${strings.latency} : ${if (latencyMs > 0) "${latencyMs} ms" else "--"}",
+                                            fontSize = 12.sp,
+                                            color = colorScheme.onSurfaceVariantSummary
+                                        )
+                                    }
                                 }
                             }
                         }

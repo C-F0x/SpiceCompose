@@ -93,7 +93,7 @@ fun LightsScreen(onBack: () -> Unit) {
             } catch (_: Exception) {
                 if (connectionManager.getClient() == null) break
             }
-            delay(200)
+            delay(maxOf(128L, connectionManager.latencyMs.value))
         }
     }
 

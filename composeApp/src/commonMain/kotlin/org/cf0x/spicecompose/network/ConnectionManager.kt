@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.time.TimeSource
 import org.cf0x.spicecompose.data.ServerConfig
 
 enum class ConnectionStatus {
@@ -29,9 +30,14 @@ class ConnectionManager {
     private var client: SpiceClient? = null
     private var heartbeatJob: Job? = null
     private var connectJob: Job? = null
+    private var latencyJob: Job? = null
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    /** Round-trip latency of the last `info/avs` probe, in ms (0 = unknown). */
+    private val _latencyMs = MutableStateFlow(0L)
+    val latencyMs: StateFlow<Long> = _latencyMs.asStateFlow()
 
     /** One-shot toast messages for connect/disconnect events. */
     private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -60,6 +66,7 @@ class ConnectionManager {
                 _status.value = ConnectionStatus.Connected
                 println("[SpiceCompose] connect OK ← ${server.host}:${server.port}")
                 startHeartbeat()
+                startLatencyMonitor()
             } catch (e: CancellationException) {
                 // Disconnect/teardown cancelled this attempt — propagate, no toast.
                 throw e
@@ -74,6 +81,7 @@ class ConnectionManager {
                 _error.value = reason
                 _toastMessage.tryEmit(reason)
                 _currentServer.value = null
+                latencyJob?.cancel(); _latencyMs.value = 0
                 client?.close(); client = null
             }
         }
@@ -94,9 +102,36 @@ class ConnectionManager {
         }
     }
 
+    /**
+     * Latency probe — mirrors upstream SpiceCompanion: every second, time an
+     * `info/avs` round trip and publish the result in [latencyMs]. Runs on its
+     * own coroutine so the UI gets fresh readings without waiting for the
+     * 5-second heartbeat. Failures are left to the heartbeat to handle.
+     */
+    private fun startLatencyMonitor() {
+        latencyJob?.cancel()
+        latencyJob = scope.launch {
+            while (isActive && _status.value == ConnectionStatus.Connected) {
+                val c = client
+                if (c != null) {
+                    val t1 = TimeSource.Monotonic.markNow()
+                    try {
+                        c.request("info", "avs")
+                        _latencyMs.value = t1.elapsedNow().inWholeMilliseconds
+                    } catch (_: Exception) {
+                        // Heartbeat owns failure handling; keep the last reading.
+                    }
+                }
+                delay(1_000)
+            }
+        }
+    }
+
     private fun heartbeatFailed(reason: String) {
         println("[SpiceCompose] heartbeat DEAD: $reason")
         heartbeatJob?.cancel()
+        latencyJob?.cancel()
+        _latencyMs.value = 0
         scope.launch {
             client?.close()
             client = null
@@ -109,6 +144,8 @@ class ConnectionManager {
     fun disconnect() {
         println("[SpiceCompose] disconnect")
         heartbeatJob?.cancel()
+        latencyJob?.cancel()
+        _latencyMs.value = 0
         scope.launch {
             client?.close()
             client = null

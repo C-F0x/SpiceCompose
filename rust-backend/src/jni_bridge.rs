@@ -63,11 +63,19 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeCon
                     }
                     *tguard = Some(touch_conn);
                 }
-                Err(_) => {}
+                Err(e) => {
+                    // Log but do not fail the whole connect — touch falls back to main.
+                    eprintln!("[SpiceCompose] touch connection failed: {e}");
+                }
             }
             1
         }
-        Err(_) => 0,
+        Err(e) => {
+            // Keep the real reason on logcat so failures are diagnosable
+            // (the Kotlin side only sees `false` → "Connection refused").
+            eprintln!("[SpiceCompose] nativeConnect failed: {e}");
+            0
+        }
     }
 }
 

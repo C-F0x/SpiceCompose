@@ -70,7 +70,7 @@ fun ButtonsScreen(onBack: () -> Unit) {
         }
         while (isActive) {
             try { buttonStates = connection.buttonsRead() } catch (_: Exception) { }
-            delay(200)
+            delay(maxOf(128L, connectionManager.latencyMs.value))
         }
     }
 
