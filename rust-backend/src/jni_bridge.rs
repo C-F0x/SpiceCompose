@@ -1,38 +1,16 @@
-use crate::spice::SpiceConnection;
+use crate::native_core;
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
-use jni::sys::{jboolean, jstring};
-use serde_json::Value;
-use std::sync::LazyLock;
-use std::time::Duration;
-use tokio::sync::Mutex as AsyncMutex;
+use jni::sys::{jboolean, jint, jstring};
 
-static CONNECTION: LazyLock<AsyncMutex<Option<SpiceConnection>>> = LazyLock::new(|| {
-    AsyncMutex::new(None)
-});
-
-/// Dedicated connection for touch input (see `nativeTouchRequest`).
-static TOUCH_CONNECTION: LazyLock<AsyncMutex<Option<SpiceConnection>>> = LazyLock::new(|| {
-    AsyncMutex::new(None)
-});
-
-/// Single persistent Tokio runtime — must outlive all connections.
-static RT: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
-    tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(1)
-        .enable_all()
-        .build()
-        .unwrap()
-});
-
-// ── connect ──
+// Connect.
 
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeConnect(
     mut env: JNIEnv,
     _class: JClass,
     host: JString,
-    port: jni::sys::jint,
+    port: jint,
     password: JString,
 ) -> jboolean {
     let host: String = match env.get_string(&host) {
@@ -44,42 +22,14 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeCon
         Err(_) => return 0,
     };
 
-    match RT.block_on(SpiceConnection::connect(&host, port as u16, &password, Duration::from_secs(3))) {
-        Ok(conn) => {
-            let mut guard = RT.block_on(CONNECTION.lock());
-            if let Some(old) = guard.take() {
-                RT.block_on(old.disconnect());
-            }
-            *guard = Some(conn);
-
-            // Second, dedicated connection for touch input — keeps touch writes
-            // from queueing behind screen-polling requests on the main connection.
-            // Best-effort: on failure the main connection is used as fallback.
-            match RT.block_on(SpiceConnection::connect(&host, port as u16, &password, Duration::from_secs(3))) {
-                Ok(touch_conn) => {
-                    let mut tguard = RT.block_on(TOUCH_CONNECTION.lock());
-                    if let Some(old) = tguard.take() {
-                        RT.block_on(old.disconnect());
-                    }
-                    *tguard = Some(touch_conn);
-                }
-                Err(e) => {
-                    // Log but do not fail the whole connect — touch falls back to main.
-                    eprintln!("[SpiceCompose] touch connection failed: {e}");
-                }
-            }
-            1
-        }
-        Err(e) => {
-            // Keep the real reason on logcat so failures are diagnosable
-            // (the Kotlin side only sees `false` → "Connection refused").
-            eprintln!("[SpiceCompose] nativeConnect failed: {e}");
-            0
-        }
+    if native_core::connect(&host, port as u16, &password) {
+        1
+    } else {
+        0
     }
 }
 
-// ── request ──
+// Request.
 
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeRequest(
@@ -93,36 +43,11 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeReq
     let function: String = unwrap_or_return_null!(env, function);
     let params_json: String = unwrap_or_return_null!(env, params_json);
 
-    let params: Vec<Value> = match serde_json::from_str(&params_json) {
-        Ok(v) => v,
-        Err(e) => {
-            let err = format!("{{\"error\":\"{e}\"}}");
-            return env.new_string(err).unwrap().into_raw();
-        }
-    };
-
-    let mut guard = RT.block_on(CONNECTION.lock());
-    let conn = match guard.as_mut() {
-        Some(c) => c,
-        None => {
-            let err = r#"{"error":"not connected"}"#;
-            return env.new_string(err).unwrap().into_raw();
-        }
-    };
-
-    match RT.block_on(conn.request(&module, &function, params)) {
-        Ok(resp) => {
-            let json = serde_json::to_string(&resp).unwrap_or_else(|_| "{}".into());
-            env.new_string(json).unwrap().into_raw()
-        }
-        Err(e) => {
-            let err = format!("{{\"error\":\"{e}\"}}");
-            env.new_string(err).unwrap().into_raw()
-        }
-    }
+    let json = native_core::request(&module, &function, &params_json);
+    env.new_string(json).unwrap().into_raw()
 }
 
-// ── touch request (dedicated connection) ──
+// Touch request.
 
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeTouchRequest(
@@ -136,66 +61,18 @@ pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeTou
     let function: String = unwrap_or_return_null!(env, function);
     let params_json: String = unwrap_or_return_null!(env, params_json);
 
-    let params: Vec<Value> = match serde_json::from_str(&params_json) {
-        Ok(v) => v,
-        Err(e) => {
-            let err = format!("{{\"error\":\"{e}\"}}");
-            return env.new_string(err).unwrap().into_raw();
-        }
-    };
-
-    // Prefer the dedicated touch connection; fall back to the main connection.
-    let mut guard = RT.block_on(TOUCH_CONNECTION.lock());
-    if guard.is_none() {
-        drop(guard);
-        let mut main_guard = RT.block_on(CONNECTION.lock());
-        let conn = match main_guard.as_mut() {
-            Some(c) => c,
-            None => {
-                let err = r#"{"error":"not connected"}"#;
-                return env.new_string(err).unwrap().into_raw();
-            }
-        };
-        match RT.block_on(conn.request(&module, &function, params)) {
-            Ok(resp) => {
-                let json = serde_json::to_string(&resp).unwrap_or_else(|_| "{}".into());
-                env.new_string(json).unwrap().into_raw()
-            }
-            Err(e) => {
-                let err = format!("{{\"error\":\"{e}\"}}");
-                env.new_string(err).unwrap().into_raw()
-            }
-        }
-    } else {
-        let conn = guard.as_mut().unwrap();
-        match RT.block_on(conn.request(&module, &function, params)) {
-            Ok(resp) => {
-                let json = serde_json::to_string(&resp).unwrap_or_else(|_| "{}".into());
-                env.new_string(json).unwrap().into_raw()
-            }
-            Err(e) => {
-                let err = format!("{{\"error\":\"{e}\"}}");
-                env.new_string(err).unwrap().into_raw()
-            }
-        }
-    }
+    let json = native_core::touch_request(&module, &function, &params_json);
+    env.new_string(json).unwrap().into_raw()
 }
 
-// ── disconnect ──
+// Disconnect.
 
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_org_cf0x_spicecompose_platform_SpiceNative_nativeDisconnect(
     _env: JNIEnv,
     _class: JClass,
 ) {
-    let mut guard = RT.block_on(CONNECTION.lock());
-    if let Some(conn) = guard.take() {
-        RT.block_on(conn.disconnect());
-    }
-    let mut tguard = RT.block_on(TOUCH_CONNECTION.lock());
-    if let Some(conn) = tguard.take() {
-        RT.block_on(conn.disconnect());
-    }
+    native_core::disconnect();
 }
 
 macro_rules! unwrap_or_return_null {

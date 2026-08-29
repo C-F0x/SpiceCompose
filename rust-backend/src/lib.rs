@@ -1,6 +1,8 @@
 pub mod rc4;
 pub mod spice;
 pub mod api;
+pub mod native_core;
+pub mod c_bridge;
 pub mod jni_bridge;
 
 use std::sync::Arc;

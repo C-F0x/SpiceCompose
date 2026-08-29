@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.time.TimeSource
 import org.cf0x.spicecompose.data.ServerConfig
+import org.cf0x.spicecompose.platform.lastNativeConnectError
 
 enum class ConnectionStatus {
     Disconnected,
@@ -58,7 +59,10 @@ class ConnectionManager {
                 // Rust backend; give the Kotlin side generous headroom.
                 withTimeout(12_000) {
                     val result = newClient.connect(server.host, server.port, server.password)
-                    if (!result.connected) throw Exception("Connection refused")
+                    if (!result.connected) {
+                        // Preserve the native error instead of a generic message.
+                        throw Exception(lastNativeConnectError().ifEmpty { "Connection refused" })
+                    }
                 }
                 if (!isActive) return@launch
 

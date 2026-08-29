@@ -1,0 +1,4 @@
+headers = spice_bridge.h
+headerFilter = spice_bridge.h
+package = org.cf0x.spicecompose.platform
+compilerOpts = -std=c99

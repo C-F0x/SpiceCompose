@@ -21,3 +21,4 @@ node_modules/
 /rust-backend/target
 /rust-backend/.cargo
 /composeApp/src/androidMain/jniLibs
+/composeApp/src/iosMain/libs

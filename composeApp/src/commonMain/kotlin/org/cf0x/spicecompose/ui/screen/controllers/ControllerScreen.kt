@@ -44,6 +44,7 @@ import org.cf0x.spicecompose.ui.component.AdaptiveTopAppBar
 import org.cf0x.spicecompose.ui.component.FullscreenAction
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.theme.CustomPreferences
+import org.cf0x.spicecompose.util.simpleFormat
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
@@ -300,7 +301,7 @@ private fun ControllerBody(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(16.dp),
             ) {
-                Text(strings.gameLabel.format(gameModel), style = MaterialTheme.typography.titleMedium)
+                Text(strings.gameLabel.simpleFormat(gameModel), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 Text(strings.noControllerView, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

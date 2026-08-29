@@ -27,7 +27,7 @@ class Capture2xConnection(
     private var wsJob: Job? = null
 
     // RC4 cipher for encryption (shared across send/recv, like Spice2x)
-    private var cipher: Rc4Cipher? = if (password.isNotEmpty()) Rc4Cipher(password.toByteArray()) else null
+    private var cipher: Rc4Cipher? = if (password.isNotEmpty()) Rc4Cipher(password.encodeToByteArray()) else null
 
     private val _frames = MutableSharedFlow<Rgb24Image>(replay = 0, extraBufferCapacity = 4)
     val frames: SharedFlow<Rgb24Image> = _frames.asSharedFlow()
@@ -77,7 +77,7 @@ class Capture2xConnection(
         timeoutMs: Long = 8000
     ): Boolean {
         wsJob?.cancel(); wsJob = null
-        cipher = if (password.isNotEmpty()) Rc4Cipher(password.toByteArray()) else null
+        cipher = if (password.isNotEmpty()) Rc4Cipher(password.encodeToByteArray()) else null
 
         val wsUrl = "ws://$host:${apiPort + 1}/"
         println("[Capture2x] Connecting to $wsUrl (password=${password.isNotEmpty()})")
@@ -152,7 +152,7 @@ class Capture2xConnection(
 
     /** Send JSON command as binary frame (encrypted if cipher is set). */
     private suspend fun WebSocketSession.sendBinary(json: String) {
-        val raw = (json + "\u0000").toByteArray()  // null-terminated
+        val raw = (json + "\u0000").encodeToByteArray()  // null-terminated
         cipher?.crypt(raw)
         send(Frame.Binary(true, raw))
     }

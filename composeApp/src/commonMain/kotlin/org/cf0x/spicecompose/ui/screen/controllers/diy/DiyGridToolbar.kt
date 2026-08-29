@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
+import org.cf0x.spicecompose.util.simpleFormat
 
 /**
  * Permanent inline toolbar at the bottom of the editor canvas.
@@ -71,12 +72,12 @@ fun DiyGridToolbar(
         }
 
         // X step
-        Text(strings.xStepFormat.format(xStep.toInt()), style = MaterialTheme.typography.labelSmall)
+        Text(strings.xStepFormat.simpleFormat(xStep.toInt()), style = MaterialTheme.typography.labelSmall)
         Slider(value = xStep, onValueChange = { xStep = it }, onValueChangeFinished = { commit() },
             valueRange = 1f..20f, steps = 18, modifier = Modifier.fillMaxWidth())
 
         // Y step
-        Text(strings.yStepFormat.format(yStep.toInt()), style = MaterialTheme.typography.labelSmall)
+        Text(strings.yStepFormat.simpleFormat(yStep.toInt()), style = MaterialTheme.typography.labelSmall)
         Slider(value = yStep, onValueChange = { yStep = it }, onValueChangeFinished = { commit() },
             valueRange = 1f..20f, steps = 18, modifier = Modifier.fillMaxWidth())
 
