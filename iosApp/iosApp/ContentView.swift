@@ -125,11 +125,30 @@ final class NFCReader: NSObject, NFCTagReaderSessionDelegate {
 }
 
 struct ComposeView: UIViewControllerRepresentable {
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        let viewController = MainViewControllerKt.MainViewController()
+        let edgeBackGesture = UIScreenEdgePanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleEdgeBack(_:))
+        )
+        edgeBackGesture.edges = .left
+        viewController.view.addGestureRecognizer(edgeBackGesture)
+        return viewController
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    final class Coordinator: NSObject {
+        @objc func handleEdgeBack(_ gesture: UIScreenEdgePanGestureRecognizer) {
+            guard gesture.state == .ended else { return }
+            guard gesture.translation(in: gesture.view).x > 0 else { return }
+            _ = MainViewControllerKt.dispatchIOSBack()
+        }
+    }
 }
 
 struct ContentView: View {
@@ -137,7 +156,9 @@ struct ContentView: View {
 
     var body: some View {
         ComposeView()
-            .ignoresSafeArea(.keyboard) // Compose has its own keyboard handler
+            // Compose manages system insets itself; extend the host view behind
+            // the status bar and Home Indicator for edge-to-edge rendering.
+            .ignoresSafeArea(.all)
             .onAppear { NFCReader.shared.start() }
             .onDisappear { NFCReader.shared.stop() }
             .onAppear { networkAccess.start() }

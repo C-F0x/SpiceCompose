@@ -2,6 +2,7 @@ package org.cf0x.spicecompose
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.window.ComposeUIViewController
+import org.cf0x.spicecompose.ui.dispatchIOSBack as dispatchBackEvent
 import platform.UIKit.UIViewController
 
 /**
@@ -15,3 +16,6 @@ fun MainViewController(): UIViewController {
     requestLocalNetworkPermission()
     return ComposeUIViewController { App() }
 }
+
+/** Entry point for the native iOS edge-swipe back gesture. */
+fun dispatchIOSBack(): Boolean = dispatchBackEvent()

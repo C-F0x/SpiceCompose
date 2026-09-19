@@ -24,7 +24,9 @@ kotlin {
 
     jvm("desktop")
     wasmJs {
-        browser()
+        browser {
+            binaries.executable()
+        }
     }
 
     listOf(
@@ -35,6 +37,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            binaryOption("bundleId", "org.cf0x.spicecompose.ComposeApp")
         }
 
         iosTarget.compilations.getByName("main").cinterops.create("spiceBridge") {

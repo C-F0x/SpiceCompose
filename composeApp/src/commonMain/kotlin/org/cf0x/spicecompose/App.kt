@@ -15,6 +15,7 @@ import org.cf0x.spicecompose.platform.SystemBarsManager
 import org.cf0x.spicecompose.ui.LocalInSubPage
 import org.cf0x.spicecompose.ui.SubPageState
 import org.cf0x.spicecompose.ui.LocalUiMode
+import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
 import org.cf0x.spicecompose.ui.i18n.LocalLocale
 import org.cf0x.spicecompose.ui.i18n.appStrings
@@ -40,6 +41,11 @@ fun App() {
 
     LaunchedEffect(fullscreenMode.value) {
         SystemBarsManager.setFullscreen(fullscreenMode.value)
+    }
+
+    // Platform back/escape always exits edge-to-edge before leaving the page.
+    SpiceBackHandler(enabled = fullscreenMode.value) {
+        fullscreenMode.value = false
     }
 
     // Apply locale at the platform level (Android Configuration / Desktop / Wasm)
