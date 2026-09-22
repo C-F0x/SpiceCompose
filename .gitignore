@@ -22,3 +22,5 @@ node_modules/
 /rust-backend/.cargo
 /composeApp/src/androidMain/jniLibs
 /composeApp/src/iosMain/libs
+/version.properties
+/iosApp/Configuration/Version.xcconfig

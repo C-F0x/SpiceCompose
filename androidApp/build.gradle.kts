@@ -10,11 +10,8 @@ val androidMinSdkVersion:     Int    by rootProject.extra
 val androidTargetSdkVersion:  Int    by rootProject.extra
 val androidCompileSdkVersion: Int    by rootProject.extra
 val androidBuildToolsVersion: String by rootProject.extra
-
-// Read APP_VERSION / APP_VERSION_CODE from shared source of truth.
-val versionSrc = file("../composeApp/src/commonMain/kotlin/org/cf0x/spicecompose/util/AppVersion.kt").readText()
-val appVersionName = Regex("""APP_VERSION\s*=\s*"(.+)"""").find(versionSrc)!!.groupValues[1]
-val appVersionCode = Regex("""APP_VERSION_CODE\s*=\s*(\d+)""").find(versionSrc)!!.groupValues[1].toInt()
+val appVersionName: String by rootProject.extra
+val appVersionCode: Int by rootProject.extra
 
 android {
     namespace         = "org.cf0x.spicecompose"

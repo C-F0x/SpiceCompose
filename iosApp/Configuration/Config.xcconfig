@@ -1,3 +1,8 @@
 TEAM_ID=
 BUNDLE_ID=org.cf0x.spicecompose
 APP_NAME=SpiceCompose
+
+// Keep Xcode-only builds valid before Gradle generates Version.xcconfig.
+APP_VERSION_RELEASE = 1.0.0
+APP_VERSION_BUILD = 1.0.0
+#include? "Version.xcconfig"

@@ -1,6 +1,12 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,6 +18,52 @@ plugins {
 
 val androidCompileSdkVersion: Int = rootProject.extra["androidCompileSdkVersion"] as Int
 val androidMinSdkVersion:     Int = rootProject.extra["androidMinSdkVersion"]     as Int
+val appVersionName: String = rootProject.extra["appVersionName"] as String
+val appVersionCode: Int = rootProject.extra["appVersionCode"] as Int
+
+abstract class GenerateTextFileTask : DefaultTask() {
+    @get:Input
+    abstract val content: Property<String>
+
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    @TaskAction
+    fun writeFile() {
+        outputFile.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(content.get())
+        }
+    }
+}
+
+val generatedVersionDir = layout.buildDirectory.dir("generated/version/commonMain/kotlin")
+val generatedVersionFile = generatedVersionDir.map {
+    it.file("org/cf0x/spicecompose/util/GeneratedAppVersion.kt")
+}
+val generateAppVersionSource = tasks.register<GenerateTextFileTask>("generateAppVersionSource") {
+    notCompatibleWithConfigurationCache("Version metadata includes the current calendar date")
+    outputFile.set(generatedVersionFile)
+    content.set(
+        """
+        package org.cf0x.spicecompose.util
+
+        // Generated from the root version.properties file. Do not edit manually.
+        const val GENERATED_APP_VERSION = "$appVersionName"
+        const val GENERATED_APP_VERSION_CODE = $appVersionCode
+        """.trimIndent() + "\n"
+    )
+}
+
+kotlin.sourceSets.getByName("commonMain").kotlin.srcDir(generatedVersionDir)
+tasks.configureEach {
+    if (name.startsWith("compile") && (name.contains("Kotlin") || name.contains("AndroidMain"))) {
+        dependsOn(generateAppVersionSource)
+    }
+}
+tasks.matching { it.name == "embedAndSignAppleFrameworkForXcode" }.configureEach {
+    dependsOn(rootProject.tasks.named("generateAppVersionMetadata"))
+}
 
 kotlin {
     android {
