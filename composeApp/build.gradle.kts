@@ -40,9 +40,15 @@ kotlin {
             binaryOption("bundleId", "org.cf0x.spicecompose.ComposeApp")
         }
 
-        iosTarget.compilations.getByName("main").cinterops.create("spiceBridge") {
-            defFile(file("src/iosMain/cinterop/spiceBridge.def"))
-            includeDirs(file("src/iosMain/cinterop"))
+        // spiceBridge cinterop requires Xcode's native toolchain, which only
+        // exists on macOS. On Windows/Linux hosts, declaring it anyway leaves
+        // Gradle/IDE with an inconsistent cinterop model for iosMain/appleMain/
+        // nativeMain, which breaks Android Studio's Gradle sync.
+        if (org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
+            iosTarget.compilations.getByName("main").cinterops.create("spiceBridge") {
+                defFile(file("src/iosMain/cinterop/spiceBridge.def"))
+                includeDirs(file("src/iosMain/cinterop"))
+            }
         }
     }
 

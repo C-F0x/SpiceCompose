@@ -1,19 +1,19 @@
 [versions]
 agp                       = "9.5.0-alpha06"
-kotlin                    = "2.4.20-Beta2"
-compose-multiplatform     = "1.12.0-beta02"
+kotlin                    = "2.4.20"
+compose-multiplatform     = "1.12.1"
 lifecycle                 = "2.11.0"
 activity-compose          = "1.13.0"
 kotlinx-coroutines        = "1.11.0"
 kotlinx-serialization     = "1.11.0"
 material-icons-extended   = "1.7.3"
-miuix                     = "0.9.4-rc01"
-materialkolor             = "5.0.0"
-ui-tooling-preview        = "1.12.0-beta02"
+miuix                     = "0.9.4"
+materialkolor             = "5.0.1"
+ui-tooling-preview        = "1.12.1"
 material3                 = "1.12.0-alpha03"
 multiplatform-settings    = "1.3.0"
-ktor                      = "3.5.1"
-androidx-material3        = "1.5.0-alpha24"
+ktor                      = "3.6.0"
+androidx-material3        = "1.5.0-alpha28"
 
 [plugins]
 androidApplication   = { id = "com.android.application",                   version.ref = "agp"                   }

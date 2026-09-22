@@ -17,7 +17,7 @@ import org.cf0x.spicecompose.ui.SubPageState
 import org.cf0x.spicecompose.ui.LocalUiMode
 import org.cf0x.spicecompose.ui.SpiceBackHandler
 import org.cf0x.spicecompose.ui.i18n.LocalAppStrings
-import org.cf0x.spicecompose.ui.i18n.LocalLocale
+import org.cf0x.spicecompose.ui.i18n.ProvideAppLocale
 import org.cf0x.spicecompose.ui.i18n.appStrings
 import org.cf0x.spicecompose.ui.screen.MainScreen
 import org.cf0x.spicecompose.ui.screen.settings.SettingsScreen
@@ -48,13 +48,11 @@ fun App() {
         fullscreenMode.value = false
     }
 
-    // Apply locale at the platform level (Android Configuration / Desktop / Wasm)
-    CompositionLocalProvider(
-        LocalLocale provides p.appLanguage.isoCode,
-        LocalUiMode provides p.uiMode,
-    ) {
-        // Read strings from XML resources — recomposed when p.appLanguage changes
-        // because LocalLocale re-triggers the Compose tree via Configuration update
+    // Apply the selected locale to the platform resource environment.
+    ProvideAppLocale(p.appLanguage.isoCode) {
+        CompositionLocalProvider(LocalUiMode provides p.uiMode) {
+        // Read strings from XML resources; the provider's environment is part
+        // of Compose Resources' cache key, so language changes reload them.
         val strings = appStrings()
 
         // Toast listeners — placed here so appStrings() is available
@@ -144,6 +142,7 @@ fun App() {
                     )
                 }
             }
+        }
         }
     }
 }

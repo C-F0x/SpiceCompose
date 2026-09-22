@@ -26,7 +26,7 @@ sync with [upstream](https://github.com/LupinThidr/spicecompanion/blob/master/RE
 
 ## Requirements
 - Spice2x
-- Android 12+
+- Android 12+, iOS 15.0+
 - NFC (optional)
 
 
