@@ -24,3 +24,4 @@ node_modules/
 /composeApp/src/iosMain/libs
 /version.properties
 /iosApp/Configuration/Version.xcconfig
+/rust-backend/static

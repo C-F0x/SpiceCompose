@@ -33,10 +33,10 @@ plugins {
     alias(libs.plugins.kotlinSerialization)  apply false
 }
 
-val androidMinSdkVersion     by extra(31)
-val androidTargetSdkVersion  by extra(37)
-val androidCompileSdkVersion by extra(37)
-val androidBuildToolsVersion by extra("37.0.0")
+extra.set("androidMinSdkVersion", 31)
+extra.set("androidTargetSdkVersion", 37)
+extra.set("androidCompileSdkVersion", 37)
+extra.set("androidBuildToolsVersion", "37.0.0")
 
 val versionProperties = Properties()
 val versionPropertiesFile = rootProject.file("version.properties")

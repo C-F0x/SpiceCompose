@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Gamepad
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -30,8 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -102,9 +103,9 @@ fun DiyLayoutList(
                         onValueChange = {}, readOnly = true,
                         label = { Text("Filter") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(filterExpanded) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable).padding(horizontal = 8.dp),
+                        modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).padding(horizontal = 8.dp),
                     )
-                    ExposedDropdownMenu(expanded = filterExpanded, onDismissRequest = { filterExpanded = false }) {
+                    DropdownMenu(expanded = filterExpanded, onDismissRequest = { filterExpanded = false }) {
                         DropdownMenuItem(text = { Text("All Models") }, onClick = { filterModel = ""; filterExpanded = false })
                         gameModelOptions.forEach { opt ->
                             DropdownMenuItem(text = { Text(opt.label) }, onClick = { filterModel = opt.code; filterExpanded = false })
@@ -190,9 +191,9 @@ fun DiyNewDialog(
                             readOnly = true,
                             label = { Text("Target Game") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(gameExpanded) },
-                            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                         )
-                        ExposedDropdownMenu(expanded = gameExpanded, onDismissRequest = { gameExpanded = false }) {
+                        DropdownMenu(expanded = gameExpanded, onDismissRequest = { gameExpanded = false }) {
                             gameModelOptions.forEach { opt ->
                                 DropdownMenuItem(
                                     text = { Text(opt.label) },

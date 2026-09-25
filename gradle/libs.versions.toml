@@ -1,5 +1,5 @@
 [versions]
-agp                       = "9.5.0-alpha06"
+agp                       = "9.5.0-alpha07"
 kotlin                    = "2.4.20"
 compose-multiplatform     = "1.12.1"
 lifecycle                 = "2.11.0"
@@ -17,6 +17,7 @@ androidx-material3        = "1.5.0-alpha28"
 
 [plugins]
 androidApplication   = { id = "com.android.application",                   version.ref = "agp"                   }
+androidLibraryPlugin = { id = "com.android.library",                       version.ref = "agp"                   }
 androidMultiplatform = { id = "com.android.kotlin.multiplatform.library",  version.ref = "agp"                   }
 kotlinMultiplatform  = { id = "org.jetbrains.kotlin.multiplatform",        version.ref = "kotlin"                }
 composeMultiplatform = { id = "org.jetbrains.compose",                     version.ref = "compose-multiplatform" }

@@ -47,14 +47,15 @@ import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -444,8 +445,8 @@ private fun InlinePropertyEditor(
                 ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) {
                     OutlinedTextField(widget.iconName, {}, readOnly = true, label = { Text("Icon") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable))
-                    ExposedDropdownMenu(expanded = exp, onDismissRequest = { exp = false }) {
+                        modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable))
+                    DropdownMenu(expanded = exp, onDismissRequest = { exp = false }) {
                         DiyIconRegistry.names.forEach { n -> DropdownMenuItem(text = { Text(n) }, onClick = { onUpdate(widget.copy(iconName = n)); exp = false }) }
                     }
                 }

@@ -81,22 +81,18 @@ kotlin {
         }
     }
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
-        // cinterop generates bindings; Xcode links the Rust static library.
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-            binaryOption("bundleId", "org.cf0x.spicecompose.ComposeApp")
-        }
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64(),
+        ).forEach { iosTarget ->
+            // cinterop generates bindings; Xcode links the Rust static library.
+            iosTarget.binaries.framework {
+                baseName = "ComposeApp"
+                isStatic = true
+                binaryOption("bundleId", "org.cf0x.spicecompose.ComposeApp")
+            }
 
-        // spiceBridge cinterop requires Xcode's native toolchain, which only
-        // exists on macOS. On Windows/Linux hosts, declaring it anyway leaves
-        // Gradle/IDE with an inconsistent cinterop model for iosMain/appleMain/
-        // nativeMain, which breaks Android Studio's Gradle sync.
-        if (org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
             iosTarget.compilations.getByName("main").cinterops.create("spiceBridge") {
                 defFile(file("src/iosMain/cinterop/spiceBridge.def"))
                 includeDirs(file("src/iosMain/cinterop"))
@@ -106,13 +102,10 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    // Keep iosX64 disabled: current Compose/Miuix artifacts lack Intel
-    // simulator variants.
-
     sourceSets {
         val desktopMain = sourceSets.getByName("desktopMain")
         val wasmJsMain = sourceSets.getByName("wasmJsMain")
-        val iosMain = sourceSets.getByName("iosMain")
+        val iosMain = sourceSets.findByName("iosMain")
 
         commonMain.dependencies {
             implementation(libs.runtime)
@@ -154,7 +147,7 @@ kotlin {
         wasmJsMain.dependencies {
         }
 
-        iosMain.dependencies {
+        iosMain?.dependencies {
             implementation(libs.ktor.client.darwin)
         }
     }
@@ -168,7 +161,7 @@ compose.desktop {
 
 // Copy Wasm distribution to Rust backend's static directory
 tasks.register<Copy>("deployWasmToRustBackend") {
-    dependsOn("composeCompatibilityBrowserDistribution")
+    dependsOn(tasks.matching { it.name == "wasmJsBrowserDistribution" })
     from(layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
     into(rootProject.layout.projectDirectory.dir("rust-backend/static"))
 }

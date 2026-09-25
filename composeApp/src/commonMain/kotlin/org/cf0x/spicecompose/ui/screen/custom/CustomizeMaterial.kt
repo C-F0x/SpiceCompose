@@ -37,8 +37,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -166,7 +166,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
 
                         ExposedDropdownMenuBox(expanded = paletteExpanded, onExpandedChange = { paletteExpanded = it }) {
                             ListItem(
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                                 headlineContent = { Text(strings.paletteStyle) },
                                 supportingContent = {
                                     val labels = paletteStyleLabels(strings)
@@ -196,7 +196,7 @@ fun CustomizeScreenMaterial(uiState: CustomizeUiState, actions: CustomizeScreenA
 
                         ExposedDropdownMenuBox(expanded = navExpanded, onExpandedChange = { navExpanded = it }) {
                             ListItem(
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                                 headlineContent = { Text(strings.navBarStyle) },
                                 supportingContent = { Text(listOf(strings.navAuto, strings.navBottom, strings.navRail)[uiState.navLayoutMode.ordinal]) },
                                 leadingContent = { Icon(Icons.AutoMirrored.Rounded.MenuOpen, null) },

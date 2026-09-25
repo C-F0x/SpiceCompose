@@ -2,16 +2,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
 
-val androidMinSdkVersion:     Int    by rootProject.extra
-val androidTargetSdkVersion:  Int    by rootProject.extra
-val androidCompileSdkVersion: Int    by rootProject.extra
-val androidBuildToolsVersion: String by rootProject.extra
-val appVersionName: String by rootProject.extra
-val appVersionCode: Int by rootProject.extra
+val androidMinSdkVersion:     Int    = rootProject.extra["androidMinSdkVersion"] as Int
+val androidTargetSdkVersion:  Int    = rootProject.extra["androidTargetSdkVersion"] as Int
+val androidCompileSdkVersion: Int    = rootProject.extra["androidCompileSdkVersion"] as Int
+val androidBuildToolsVersion: String = rootProject.extra["androidBuildToolsVersion"] as String
+val appVersionName: String = rootProject.extra["appVersionName"] as String
+val appVersionCode: Int = rootProject.extra["appVersionCode"] as Int
 
 android {
     namespace         = "org.cf0x.spicecompose"

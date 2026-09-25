@@ -24,8 +24,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -95,7 +95,7 @@ fun SettingsPagerMaterial(
                     onExpandedChange = { if (langEnabled) langExpanded = it }
                 ) {
                     TonalCard(
-                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                         shape = SpiceTheme.containerShape()
                     ) {
                         ListItem(
