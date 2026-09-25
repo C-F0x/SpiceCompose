@@ -12,12 +12,16 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.cf0x.spicecompose.ui.DesktopBackDispatcher
+import org.jetbrains.compose.resources.painterResource
+import spicecompose.composeapp.generated.resources.Res
+import spicecompose.composeapp.generated.resources.ic_launcher
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "SpiceCompose",
+        icon = painterResource(Res.drawable.ic_launcher),
         onPreviewKeyEvent = { event ->
             event.type == KeyEventType.KeyUp &&
                 event.key == Key.Escape &&
