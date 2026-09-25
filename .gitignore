@@ -21,6 +21,7 @@ node_modules/
 /rust-backend/target
 /rust-backend/.cargo
 /composeApp/src/androidMain/jniLibs
+/composeApp/src/desktopMain/resources/spice_backend.dll
 /composeApp/src/iosMain/libs
 /version.properties
 /iosApp/Configuration/Version.xcconfig

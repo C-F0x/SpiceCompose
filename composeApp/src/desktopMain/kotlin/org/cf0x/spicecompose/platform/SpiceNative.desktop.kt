@@ -1,87 +1,87 @@
 package org.cf0x.spicecompose.platform
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
+import com.sun.jna.Library
+import com.sun.jna.Native
+import com.sun.jna.Pointer
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
+/** Desktop bridge to the Rust C ABI, matching the Android JNI and iOS cinterop paths. */
 actual object SpiceNative {
-    private const val BASE_URL = "http://127.0.0.1:9800"
-
-    private var _httpClient: HttpClient? = null
-    private fun client(): HttpClient {
-        if (_httpClient == null) {
-            _httpClient = HttpClient {
-                install(ContentNegotiation) {
-                    json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
-                }
-                install(HttpTimeout) {
-                    requestTimeoutMillis = 30_000
-                    connectTimeoutMillis  = 10_000
-                    socketTimeoutMillis   = 10_000
-                }
-            }
-        }
-        return _httpClient!!
+    private interface NativeApi : Library {
+        fun spice_native_connect(host: String, port: Int, password: String): Byte
+        fun spice_native_request(module: String, function: String, paramsJson: String): Pointer?
+        fun spice_native_touch_request(module: String, function: String, paramsJson: String): Pointer?
+        fun spice_native_disconnect()
+        fun spice_native_last_error(): Pointer?
+        fun spice_native_free_string(value: Pointer?)
     }
 
-    @Serializable
-    data class ConnectBody(val host: String, val port: Int, val password: String)
+    private val nativeApi: NativeApi by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        Native.load(resolveLibrary().absolutePath, NativeApi::class.java)
+    }
 
-    @Serializable
-    data class RequestBody(val module: String, val function: String, val params: JsonArray)
+    private fun resolveLibrary(): File {
+        val libraryName = System.mapLibraryName("spice_backend")
+        val configured = listOfNotNull(
+            System.getProperty("spice.backend.library"),
+            System.getenv("SPICE_BACKEND_LIBRARY"),
+        ).map(::File).firstOrNull(File::isFile)
+        if (configured != null) return configured
 
-    @Serializable
-    data class StatusResponse(val connected: Boolean)
+        val local = listOf(
+            File("rust-backend/target/release", libraryName),
+            File("rust-backend/target/debug", libraryName),
+            File(System.getProperty("user.dir"), libraryName),
+        ).firstOrNull(File::isFile)
+        if (local != null) return local
+
+        val resource = SpiceNative::class.java.getResourceAsStream("/$libraryName")
+            ?: error("Rust desktop library not found; build the desktop target or set spice.backend.library")
+        val extracted = Files.createTempFile("spicecompose-$libraryName-", "").toFile()
+        extracted.deleteOnExit()
+        resource.use { input ->
+            Files.copy(input, extracted.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+        return extracted
+    }
+
+    private fun readAndFree(pointer: Pointer?): String {
+        return readNativeString(pointer) ?: "{\"error\":\"native returned null\"}"
+    }
+
+    private fun readNativeString(pointer: Pointer?): String? {
+        if (pointer == null) return null
+        return try {
+            pointer.getString(0, Charsets.UTF_8.name())
+        } finally {
+            nativeApi.spice_native_free_string(pointer)
+        }
+    }
 
     actual suspend fun connect(host: String, port: Int, password: String): Boolean {
-        return try {
-            val response: StatusResponse = client().post("$BASE_URL/connect") {
-                contentType(ContentType.Application.Json)
-                setBody(ConnectBody(host, port, password))
-            }.body()
-            response.connected
-        } catch (_: Exception) {
-            false
+        if (host.isEmpty()) return false
+        return withContext(Dispatchers.IO) {
+            nativeApi.spice_native_connect(host, port, password).toInt() != 0
         }
     }
 
-    actual suspend fun request(module: String, function: String, paramsJson: String): String {
-        val params = Json.parseToJsonElement(paramsJson) as JsonArray
-        return try {
-            val response: JsonElement = client().post("$BASE_URL/request") {
-                contentType(ContentType.Application.Json)
-                setBody(RequestBody(module, function, params))
-            }.body()
-            response.toString()
-        } catch (e: Exception) {
-            """{"error":"${e.message}"}"""
+    actual suspend fun request(module: String, function: String, paramsJson: String): String =
+        withContext(Dispatchers.IO) {
+            readAndFree(nativeApi.spice_native_request(module, function, paramsJson))
         }
-    }
 
-    actual suspend fun touchRequest(module: String, function: String, paramsJson: String): String {
-        val params = Json.parseToJsonElement(paramsJson) as JsonArray
-        return try {
-            val response: JsonElement = client().post("$BASE_URL/touch_request") {
-                contentType(ContentType.Application.Json)
-                setBody(RequestBody(module, function, params))
-            }.body()
-            response.toString()
-        } catch (e: Exception) {
-            """{"error":"${e.message}"}"""
+    actual suspend fun touchRequest(module: String, function: String, paramsJson: String): String =
+        withContext(Dispatchers.IO) {
+            readAndFree(nativeApi.spice_native_touch_request(module, function, paramsJson))
         }
-    }
 
     actual suspend fun disconnect() {
-        try { client().post("$BASE_URL/disconnect") } catch (_: Exception) {}
-        _httpClient?.close()
-        _httpClient = null
+        withContext(Dispatchers.IO) { nativeApi.spice_native_disconnect() }
     }
+
+    internal fun lastConnectError(): String = readNativeString(nativeApi.spice_native_last_error()).orEmpty()
 }

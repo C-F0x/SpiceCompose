@@ -4,7 +4,7 @@ package org.cf0x.spicecompose.platform
  * Platform-native bridge to the Rust spice-backend.
  *
  * Android: JNI calls into libspice_backend.so
- * Desktop: HTTP to localhost:9800
+ * Desktop: JNA calls into the Rust C ABI
  * Web:     fetch() to Rust backend
  */
 expect object SpiceNative {

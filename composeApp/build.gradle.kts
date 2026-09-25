@@ -1,6 +1,7 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -74,7 +75,9 @@ kotlin {
         androidResources.enable = true
     }
 
-    jvm("desktop")
+    jvm("desktop") {
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
+    }
     wasmJs {
         browser {
             binaries.executable()
@@ -141,7 +144,7 @@ kotlin {
 
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation(libs.ktor.client.java)
+            implementation(libs.jna)
         }
 
         wasmJsMain.dependencies {
@@ -156,7 +159,62 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "org.cf0x.spicecompose.MainKt"
+
+        val currentJavaHome = System.getProperty("java.home") ?: ""
+        val hasJpackage = File(currentJavaHome, "bin/jpackage.exe").exists()
+            || File(currentJavaHome, "bin/jpackage").exists()
+        if (!hasJpackage) {
+            val candidatePaths = listOfNotNull(
+                "D:/DevHub/Java/jdk-25.0.4.1",
+                System.getenv("JAVA_HOME"),
+                "${System.getProperty("user.home")}/.jdks/jbr-21.0.11",
+                "C:/Program Files/Java/latest"
+            )
+            val validJdk = candidatePaths.firstOrNull { path ->
+                File(path, "bin/jpackage.exe").exists() || File(path, "bin/jpackage").exists()
+            }
+            if (validJdk != null) {
+                javaHome = validJdk
+            }
+        }
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
+            packageName = "SpiceCompose"
+            packageVersion = rootProject.extra["appVersionRelease"] as String
+            description = "SpiceCompose Desktop Application"
+            vendor = "SpiceCompose"
+
+            windows {
+                shortcut = true
+                menu = true
+                menuGroup = "SpiceCompose"
+                dirChooser = true
+                perUserInstall = false
+                upgradeUuid = "c98342f1-638a-4467-b50a-81a6c0f2142e"
+            }
+        }
     }
+}
+
+// Build and package the Rust C ABI library used by the desktop target. This is
+// the same native core linked by Android and iOS; desktop loads it through JNA.
+val desktopRustLibraryName = System.mapLibraryName("spice_backend")
+val desktopRustResourceDir = layout.buildDirectory.dir("generated/resources/desktopMain/native")
+val buildDesktopRust = tasks.register<Exec>("buildDesktopRust") {
+    workingDir(rootProject.layout.projectDirectory.dir("rust-backend"))
+    commandLine("cargo", "build", "--release", "--lib")
+}
+val stageDesktopRust = tasks.register<Copy>("stageDesktopRust") {
+    dependsOn(buildDesktopRust)
+    from(rootProject.layout.projectDirectory.dir("rust-backend/target/release")) {
+        include(desktopRustLibraryName)
+    }
+    into(desktopRustResourceDir)
+}
+kotlin.sourceSets.getByName("desktopMain").resources.srcDir(desktopRustResourceDir)
+tasks.named("desktopProcessResources") {
+    dependsOn(stageDesktopRust)
 }
 
 // Copy Wasm distribution to Rust backend's static directory
